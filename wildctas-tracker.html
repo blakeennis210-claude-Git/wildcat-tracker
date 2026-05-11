@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Wildcats">
+<meta name="theme-color" content="#26215C">
+<title>Wildcats Tracker</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --purple:#3C3489;--purple-light:#EEEDFE;--purple-mid:#7F77DD;
+  --purple-dark:#26215C;--gold:#d4af37;
+  --bg:#f5f4fc;--card:#fff;--border:#e0ddf7;
+  --text:#1a1a2e;--text2:#534AB7;--text3:#7F77DD;
+  --red-bg:#FCEBEB;--red:#A32D2D;
+}
+html,body{height:100%;overflow:hidden;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column;}
+
+.hdr{background:var(--purple-dark);padding:env(safe-area-inset-top,0) 0 0;flex-shrink:0;}
+.hdr-inner{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;}
+.logo-wrap{display:flex;align-items:center;gap:10px;}
+.logo{width:38px;height:38px;border-radius:50%;background:#1a1030;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:var(--gold);letter-spacing:.5px;flex-shrink:0;}
+.team-name{font-size:16px;font-weight:600;color:#fff;}
+.team-sub{font-size:11px;color:#AFA9EC;}
+.qtr-wrap{display:flex;gap:4px;}
+.qbtn{padding:4px 8px;font-size:11px;border:1px solid #534AB7;border-radius:6px;background:transparent;color:#AFA9EC;cursor:pointer;font-weight:500;}
+.qbtn.active{background:#534AB7;color:#fff;border-color:#534AB7;}
+.tabs{display:flex;background:var(--purple-dark);border-top:1px solid #3a3570;flex-shrink:0;}
+.tab{flex:1;padding:10px 0;font-size:12px;font-weight:600;color:#AFA9EC;border:none;background:transparent;cursor:pointer;letter-spacing:.3px;border-bottom:2px solid transparent;}
+.tab.active{color:#fff;border-bottom-color:var(--gold);}
+
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 12px calc(env(safe-area-inset-bottom,0) + 12px);}
+.panel{display:none;}
+.panel.active{display:block;}
+
+/* GITHUB NOTICE */
+.github-notice{background:#1a1030;border:1px solid var(--gold);border-radius:10px;padding:10px 14px;margin-bottom:12px;}
+.github-notice p{font-size:12px;color:#AFA9EC;line-height:1.6;}
+.github-notice strong{color:var(--gold);}
+
+.setup-row{display:flex;gap:8px;margin-bottom:8px;}
+.setup-input{flex:1;height:40px;padding:0 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;background:var(--card);color:var(--text);}
+.setup-input:focus{outline:none;border-color:var(--purple-mid);}
+.btn-save{height:40px;padding:0 16px;background:var(--purple);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;flex:1;display:flex;align-items:center;justify-content:center;gap:6px;}
+.btn-save:active{background:var(--purple-dark);}
+.btn-reset{height:40px;padding:0 14px;background:transparent;color:var(--text2);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;}
+
+.reset-confirm{display:none;align-items:center;gap:8px;padding:8px 10px;background:var(--red-bg);border:1px solid #F09595;border-radius:8px;margin-bottom:8px;}
+.reset-confirm.show{display:flex;}
+.reset-confirm span{font-size:13px;color:var(--red);flex:1;font-weight:500;}
+.rc-yes{height:32px;padding:0 12px;background:var(--red);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;}
+.rc-no{height:32px;padding:0 10px;background:transparent;color:var(--red);border:1px solid #F09595;border-radius:6px;font-size:12px;cursor:pointer;}
+
+.legend{display:flex;gap:12px;padding:7px 10px;background:#fff;border:1px solid var(--border);border-radius:8px;margin-bottom:10px;flex-wrap:wrap;}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2);}
+.leg-dot{width:10px;height:10px;border-radius:3px;}
+
+.section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--text3);margin:12px 0 6px;}
+.shot-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;}
+.shot-row{display:flex;align-items:center;justify-content:space-between;}
+.shot-name{font-size:14px;font-weight:500;color:var(--text);flex:1;}
+.shot-stat{display:flex;flex-direction:column;align-items:center;min-width:56px;}
+.shot-made{font-size:20px;font-weight:700;color:var(--purple);line-height:1;}
+.shot-att{font-size:11px;color:#999;margin-top:1px;}
+.shot-pct{font-size:11px;color:var(--purple-mid);margin-top:1px;}
+.shot-btns{display:flex;gap:6px;align-items:center;}
+.sbtn{width:42px;height:42px;border-radius:8px;border:1px solid var(--border);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;user-select:none;font-weight:500;}
+.sbtn:active{transform:scale(0.92);}
+.sbtn.made{background:var(--purple-light);border-color:var(--purple-mid);color:var(--purple);}
+.sbtn.miss{background:#f5f5f5;border-color:#ddd;color:#666;}
+.sbtn.undo{background:#fff;border-color:#ddd;color:#999;font-size:16px;}
+.sbtn.undo:active{background:var(--red-bg);border-color:#F09595;color:var(--red);}
+
+.three-total{display:flex;justify-content:space-between;align-items:center;padding-top:8px;margin-top:8px;border-top:1px solid var(--border);}
+.three-total-lbl{font-size:12px;color:#999;}
+.three-total-val{font-size:12px;color:var(--text2);font-weight:500;}
+
+.to-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+.to-card{border-radius:10px;padding:12px;display:flex;flex-direction:column;align-items:center;gap:8px;}
+.to-created{background:var(--purple-light);border:1px solid var(--purple-mid);}
+.to-committed{background:var(--red-bg);border:1px solid #F09595;}
+.to-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;}
+.to-created .to-lbl{color:var(--purple);}
+.to-committed .to-lbl{color:var(--red);}
+.to-row{display:flex;align-items:center;gap:10px;}
+.to-num{font-size:32px;font-weight:700;min-width:44px;text-align:center;}
+.to-created .to-num{color:var(--purple);}
+.to-committed .to-num{color:var(--red);}
+.to-btn{width:36px;height:36px;border-radius:8px;border:1px solid;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;background:transparent;font-weight:500;}
+.to-created .to-btn{border-color:var(--purple-mid);color:var(--purple);}
+.to-created .to-btn:active{background:#CECBF6;}
+.to-committed .to-btn{border-color:#F09595;color:var(--red);}
+.to-committed .to-btn:active{background:#F7C1C1;}
+
+.sum-bar{background:var(--purple-dark);border-radius:10px;padding:10px 12px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px;}
+.sum-item{text-align:center;}
+.sum-val{font-size:16px;font-weight:700;color:#fff;}
+.sum-lbl{font-size:10px;color:#AFA9EC;margin-top:1px;}
+
+.toast{position:fixed;bottom:calc(env(safe-area-inset-bottom,0) + 16px);left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:20px;font-size:13px;font-weight:600;color:#fff;z-index:999;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;}
+.toast.ok{background:var(--purple);}
+.toast.err{background:var(--red);}
+
+/* HISTORY */
+.hist-top{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+.btn-outline{height:36px;padding:0 14px;background:transparent;color:var(--text2);border:1px solid var(--border);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;}
+.btn-outline:active{background:var(--purple-light);}
+
+.season-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px;margin-bottom:12px;}
+.ss-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;}
+.ss-val{font-size:18px;font-weight:700;color:var(--purple);}
+.ss-lbl{font-size:10px;color:#999;margin-top:2px;}
+
+.game-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;}
+.gc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.gc-opp{font-size:15px;font-weight:600;color:var(--text);}
+.gc-date{font-size:11px;color:#999;margin-top:2px;}
+.gc-del{background:transparent;border:1px solid var(--border);border-radius:6px;color:#aaa;cursor:pointer;font-size:12px;padding:5px 9px;font-weight:600;}
+.gc-del:active{background:var(--red-bg);border-color:#F09595;color:var(--red);}
+.badges{display:flex;gap:5px;flex-wrap:wrap;}
+.badge{font-size:11px;padding:3px 7px;border-radius:5px;font-weight:600;}
+.b-purple{background:var(--purple-light);color:var(--purple);}
+.b-dark{background:#1a1030;color:#AFA9EC;}
+.b-red{background:var(--red-bg);color:var(--red);}
+
+.del-confirm{display:none;align-items:center;gap:8px;margin-top:10px;padding:8px 10px;background:var(--red-bg);border:1px solid #F09595;border-radius:8px;}
+.del-confirm.show{display:flex;}
+.del-confirm span{font-size:13px;color:var(--red);flex:1;font-weight:500;}
+.del-yes{height:32px;padding:0 12px;background:var(--red);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;}
+.del-no{height:32px;padding:0 10px;background:transparent;color:var(--red);border:1px solid #F09595;border-radius:6px;font-size:12px;cursor:pointer;}
+
+.no-games{text-align:center;padding:3rem 1rem;color:#aaa;font-size:14px;line-height:1.8;}
+
+/* EXPORT MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:flex;align-items:flex-end;justify-content:center;padding:0;}
+.modal-overlay.hidden{display:none;}
+.modal{background:#fff;border-radius:16px 16px 0 0;padding:20px;width:100%;max-width:600px;}
+.modal h3{font-size:15px;font-weight:700;color:var(--purple-dark);margin-bottom:6px;}
+.modal p{font-size:12px;color:#666;margin-bottom:10px;line-height:1.6;}
+.code-box{background:#1a1a2e;color:#AFA9EC;font-family:monospace;font-size:11px;padding:12px;border-radius:8px;overflow:auto;max-height:200px;white-space:pre;margin-bottom:12px;-webkit-overflow-scrolling:touch;}
+.modal-btns{display:flex;gap:8px;}
+.btn-copy{flex:1;height:42px;background:var(--purple);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;}
+.btn-copy:active{background:var(--purple-dark);}
+.btn-close{height:42px;padding:0 16px;background:transparent;color:var(--text2);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-inner">
+    <div class="logo-wrap">
+      <div class="logo">WOW</div>
+      <div>
+        <div class="team-name">Wortham Oaks Wildcats</div>
+        <div class="team-sub">Game Tracker</div>
+      </div>
+    </div>
+    <div class="qtr-wrap">
+      <button class="qbtn active" onclick="setQtr(this)">Q1</button>
+      <button class="qbtn" onclick="setQtr(this)">Q2</button>
+      <button class="qbtn" onclick="setQtr(this)">Q3</button>
+      <button class="qbtn" onclick="setQtr(this)">Q4</button>
+      <button class="qbtn" onclick="setQtr(this)">OT</button>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('live',this)">⚡ Live Game</button>
+    <button class="tab" onclick="showTab('history',this)">📋 History</button>
+  </div>
+</div>
+
+<div class="scroll">
+
+  <!-- LIVE PANEL -->
+  <div id="panel-live" class="panel active">
+
+    <div class="setup-row">
+      <input class="setup-input" id="opp-input" placeholder="Opponent name" autocomplete="off">
+      <input class="setup-input" id="date-input" type="date" style="flex:0 0 140px;">
+    </div>
+    <div class="setup-row">
+      <button class="btn-reset" onclick="showResetConfirm()">↺ Reset</button>
+      <button class="btn-save" onclick="saveGame()">💾 Save Game</button>
+    </div>
+    <div class="reset-confirm" id="reset-confirm">
+      <span>Reset all current stats?</span>
+      <button class="rc-yes" onclick="clearStats()">Yes</button>
+      <button class="rc-no" onclick="hideResetConfirm()">Cancel</button>
+    </div>
+
+    <div class="legend">
+      <div class="leg-item"><div class="leg-dot" style="background:#CECBF6;border:1px solid #AFA9EC;"></div> + = Made</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#e8e8e8;border:1px solid #ccc;"></div> − = Missed</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#F7C1C1;border:1px solid #F09595;"></div> ↩ = Undo</div>
+    </div>
+
+    <div class="section-label">Paint &amp; Free Throws</div>
+
+    <div class="shot-card">
+      <div class="shot-row">
+        <span class="shot-name">Layups</span>
+        <div class="shot-stat"><span class="shot-made" id="disp-l-m">0</span><span class="shot-att" id="disp-l-a">0 att</span><span class="shot-pct" id="disp-l-p">—</span></div>
+        <div class="shot-btns">
+          <button class="sbtn made" onclick="shotMade('l')">+</button>
+          <button class="sbtn miss" onclick="shotMiss('l')">−</button>
+          <button class="sbtn undo" onclick="shotUndo('l')">↩</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="shot-card">
+      <div class="shot-row">
+        <span class="shot-name">Free Throws</span>
+        <div class="shot-stat"><span class="shot-made" id="disp-f-m">0</span><span class="shot-att" id="disp-f-a">0 att</span><span class="shot-pct" id="disp-f-p">—</span></div>
+        <div class="shot-btns">
+          <button class="sbtn made" onclick="shotMade('f')">+</button>
+          <button class="sbtn miss" onclick="shotMiss('f')">−</button>
+          <button class="sbtn undo" onclick="shotUndo('f')">↩</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="shot-card">
+      <div class="shot-row">
+        <span class="shot-name">Midrange</span>
+        <div class="shot-stat"><span class="shot-made" id="disp-mid-m">0</span><span class="shot-att" id="disp-mid-a">0 att</span><span class="shot-pct" id="disp-mid-p">—</span></div>
+        <div class="shot-btns">
+          <button class="sbtn made" onclick="shotMade('mid')">+</button>
+          <button class="sbtn miss" onclick="shotMiss('mid')">−</button>
+          <button class="sbtn undo" onclick="shotUndo('mid')">↩</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label">Three-Pointers</div>
+
+    <div class="shot-card">
+      <div class="shot-row">
+        <span class="shot-name">Catch &amp; Shoot</span>
+        <div class="shot-stat"><span class="shot-made" id="disp-cs-m">0</span><span class="shot-att" id="disp-cs-a">0 att</span><span class="shot-pct" id="disp-cs-p">—</span></div>
+        <div class="shot-btns">
+          <button class="sbtn made" onclick="shotMade('cs')">+</button>
+          <button class="sbtn miss" onclick="shotMiss('cs')">−</button>
+          <button class="sbtn undo" onclick="shotUndo('cs')">↩</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="shot-card">
+      <div class="shot-row">
+        <span class="shot-name">One Pass 3</span>
+        <div class="shot-stat"><span class="shot-made" id="disp-op-m">0</span><span class="shot-att" id="disp-op-a">0 att</span><span class="shot-pct" id="disp-op-p">—</span></div>
+        <div class="shot-btns">
+          <button class="sbtn made" onclick="shotMade('op')">+</button>
+          <button class="sbtn miss" onclick="shotMiss('op')">−</button>
+          <button class="sbtn undo" onclick="shotUndo('op')">↩</button>
+        </div>
+      </div>
+      <div class="three-total">
+        <span class="three-total-lbl">Total 3s</span>
+        <span class="three-total-val" id="total3">0 / 0 — —</span>
+      </div>
+    </div>
+
+    <div class="section-label">Turnovers</div>
+
+    <div class="to-grid">
+      <div class="to-card to-created">
+        <div class="to-lbl">Created</div>
+        <div class="to-row">
+          <button class="to-btn" onclick="adjTO('tcr',-1)">−</button>
+          <span class="to-num" id="tcr">0</span>
+          <button class="to-btn" onclick="adjTO('tcr',1)">+</button>
+        </div>
+      </div>
+      <div class="to-card to-committed">
+        <div class="to-lbl">Committed</div>
+        <div class="to-row">
+          <button class="to-btn" onclick="adjTO('tco',-1)">−</button>
+          <span class="to-num" id="tco">0</span>
+          <button class="to-btn" onclick="adjTO('tco',1)">+</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="sum-bar">
+      <div class="sum-item"><div class="sum-val" id="s-pts">0</div><div class="sum-lbl">Est. Points</div></div>
+      <div class="sum-item"><div class="sum-val" id="s-efg">—</div><div class="sum-lbl">eFG%</div></div>
+      <div class="sum-item"><div class="sum-val" id="s-fg">0/0</div><div class="sum-lbl">Total FG</div></div>
+      <div class="sum-item"><div class="sum-val" id="s-3p">—</div><div class="sum-lbl">3PT%</div></div>
+      <div class="sum-item"><div class="sum-val" id="s-ftp">—</div><div class="sum-lbl">FT%</div></div>
+      <div class="sum-item"><div class="sum-val" id="s-tor">—</div><div class="sum-lbl">TO Ratio</div></div>
+    </div>
+
+  </div><!-- end live -->
+
+  <!-- HISTORY PANEL -->
+  <div id="panel-history" class="panel">
+    <div class="github-notice">
+      <p><strong>How to save games permanently:</strong> After saving a game, tap <strong>Copy Game Data</strong> below. Open your HTML file on GitHub, find the <strong>GAMES DATA</strong> section, and replace the array with what you copied. Commit the file and every device is updated.</p>
+    </div>
+    <div class="hist-top">
+      <button class="btn-outline" onclick="showExportModal()">📋 Copy Game Data</button>
+      <button class="btn-outline" onclick="exportCSV()">⬇ Export CSV</button>
+    </div>
+    <div class="season-grid" id="season-grid"></div>
+    <div id="game-list"></div>
+  </div>
+
+</div><!-- end scroll -->
+
+<!-- EXPORT MODAL -->
+<div class="modal-overlay hidden" id="export-modal">
+  <div class="modal">
+    <h3>📋 Copy Game Data for GitHub</h3>
+    <p>Copy everything below. In your HTML file on GitHub, find <code style="background:#f0effe;padding:1px 4px;border-radius:3px;">/* GAMES DATA */</code> and replace the array on the next line with this.</p>
+    <div class="code-box" id="export-code"></div>
+    <div class="modal-btns">
+      <button class="btn-copy" onclick="copyCode()">Copy to Clipboard</button>
+      <button class="btn-close" onclick="closeExportModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+
+// ─────────────────────────────────────────────────
+// GAMES DATA — paste updated array here after each session
+var GAMES = [
+];
+// ─────────────────────────────────────────────────
+
+var SHOT_KEYS = ['l','f','mid','cs','op'];
+var shots = {};
+SHOT_KEYS.forEach(function(k){ shots[k] = {m:0,a:0,log:[]}; });
+var toVals = {tcr:0, tco:0};
+
+// Runtime games list — starts from hardcoded data
+var gamesList = GAMES.slice();
+
+function pct(m,a){ return a===0 ? '—' : Math.round(m/a*100)+'%'; }
+
+function renderShot(k){
+  var s = shots[k];
+  document.getElementById('disp-'+k+'-m').textContent = s.m;
+  document.getElementById('disp-'+k+'-a').textContent = s.a+' att';
+  document.getElementById('disp-'+k+'-p').textContent = pct(s.m,s.a);
+}
+function shotMade(k){ shots[k].m++; shots[k].a++; shots[k].log.push('made'); renderShot(k); updateSummary(); }
+function shotMiss(k){ shots[k].a++; shots[k].log.push('miss'); renderShot(k); updateSummary(); }
+function shotUndo(k){
+  var s = shots[k]; if(!s.log.length) return;
+  var last = s.log.pop(); if(last==='made') s.m--; s.a--;
+  renderShot(k); updateSummary();
+}
+function adjTO(key,delta){
+  toVals[key] = Math.max(0,toVals[key]+delta);
+  document.getElementById(key).textContent = toVals[key];
+  updateSummary();
+}
+function updateSummary(){
+  var t3m=shots.cs.m+shots.op.m, t3a=shots.cs.a+shots.op.a;
+  document.getElementById('total3').textContent = t3m+'/'+t3a+' — '+pct(t3m,t3a);
+  var fgm=shots.l.m+shots.mid.m+t3m, fga=shots.l.a+shots.mid.a+t3a;
+  var pts = fgm*2+t3m+shots.f.m;
+  document.getElementById('s-pts').textContent = pts;
+  document.getElementById('s-fg').textContent = fgm+'/'+fga;
+  document.getElementById('s-3p').textContent = pct(t3m,t3a);
+  document.getElementById('s-ftp').textContent = pct(shots.f.m,shots.f.a);
+  document.getElementById('s-efg').textContent = fga===0?'—':Math.round((fgm+0.5*t3m)/fga*100)+'%';
+  var cr=toVals.tcr, co=toVals.tco;
+  document.getElementById('s-tor').textContent = (cr===0&&co===0)?'—':cr+':'+co;
+}
+
+function showResetConfirm(){ document.getElementById('reset-confirm').classList.add('show'); }
+function hideResetConfirm(){ document.getElementById('reset-confirm').classList.remove('show'); }
+function clearStats(){
+  hideResetConfirm();
+  SHOT_KEYS.forEach(function(k){ shots[k]={m:0,a:0,log:[]}; renderShot(k); });
+  toVals.tcr=0; toVals.tco=0;
+  document.getElementById('tcr').textContent=0;
+  document.getElementById('tco').textContent=0;
+  document.getElementById('opp-input').value='';
+  updateSummary();
+}
+
+function saveGame(){
+  var opp = document.getElementById('opp-input').value.trim();
+  if(!opp){ showToast('Enter opponent name first',true); return; }
+  var dateVal = document.getElementById('date-input').value;
+  var t3m=shots.cs.m+shots.op.m, t3a=shots.cs.a+shots.op.a;
+  var fgm=shots.l.m+shots.mid.m+t3m, fga=shots.l.a+shots.mid.a+t3a;
+  var game = {
+    id: Date.now(), opp: opp,
+    date: dateVal||new Date().toISOString().slice(0,10),
+    lm:shots.l.m, la:shots.l.a,
+    fm:shots.f.m, fa:shots.f.a,
+    midm:shots.mid.m, mida:shots.mid.a,
+    csm:shots.cs.m, csa:shots.cs.a,
+    opm:shots.op.m, opa:shots.op.a,
+    tcr:toVals.tcr, tco:toVals.tco,
+    pts: fgm*2+t3m+shots.f.m,
+    efg: fga===0?null:Math.round((fgm+0.5*t3m)/fga*100),
+    fgm:fgm, fga:fga, t3m:t3m, t3a:t3a
+  };
+  gamesList.unshift(game);
+  clearStats();
+  showToast('Saved vs '+opp+'! Go to History to copy data.',false);
+}
+
+// ── DELETE ────────────────────────────────────────
+function deleteGame(id){
+  var all = document.querySelectorAll('.del-confirm');
+  for(var i=0;i<all.length;i++){
+    if(all[i].id !== 'del-confirm-'+id) all[i].classList.remove('show');
+  }
+  var row = document.getElementById('del-confirm-'+id);
+  if(row) row.classList.toggle('show');
+}
+function cancelDelete(id){
+  var row = document.getElementById('del-confirm-'+id);
+  if(row) row.classList.remove('show');
+}
+function deleteGameConfirmed(id){
+  gamesList = gamesList.filter(function(g){ return g.id !== id; });
+  showToast('Game deleted',false);
+  renderHistory();
+}
+
+// ── HISTORY ───────────────────────────────────────
+function renderHistory(){
+  var games = gamesList;
+  var grid = document.getElementById('season-grid');
+  var list = document.getElementById('game-list');
+  if(!games.length){
+    grid.innerHTML='';
+    list.innerHTML='<div class="no-games">No games yet.<br>Track a game and tap <strong>Save Game</strong>.</div>';
+    return;
+  }
+  var avgPts = Math.round(games.reduce(function(s,g){return s+g.pts;},0)/games.length);
+  var ftG = games.filter(function(g){return g.fa>0;});
+  var avgFT = ftG.length ? Math.round(ftG.reduce(function(s,g){return s+g.fm/g.fa;},0)/ftG.length*100) : null;
+  var t3G = games.filter(function(g){return g.t3a>0;});
+  var avg3 = t3G.length ? Math.round(t3G.reduce(function(s,g){return s+g.t3m/g.t3a;},0)/t3G.length*100) : null;
+  var avgCr = (games.reduce(function(s,g){return s+g.tcr;},0)/games.length).toFixed(1);
+  var avgCo = (games.reduce(function(s,g){return s+g.tco;},0)/games.length).toFixed(1);
+
+  grid.innerHTML =
+    '<div class="ss-card"><div class="ss-val">'+games.length+'</div><div class="ss-lbl">Games</div></div>'+
+    '<div class="ss-card"><div class="ss-val">'+avgPts+'</div><div class="ss-lbl">Avg Pts</div></div>'+
+    '<div class="ss-card"><div class="ss-val">'+(avg3!==null?avg3+'%':'—')+'</div><div class="ss-lbl">Avg 3PT%</div></div>'+
+    '<div class="ss-card"><div class="ss-val">'+(avgFT!==null?avgFT+'%':'—')+'</div><div class="ss-lbl">Avg FT%</div></div>'+
+    '<div class="ss-card"><div class="ss-val">'+avgCr+':'+avgCo+'</div><div class="ss-lbl">Avg TO</div></div>';
+
+  var html = '';
+  for(var i=0;i<games.length;i++){
+    var g = games[i];
+    var d = new Date(g.date+'T12:00:00');
+    var ds = d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    var efgBadge = g.efg!==null ? '<span class="badge b-purple">eFG '+g.efg+'%</span>' : '';
+    html +=
+      '<div class="game-card">'+
+        '<div class="gc-top">'+
+          '<div><div class="gc-opp">vs '+g.opp+'</div><div class="gc-date">'+ds+'</div></div>'+
+          '<button class="gc-del" onclick="deleteGame('+g.id+')">🗑 Delete</button>'+
+        '</div>'+
+        '<div class="badges">'+
+          '<span class="badge b-purple">'+g.pts+' pts</span>'+
+          '<span class="badge b-purple">Layups '+g.lm+'/'+g.la+'</span>'+
+          '<span class="badge b-purple">FT '+g.fm+'/'+g.fa+'</span>'+
+          '<span class="badge b-purple">Mid '+g.midm+'/'+g.mida+'</span>'+
+          '<span class="badge b-purple">C&S '+g.csm+'/'+g.csa+'</span>'+
+          '<span class="badge b-purple">OP3 '+g.opm+'/'+g.opa+'</span>'+
+          '<span class="badge b-dark">TO Cr '+g.tcr+'</span>'+
+          '<span class="badge b-red">TO Co '+g.tco+'</span>'+
+          efgBadge+
+        '</div>'+
+        '<div class="del-confirm" id="del-confirm-'+g.id+'">'+
+          '<span>Delete this game?</span>'+
+          '<button class="del-yes" onclick="deleteGameConfirmed('+g.id+')">Delete</button>'+
+          '<button class="del-no" onclick="cancelDelete('+g.id+')">Cancel</button>'+
+        '</div>'+
+      '</div>';
+  }
+  list.innerHTML = html;
+}
+
+// ── EXPORT FOR GITHUB ─────────────────────────────
+function showExportModal(){
+  var code = JSON.stringify(gamesList, null, 2);
+  document.getElementById('export-code').textContent = code;
+  document.getElementById('export-modal').classList.remove('hidden');
+}
+function closeExportModal(){
+  document.getElementById('export-modal').classList.add('hidden');
+}
+function copyCode(){
+  var text = document.getElementById('export-code').textContent;
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){
+      showToast('Copied! Paste into GitHub.',false);
+      closeExportModal();
+    });
+  } else {
+    // fallback for older browsers
+    var ta = document.createElement('textarea');
+    ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    try{ document.execCommand('copy'); showToast('Copied! Paste into GitHub.',false); closeExportModal(); }
+    catch(e){ showToast('Copy failed — select manually',true); }
+    document.body.removeChild(ta);
+  }
+}
+
+function exportCSV(){
+  var games = gamesList;
+  if(!games.length){ showToast('No games to export',true); return; }
+  var hdr='Date,Opponent,Points,Layups M,Layups A,FT M,FT A,Mid M,Mid A,C&S M,C&S A,OP3 M,OP3 A,TO Created,TO Committed,eFG%';
+  var rows = games.map(function(g){
+    return [g.date,'"'+g.opp+'"',g.pts,g.lm,g.la,g.fm,g.fa,g.midm,g.mida,g.csm,g.csa,g.opm,g.opa,g.tcr,g.tco,g.efg!==null?g.efg+'%':''].join(',');
+  });
+  var blob = new Blob([[hdr].concat(rows).join('\n')],{type:'text/csv'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a'); a.href=url; a.download='wildcats-stats.csv'; a.click();
+  URL.revokeObjectURL(url);
+}
+
+function setQtr(btn){
+  var btns = document.querySelectorAll('.qbtn');
+  for(var i=0;i<btns.length;i++) btns[i].classList.remove('active');
+  btn.classList.add('active');
+}
+function showTab(name,btn){
+  var panels = document.querySelectorAll('.panel');
+  for(var i=0;i<panels.length;i++) panels[i].classList.remove('active');
+  var tabs = document.querySelectorAll('.tab');
+  for(var i=0;i<tabs.length;i++) tabs[i].classList.remove('active');
+  document.getElementById('panel-'+name).classList.add('active');
+  btn.classList.add('active');
+  if(name==='history') renderHistory();
+}
+function showToast(msg,isErr){
+  var t = document.getElementById('toast');
+  t.textContent=msg; t.className='toast '+(isErr?'err':'ok')+' show';
+  clearTimeout(t._timer); t._timer=setTimeout(function(){ t.classList.remove('show'); },3500);
+}
+
+document.getElementById('date-input').value = new Date().toISOString().slice(0,10);
+</script>
+</body>
+</html>
