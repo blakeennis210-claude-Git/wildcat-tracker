@@ -615,14 +615,23 @@ function renderHistory(games){
   var avgFT=ftG.length?Math.round(ftG.reduce(function(s,g){return s+g.fm/g.fa;},0)/ftG.length*100):null;
   var t3G=games.filter(function(g){return g.t3a>0;});
   var avg3=t3G.length?Math.round(t3G.reduce(function(s,g){return s+g.t3m/g.t3a;},0)/t3G.length*100):null;
+  var op3G=games.filter(function(g){return g.opa>0;});
+  var avgOP3=op3G.length?Math.round(op3G.reduce(function(s,g){return s+g.opm/g.opa;},0)/op3G.length*100):null;
+  var layG=games.filter(function(g){return g.la>0;});
+  var avgLay=layG.length?Math.round(layG.reduce(function(s,g){return s+g.lm/g.la;},0)/layG.length*100):null;
+  var midG=games.filter(function(g){return g.mida>0;});
+  var avgMid=midG.length?Math.round(midG.reduce(function(s,g){return s+g.midm/g.mida;},0)/midG.length*100):null;
   var avgCr=(games.reduce(function(s,g){return s+g.tcr;},0)/games.length).toFixed(1);
   var avgCo=(games.reduce(function(s,g){return s+g.tco;},0)/games.length).toFixed(1);
 
   grid.innerHTML=
     '<div class="ss-card"><div class="ss-val">'+games.length+'</div><div class="ss-lbl">Games</div></div>'+
     '<div class="ss-card"><div class="ss-val">'+avgPts+'</div><div class="ss-lbl">Avg Pts</div></div>'+
-    '<div class="ss-card"><div class="ss-val">'+(avg3!==null?avg3+'%':'—')+'</div><div class="ss-lbl">Avg 3PT%</div></div>'+
-    '<div class="ss-card"><div class="ss-val">'+(avgFT!==null?avgFT+'%':'—')+'</div><div class="ss-lbl">Avg FT%</div></div>'+
+    '<div class="ss-card"><div class="ss-val">'+(avgLay!==null?avgLay+'%':'—')+'</div><div class="ss-lbl">Layup %</div></div>'+
+    '<div class="ss-card"><div class="ss-val">'+(avgFT!==null?avgFT+'%':'—')+'</div><div class="ss-lbl">FT %</div></div>'+
+    '<div class="ss-card"><div class="ss-val">'+(avgMid!==null?avgMid+'%':'—')+'</div><div class="ss-lbl">Midrange %</div></div>'+
+    '<div class="ss-card"><div class="ss-val">'+(avg3!==null?avg3+'%':'—')+'</div><div class="ss-lbl">3PT %</div></div>'+
+    '<div class="ss-card"><div class="ss-val">'+(avgOP3!==null?avgOP3+'%':'—')+'</div><div class="ss-lbl">One Pass 3 %</div></div>'+
     '<div class="ss-card"><div class="ss-val">'+avgCr+':'+avgCo+'</div><div class="ss-lbl">Avg TO</div></div>';
 
   var html='';
@@ -640,11 +649,12 @@ function renderHistory(games){
         '</div>'+
         '<div class="badges">'+
           '<span class="badge b-purple">'+g.pts+' pts</span>'+
-          '<span class="badge b-purple">Layups '+g.lm+'/'+g.la+'</span>'+
-          '<span class="badge b-purple">FT '+g.fm+'/'+g.fa+'</span>'+
-          '<span class="badge b-purple">Mid '+g.midm+'/'+g.mida+'</span>'+
+          '<span class="badge b-purple">Layups '+g.lm+'/'+g.la+(g.la>0?' ('+Math.round(g.lm/g.la*100)+'%)':'')+'</span>'+
+          '<span class="badge b-purple">FT '+g.fm+'/'+g.fa+(g.fa>0?' ('+Math.round(g.fm/g.fa*100)+'%)':'')+'</span>'+
+          '<span class="badge b-purple">Mid '+g.midm+'/'+g.mida+(g.mida>0?' ('+Math.round(g.midm/g.mida*100)+'%)':'')+'</span>'+
           '<span class="badge b-purple">C&S '+g.csm+'/'+g.csa+'</span>'+
-          '<span class="badge b-purple">OP3 '+g.opm+'/'+g.opa+'</span>'+
+          '<span class="badge b-purple">OP3 '+g.opm+'/'+g.opa+(g.opa>0?' ('+Math.round(g.opm/g.opa*100)+'%)':'')+'</span>'+
+          '<span class="badge b-purple">3PT '+(g.t3m)+'/'+g.t3a+(g.t3a>0?' ('+Math.round(g.t3m/g.t3a*100)+'%)':'')+'</span>'+
           '<span class="badge b-dark">TO Cr '+g.tcr+'</span>'+
           '<span class="badge b-red">TO Co '+g.tco+'</span>'+
           efgBadge+
