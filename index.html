@@ -97,7 +97,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .sum-val{font-size:16px;font-weight:700;color:#fff;}
 .sum-lbl{font-size:10px;color:#AFA9EC;margin-top:1px;}
 
-/* STATUS BAR */
 .status-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;margin-bottom:8px;font-size:12px;font-weight:600;}
 .status-bar.loading{background:#f0effe;color:var(--purple);}
 .status-bar.ok{background:#e6f4ea;color:#2d6a4f;}
@@ -111,7 +110,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .toast.ok{background:var(--purple);}
 .toast.err{background:var(--red);}
 
-/* HISTORY */
 .hist-top{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
 .btn-outline{height:36px;padding:0 14px;background:transparent;color:var(--text2);border:1px solid var(--border);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;}
 .btn-outline:active{background:var(--purple-light);}
@@ -165,11 +163,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 <div class="scroll">
 
-  <!-- LIVE PANEL -->
   <div id="panel-live" class="panel active">
-
-    <div id="status-bar" class="status-bar hidden"></div>
-
+    <div id="status-live" class="status-bar hidden"></div>
     <div class="setup-row">
       <input class="setup-input" id="opp-input" placeholder="Opponent name" autocomplete="off">
       <input class="setup-input" id="date-input" type="date" style="flex:0 0 140px;">
@@ -281,16 +276,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="sum-item"><div class="sum-val" id="s-ftp">—</div><div class="sum-lbl">FT%</div></div>
       <div class="sum-item"><div class="sum-val" id="s-tor">—</div><div class="sum-lbl">TO Ratio</div></div>
     </div>
+  </div>
 
-  </div><!-- end live -->
-
-  <!-- HISTORY PANEL -->
   <div id="panel-history" class="panel">
     <div class="hist-top">
       <button class="btn-outline" onclick="loadHistory()">↻ Refresh</button>
       <button class="btn-outline" onclick="exportCSV()">⬇ Export CSV</button>
     </div>
-    <div id="hist-status" class="status-bar hidden"></div>
+    <div id="status-hist" class="status-bar hidden"></div>
     <div class="season-grid" id="season-grid"></div>
     <div id="game-list"></div>
   </div>
@@ -300,23 +293,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="toast" id="toast"></div>
 
 <script>
-// ── GITHUB CONFIG ─────────────────────────────────
-var GH_OWNER = 'blakeennis210-claude-Git';
-var GH_REPO  = 'wildcat-tracker';
-var GH_FILE  = 'games.json';
-var GH_TOKEN = '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';
-var API_BASE = 'https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/contents/'+GH_FILE;
+// ── JSONBIN CONFIG ────────────────────────────────
+var BIN_ID  = '6a02181dc0954111d80b025b';
+var API_KEY = '$2a$10$So6ALIJk2M06t/mHx29cSecGDs06Up3YNWtZyMmMSQ497Pah1jSAW';
+var BIN_URL = 'https://api.jsonbin.io/v3/b/' + BIN_ID;
 // ─────────────────────────────────────────────────
 
 var SHOT_KEYS = ['l','f','mid','cs','op'];
 var shots = {};
 SHOT_KEYS.forEach(function(k){ shots[k]={m:0,a:0,log:[]}; });
 var toVals = {tcr:0,tco:0};
-var currentSha = null; // GitHub file SHA needed for updates
 
 function pct(m,a){ return a===0?'—':Math.round(m/a*100)+'%'; }
 
-// ── SHOT LOGIC ────────────────────────────────────
 function renderShot(k){
   var s=shots[k];
   document.getElementById('disp-'+k+'-m').textContent=s.m;
@@ -361,73 +350,52 @@ function clearStats(){
   updateSummary();
 }
 
-// ── GITHUB API ────────────────────────────────────
-function ghHeaders(){
+// ── JSONBIN API ───────────────────────────────────
+function jsonbinHeaders(){
   return {
-    'Authorization': 'token '+GH_TOKEN,
     'Content-Type': 'application/json',
-    'Accept': 'application/vnd.github.v3+json'
+    'X-Master-Key': API_KEY,
+    'X-Bin-Versioning': 'false'
   };
 }
 
-function fetchGames(callback){
-  fetch(API_BASE+'?t='+Date.now(), {headers: ghHeaders()})
+function fetchGames(cb){
+  fetch(BIN_URL+'/latest', {headers: jsonbinHeaders()})
     .then(function(r){ return r.json(); })
     .then(function(data){
-      if(data.content){
-        currentSha = data.sha;
-        var json = atob(data.content.replace(/\n/g,''));
-        var games = JSON.parse(json);
-        callback(null, games);
-      } else if(data.message && data.message.indexOf('Not Found')>-1){
-        // file doesn't exist yet
-        currentSha = null;
-        callback(null, []);
-      } else {
-        callback(data.message||'Unknown error', []);
-      }
+      var games = data.record && data.record.games ? data.record.games : (Array.isArray(data.record) ? data.record : []);
+      cb(null, games);
     })
-    .catch(function(e){ callback(e.message, []); });
+    .catch(function(e){ cb(e.message, []); });
 }
 
-function writeGames(games, commitMsg, onDone){
-  var content = btoa(unescape(encodeURIComponent(JSON.stringify(games, null, 2))));
-  var body = {message: commitMsg, content: content};
-  if(currentSha) body.sha = currentSha;
-  fetch(API_BASE, {
+function writeGames(games, cb){
+  fetch(BIN_URL, {
     method: 'PUT',
-    headers: ghHeaders(),
-    body: JSON.stringify(body)
+    headers: jsonbinHeaders(),
+    body: JSON.stringify({games: games})
   })
   .then(function(r){ return r.json(); })
   .then(function(data){
-    if(data.content && data.content.sha){
-      currentSha = data.content.sha;
-      onDone(null);
-    } else {
-      onDone(data.message||'Write failed');
-    }
+    if(data.record){ cb(null); }
+    else { cb(data.message||'Write failed'); }
   })
-  .catch(function(e){ onDone(e.message); });
+  .catch(function(e){ cb(e.message); });
 }
 
-// ── STATUS BAR ────────────────────────────────────
-function setStatus(elId, type, msg){
-  var el = document.getElementById(elId);
-  el.className = 'status-bar '+type;
-  el.innerHTML = type==='loading'
-    ? '<div class="spinner"></div>'+msg
-    : msg;
+// ── STATUS ────────────────────────────────────────
+function setStatus(id, type, msg){
+  var el=document.getElementById(id);
+  el.className='status-bar '+type;
+  el.innerHTML=type==='loading'?'<div class="spinner"></div>'+msg:msg;
 }
-function hideStatus(elId){
-  document.getElementById(elId).className='status-bar hidden';
-}
+function hideStatus(id){ document.getElementById(id).className='status-bar hidden'; }
 
-// ── SAVE GAME ─────────────────────────────────────
+// ── SAVE ──────────────────────────────────────────
 function saveGame(){
-  var opp = document.getElementById('opp-input').value.trim();
+  var opp=document.getElementById('opp-input').value.trim();
   if(!opp){ showToast('Enter opponent name first',true); return; }
-  var dateVal = document.getElementById('date-input').value;
+  var dateVal=document.getElementById('date-input').value;
   var t3m=shots.cs.m+shots.op.m, t3a=shots.cs.a+shots.op.a;
   var fgm=shots.l.m+shots.mid.m+t3m, fga=shots.l.a+shots.mid.a+t3a;
   var game={
@@ -443,26 +411,17 @@ function saveGame(){
     efg:fga===0?null:Math.round((fgm+0.5*t3m)/fga*100),
     fgm:fgm, fga:fga, t3m:t3m, t3a:t3a
   };
+  var btn=document.getElementById('save-btn');
+  btn.disabled=true; btn.textContent='Saving…';
+  setStatus('status-live','loading','Saving…');
 
-  var btn = document.getElementById('save-btn');
-  btn.disabled = true;
-  btn.textContent = 'Saving…';
-  setStatus('status-bar','loading','Saving to GitHub…');
-
-  fetchGames(function(err, games){
-    if(err){ setStatus('status-bar','err','⚠ Could not read games: '+err); btn.disabled=false; btn.innerHTML='💾 Save Game'; return; }
+  fetchGames(function(err,games){
+    if(err){ setStatus('status-live','err','⚠ '+err); btn.disabled=false; btn.innerHTML='💾 Save Game'; return; }
     games.unshift(game);
-    writeGames(games, 'Add game vs '+opp, function(werr){
-      btn.disabled=false;
-      btn.innerHTML='💾 Save Game';
-      if(werr){
-        setStatus('status-bar','err','⚠ Save failed: '+werr);
-        showToast('Save failed',true);
-      } else {
-        hideStatus('status-bar');
-        clearStats();
-        showToast('Saved vs '+opp+'!',false);
-      }
+    writeGames(games, function(werr){
+      btn.disabled=false; btn.innerHTML='💾 Save Game';
+      if(werr){ setStatus('status-live','err','⚠ '+werr); showToast('Save failed',true); }
+      else { hideStatus('status-live'); clearStats(); showToast('Saved vs '+opp+'!',false); }
     });
   });
 }
@@ -477,17 +436,16 @@ function deleteGame(id){
   if(row) row.classList.toggle('show');
 }
 function cancelDelete(id){
-  var row=document.getElementById('del-confirm-'+id);
-  if(row) row.classList.remove('show');
+  document.getElementById('del-confirm-'+id).classList.remove('show');
 }
 function deleteGameConfirmed(id){
-  setStatus('hist-status','loading','Deleting…');
+  setStatus('status-hist','loading','Deleting…');
   fetchGames(function(err,games){
-    if(err){ setStatus('hist-status','err','⚠ '+err); return; }
+    if(err){ setStatus('status-hist','err','⚠ '+err); return; }
     var updated=games.filter(function(g){ return g.id!==id; });
-    writeGames(updated,'Delete game',function(werr){
-      if(werr){ setStatus('hist-status','err','⚠ '+werr); return; }
-      hideStatus('hist-status');
+    writeGames(updated,function(werr){
+      if(werr){ setStatus('status-hist','err','⚠ '+werr); return; }
+      hideStatus('status-hist');
       showToast('Game deleted',false);
       renderHistory(updated);
     });
@@ -496,10 +454,10 @@ function deleteGameConfirmed(id){
 
 // ── HISTORY ───────────────────────────────────────
 function loadHistory(){
-  setStatus('hist-status','loading','Loading games…');
+  setStatus('status-hist','loading','Loading games…');
   fetchGames(function(err,games){
-    if(err){ setStatus('hist-status','err','⚠ Could not load: '+err); return; }
-    hideStatus('hist-status');
+    if(err){ setStatus('status-hist','err','⚠ Could not load: '+err); return; }
+    hideStatus('status-hist');
     renderHistory(games);
   });
 }
