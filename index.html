@@ -37,16 +37,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .panel{display:none;}
 .panel.active{display:block;}
 
-/* GITHUB NOTICE */
-.github-notice{background:#1a1030;border:1px solid var(--gold);border-radius:10px;padding:10px 14px;margin-bottom:12px;}
-.github-notice p{font-size:12px;color:#AFA9EC;line-height:1.6;}
-.github-notice strong{color:var(--gold);}
-
 .setup-row{display:flex;gap:8px;margin-bottom:8px;}
 .setup-input{flex:1;height:40px;padding:0 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;background:var(--card);color:var(--text);}
 .setup-input:focus{outline:none;border-color:var(--purple-mid);}
 .btn-save{height:40px;padding:0 16px;background:var(--purple);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;flex:1;display:flex;align-items:center;justify-content:center;gap:6px;}
 .btn-save:active{background:var(--purple-dark);}
+.btn-save:disabled{background:#999;cursor:not-allowed;}
 .btn-reset{height:40px;padding:0 14px;background:transparent;color:var(--text2);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;}
 
 .reset-confirm{display:none;align-items:center;gap:8px;padding:8px 10px;background:var(--red-bg);border:1px solid #F09595;border-radius:8px;margin-bottom:8px;}
@@ -101,6 +97,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .sum-val{font-size:16px;font-weight:700;color:#fff;}
 .sum-lbl{font-size:10px;color:#AFA9EC;margin-top:1px;}
 
+/* STATUS BAR */
+.status-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;margin-bottom:8px;font-size:12px;font-weight:600;}
+.status-bar.loading{background:#f0effe;color:var(--purple);}
+.status-bar.ok{background:#e6f4ea;color:#2d6a4f;}
+.status-bar.err{background:var(--red-bg);color:var(--red);}
+.status-bar.hidden{display:none;}
+.spinner{width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
 .toast{position:fixed;bottom:calc(env(safe-area-inset-bottom,0) + 16px);left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:20px;font-size:13px;font-weight:600;color:#fff;z-index:999;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;}
 .toast.show{opacity:1;}
 .toast.ok{background:var(--purple);}
@@ -110,12 +115,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .hist-top{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
 .btn-outline{height:36px;padding:0 14px;background:transparent;color:var(--text2);border:1px solid var(--border);border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;}
 .btn-outline:active{background:var(--purple-light);}
-
 .season-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:8px;margin-bottom:12px;}
 .ss-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;}
 .ss-val{font-size:18px;font-weight:700;color:var(--purple);}
 .ss-lbl{font-size:10px;color:#999;margin-top:2px;}
-
 .game-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;}
 .gc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
 .gc-opp{font-size:15px;font-weight:600;color:var(--text);}
@@ -127,26 +130,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .b-purple{background:var(--purple-light);color:var(--purple);}
 .b-dark{background:#1a1030;color:#AFA9EC;}
 .b-red{background:var(--red-bg);color:var(--red);}
-
 .del-confirm{display:none;align-items:center;gap:8px;margin-top:10px;padding:8px 10px;background:var(--red-bg);border:1px solid #F09595;border-radius:8px;}
 .del-confirm.show{display:flex;}
 .del-confirm span{font-size:13px;color:var(--red);flex:1;font-weight:500;}
 .del-yes{height:32px;padding:0 12px;background:var(--red);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;}
 .del-no{height:32px;padding:0 10px;background:transparent;color:var(--red);border:1px solid #F09595;border-radius:6px;font-size:12px;cursor:pointer;}
-
 .no-games{text-align:center;padding:3rem 1rem;color:#aaa;font-size:14px;line-height:1.8;}
-
-/* EXPORT MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:flex;align-items:flex-end;justify-content:center;padding:0;}
-.modal-overlay.hidden{display:none;}
-.modal{background:#fff;border-radius:16px 16px 0 0;padding:20px;width:100%;max-width:600px;}
-.modal h3{font-size:15px;font-weight:700;color:var(--purple-dark);margin-bottom:6px;}
-.modal p{font-size:12px;color:#666;margin-bottom:10px;line-height:1.6;}
-.code-box{background:#1a1a2e;color:#AFA9EC;font-family:monospace;font-size:11px;padding:12px;border-radius:8px;overflow:auto;max-height:200px;white-space:pre;margin-bottom:12px;-webkit-overflow-scrolling:touch;}
-.modal-btns{display:flex;gap:8px;}
-.btn-copy{flex:1;height:42px;background:var(--purple);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;}
-.btn-copy:active{background:var(--purple-dark);}
-.btn-close{height:42px;padding:0 16px;background:transparent;color:var(--text2);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;}
 </style>
 </head>
 <body>
@@ -179,13 +168,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <!-- LIVE PANEL -->
   <div id="panel-live" class="panel active">
 
+    <div id="status-bar" class="status-bar hidden"></div>
+
     <div class="setup-row">
       <input class="setup-input" id="opp-input" placeholder="Opponent name" autocomplete="off">
       <input class="setup-input" id="date-input" type="date" style="flex:0 0 140px;">
     </div>
     <div class="setup-row">
       <button class="btn-reset" onclick="showResetConfirm()">↺ Reset</button>
-      <button class="btn-save" onclick="saveGame()">💾 Save Game</button>
+      <button class="btn-save" id="save-btn" onclick="saveGame()">💾 Save Game</button>
     </div>
     <div class="reset-confirm" id="reset-confirm">
       <span>Reset all current stats?</span>
@@ -200,7 +191,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </div>
 
     <div class="section-label">Paint &amp; Free Throws</div>
-
     <div class="shot-card">
       <div class="shot-row">
         <span class="shot-name">Layups</span>
@@ -212,7 +202,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         </div>
       </div>
     </div>
-
     <div class="shot-card">
       <div class="shot-row">
         <span class="shot-name">Free Throws</span>
@@ -224,7 +213,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         </div>
       </div>
     </div>
-
     <div class="shot-card">
       <div class="shot-row">
         <span class="shot-name">Midrange</span>
@@ -238,7 +226,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </div>
 
     <div class="section-label">Three-Pointers</div>
-
     <div class="shot-card">
       <div class="shot-row">
         <span class="shot-name">Catch &amp; Shoot</span>
@@ -250,7 +237,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         </div>
       </div>
     </div>
-
     <div class="shot-card">
       <div class="shot-row">
         <span class="shot-name">One Pass 3</span>
@@ -268,7 +254,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </div>
 
     <div class="section-label">Turnovers</div>
-
     <div class="to-grid">
       <div class="to-card to-created">
         <div class="to-lbl">Created</div>
@@ -301,82 +286,67 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
   <!-- HISTORY PANEL -->
   <div id="panel-history" class="panel">
-    <div class="github-notice">
-      <p><strong>How to save games permanently:</strong> After saving a game, tap <strong>Copy Game Data</strong> below. Open your HTML file on GitHub, find the <strong>GAMES DATA</strong> section, and replace the array with what you copied. Commit the file and every device is updated.</p>
-    </div>
     <div class="hist-top">
-      <button class="btn-outline" onclick="showExportModal()">📋 Copy Game Data</button>
+      <button class="btn-outline" onclick="loadHistory()">↻ Refresh</button>
       <button class="btn-outline" onclick="exportCSV()">⬇ Export CSV</button>
     </div>
+    <div id="hist-status" class="status-bar hidden"></div>
     <div class="season-grid" id="season-grid"></div>
     <div id="game-list"></div>
   </div>
 
-</div><!-- end scroll -->
-
-<!-- EXPORT MODAL -->
-<div class="modal-overlay hidden" id="export-modal">
-  <div class="modal">
-    <h3>📋 Copy Game Data for GitHub</h3>
-    <p>Copy everything below. In your HTML file on GitHub, find <code style="background:#f0effe;padding:1px 4px;border-radius:3px;">/* GAMES DATA */</code> and replace the array on the next line with this.</p>
-    <div class="code-box" id="export-code"></div>
-    <div class="modal-btns">
-      <button class="btn-copy" onclick="copyCode()">Copy to Clipboard</button>
-      <button class="btn-close" onclick="closeExportModal()">Close</button>
-    </div>
-  </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-
-// ─────────────────────────────────────────────────
-// GAMES DATA — paste updated array here after each session
-var GAMES = [
-];
+// ── GITHUB CONFIG ─────────────────────────────────
+var GH_OWNER = 'blakeennis210-claude-Git';
+var GH_REPO  = 'wildcat-tracker';
+var GH_FILE  = 'games.json';
+var GH_TOKEN = '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';
+var API_BASE = 'https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/contents/'+GH_FILE;
 // ─────────────────────────────────────────────────
 
 var SHOT_KEYS = ['l','f','mid','cs','op'];
 var shots = {};
-SHOT_KEYS.forEach(function(k){ shots[k] = {m:0,a:0,log:[]}; });
-var toVals = {tcr:0, tco:0};
+SHOT_KEYS.forEach(function(k){ shots[k]={m:0,a:0,log:[]}; });
+var toVals = {tcr:0,tco:0};
+var currentSha = null; // GitHub file SHA needed for updates
 
-// Runtime games list — starts from hardcoded data
-var gamesList = GAMES.slice();
+function pct(m,a){ return a===0?'—':Math.round(m/a*100)+'%'; }
 
-function pct(m,a){ return a===0 ? '—' : Math.round(m/a*100)+'%'; }
-
+// ── SHOT LOGIC ────────────────────────────────────
 function renderShot(k){
-  var s = shots[k];
-  document.getElementById('disp-'+k+'-m').textContent = s.m;
-  document.getElementById('disp-'+k+'-a').textContent = s.a+' att';
-  document.getElementById('disp-'+k+'-p').textContent = pct(s.m,s.a);
+  var s=shots[k];
+  document.getElementById('disp-'+k+'-m').textContent=s.m;
+  document.getElementById('disp-'+k+'-a').textContent=s.a+' att';
+  document.getElementById('disp-'+k+'-p').textContent=pct(s.m,s.a);
 }
-function shotMade(k){ shots[k].m++; shots[k].a++; shots[k].log.push('made'); renderShot(k); updateSummary(); }
-function shotMiss(k){ shots[k].a++; shots[k].log.push('miss'); renderShot(k); updateSummary(); }
+function shotMade(k){ shots[k].m++;shots[k].a++;shots[k].log.push('made');renderShot(k);updateSummary(); }
+function shotMiss(k){ shots[k].a++;shots[k].log.push('miss');renderShot(k);updateSummary(); }
 function shotUndo(k){
-  var s = shots[k]; if(!s.log.length) return;
-  var last = s.log.pop(); if(last==='made') s.m--; s.a--;
+  var s=shots[k]; if(!s.log.length)return;
+  var last=s.log.pop(); if(last==='made')s.m--; s.a--;
   renderShot(k); updateSummary();
 }
 function adjTO(key,delta){
-  toVals[key] = Math.max(0,toVals[key]+delta);
-  document.getElementById(key).textContent = toVals[key];
+  toVals[key]=Math.max(0,toVals[key]+delta);
+  document.getElementById(key).textContent=toVals[key];
   updateSummary();
 }
 function updateSummary(){
   var t3m=shots.cs.m+shots.op.m, t3a=shots.cs.a+shots.op.a;
-  document.getElementById('total3').textContent = t3m+'/'+t3a+' — '+pct(t3m,t3a);
+  document.getElementById('total3').textContent=t3m+'/'+t3a+' — '+pct(t3m,t3a);
   var fgm=shots.l.m+shots.mid.m+t3m, fga=shots.l.a+shots.mid.a+t3a;
-  var pts = fgm*2+t3m+shots.f.m;
-  document.getElementById('s-pts').textContent = pts;
-  document.getElementById('s-fg').textContent = fgm+'/'+fga;
-  document.getElementById('s-3p').textContent = pct(t3m,t3a);
-  document.getElementById('s-ftp').textContent = pct(shots.f.m,shots.f.a);
-  document.getElementById('s-efg').textContent = fga===0?'—':Math.round((fgm+0.5*t3m)/fga*100)+'%';
-  var cr=toVals.tcr, co=toVals.tco;
-  document.getElementById('s-tor').textContent = (cr===0&&co===0)?'—':cr+':'+co;
+  var pts=fgm*2+t3m+shots.f.m;
+  document.getElementById('s-pts').textContent=pts;
+  document.getElementById('s-fg').textContent=fgm+'/'+fga;
+  document.getElementById('s-3p').textContent=pct(t3m,t3a);
+  document.getElementById('s-ftp').textContent=pct(shots.f.m,shots.f.a);
+  document.getElementById('s-efg').textContent=fga===0?'—':Math.round((fgm+0.5*t3m)/fga*100)+'%';
+  var cr=toVals.tcr,co=toVals.tco;
+  document.getElementById('s-tor').textContent=(cr===0&&co===0)?'—':cr+':'+co;
 }
 
 function showResetConfirm(){ document.getElementById('reset-confirm').classList.add('show'); }
@@ -391,81 +361,179 @@ function clearStats(){
   updateSummary();
 }
 
+// ── GITHUB API ────────────────────────────────────
+function ghHeaders(){
+  return {
+    'Authorization': 'token '+GH_TOKEN,
+    'Content-Type': 'application/json',
+    'Accept': 'application/vnd.github.v3+json'
+  };
+}
+
+function fetchGames(callback){
+  fetch(API_BASE+'?t='+Date.now(), {headers: ghHeaders()})
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      if(data.content){
+        currentSha = data.sha;
+        var json = atob(data.content.replace(/\n/g,''));
+        var games = JSON.parse(json);
+        callback(null, games);
+      } else if(data.message && data.message.indexOf('Not Found')>-1){
+        // file doesn't exist yet
+        currentSha = null;
+        callback(null, []);
+      } else {
+        callback(data.message||'Unknown error', []);
+      }
+    })
+    .catch(function(e){ callback(e.message, []); });
+}
+
+function writeGames(games, commitMsg, onDone){
+  var content = btoa(unescape(encodeURIComponent(JSON.stringify(games, null, 2))));
+  var body = {message: commitMsg, content: content};
+  if(currentSha) body.sha = currentSha;
+  fetch(API_BASE, {
+    method: 'PUT',
+    headers: ghHeaders(),
+    body: JSON.stringify(body)
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if(data.content && data.content.sha){
+      currentSha = data.content.sha;
+      onDone(null);
+    } else {
+      onDone(data.message||'Write failed');
+    }
+  })
+  .catch(function(e){ onDone(e.message); });
+}
+
+// ── STATUS BAR ────────────────────────────────────
+function setStatus(elId, type, msg){
+  var el = document.getElementById(elId);
+  el.className = 'status-bar '+type;
+  el.innerHTML = type==='loading'
+    ? '<div class="spinner"></div>'+msg
+    : msg;
+}
+function hideStatus(elId){
+  document.getElementById(elId).className='status-bar hidden';
+}
+
+// ── SAVE GAME ─────────────────────────────────────
 function saveGame(){
   var opp = document.getElementById('opp-input').value.trim();
   if(!opp){ showToast('Enter opponent name first',true); return; }
   var dateVal = document.getElementById('date-input').value;
   var t3m=shots.cs.m+shots.op.m, t3a=shots.cs.a+shots.op.a;
   var fgm=shots.l.m+shots.mid.m+t3m, fga=shots.l.a+shots.mid.a+t3a;
-  var game = {
-    id: Date.now(), opp: opp,
-    date: dateVal||new Date().toISOString().slice(0,10),
+  var game={
+    id:Date.now(), opp:opp,
+    date:dateVal||new Date().toISOString().slice(0,10),
     lm:shots.l.m, la:shots.l.a,
     fm:shots.f.m, fa:shots.f.a,
     midm:shots.mid.m, mida:shots.mid.a,
     csm:shots.cs.m, csa:shots.cs.a,
     opm:shots.op.m, opa:shots.op.a,
     tcr:toVals.tcr, tco:toVals.tco,
-    pts: fgm*2+t3m+shots.f.m,
-    efg: fga===0?null:Math.round((fgm+0.5*t3m)/fga*100),
+    pts:fgm*2+t3m+shots.f.m,
+    efg:fga===0?null:Math.round((fgm+0.5*t3m)/fga*100),
     fgm:fgm, fga:fga, t3m:t3m, t3a:t3a
   };
-  gamesList.unshift(game);
-  clearStats();
-  showToast('Saved vs '+opp+'! Go to History to copy data.',false);
+
+  var btn = document.getElementById('save-btn');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+  setStatus('status-bar','loading','Saving to GitHub…');
+
+  fetchGames(function(err, games){
+    if(err){ setStatus('status-bar','err','⚠ Could not read games: '+err); btn.disabled=false; btn.innerHTML='💾 Save Game'; return; }
+    games.unshift(game);
+    writeGames(games, 'Add game vs '+opp, function(werr){
+      btn.disabled=false;
+      btn.innerHTML='💾 Save Game';
+      if(werr){
+        setStatus('status-bar','err','⚠ Save failed: '+werr);
+        showToast('Save failed',true);
+      } else {
+        hideStatus('status-bar');
+        clearStats();
+        showToast('Saved vs '+opp+'!',false);
+      }
+    });
+  });
 }
 
 // ── DELETE ────────────────────────────────────────
 function deleteGame(id){
-  var all = document.querySelectorAll('.del-confirm');
+  var all=document.querySelectorAll('.del-confirm');
   for(var i=0;i<all.length;i++){
-    if(all[i].id !== 'del-confirm-'+id) all[i].classList.remove('show');
+    if(all[i].id!=='del-confirm-'+id) all[i].classList.remove('show');
   }
-  var row = document.getElementById('del-confirm-'+id);
+  var row=document.getElementById('del-confirm-'+id);
   if(row) row.classList.toggle('show');
 }
 function cancelDelete(id){
-  var row = document.getElementById('del-confirm-'+id);
+  var row=document.getElementById('del-confirm-'+id);
   if(row) row.classList.remove('show');
 }
 function deleteGameConfirmed(id){
-  gamesList = gamesList.filter(function(g){ return g.id !== id; });
-  showToast('Game deleted',false);
-  renderHistory();
+  setStatus('hist-status','loading','Deleting…');
+  fetchGames(function(err,games){
+    if(err){ setStatus('hist-status','err','⚠ '+err); return; }
+    var updated=games.filter(function(g){ return g.id!==id; });
+    writeGames(updated,'Delete game',function(werr){
+      if(werr){ setStatus('hist-status','err','⚠ '+werr); return; }
+      hideStatus('hist-status');
+      showToast('Game deleted',false);
+      renderHistory(updated);
+    });
+  });
 }
 
 // ── HISTORY ───────────────────────────────────────
-function renderHistory(){
-  var games = gamesList;
-  var grid = document.getElementById('season-grid');
-  var list = document.getElementById('game-list');
-  if(!games.length){
+function loadHistory(){
+  setStatus('hist-status','loading','Loading games…');
+  fetchGames(function(err,games){
+    if(err){ setStatus('hist-status','err','⚠ Could not load: '+err); return; }
+    hideStatus('hist-status');
+    renderHistory(games);
+  });
+}
+
+function renderHistory(games){
+  var grid=document.getElementById('season-grid');
+  var list=document.getElementById('game-list');
+  if(!games||!games.length){
     grid.innerHTML='';
     list.innerHTML='<div class="no-games">No games yet.<br>Track a game and tap <strong>Save Game</strong>.</div>';
     return;
   }
-  var avgPts = Math.round(games.reduce(function(s,g){return s+g.pts;},0)/games.length);
-  var ftG = games.filter(function(g){return g.fa>0;});
-  var avgFT = ftG.length ? Math.round(ftG.reduce(function(s,g){return s+g.fm/g.fa;},0)/ftG.length*100) : null;
-  var t3G = games.filter(function(g){return g.t3a>0;});
-  var avg3 = t3G.length ? Math.round(t3G.reduce(function(s,g){return s+g.t3m/g.t3a;},0)/t3G.length*100) : null;
-  var avgCr = (games.reduce(function(s,g){return s+g.tcr;},0)/games.length).toFixed(1);
-  var avgCo = (games.reduce(function(s,g){return s+g.tco;},0)/games.length).toFixed(1);
+  var avgPts=Math.round(games.reduce(function(s,g){return s+g.pts;},0)/games.length);
+  var ftG=games.filter(function(g){return g.fa>0;});
+  var avgFT=ftG.length?Math.round(ftG.reduce(function(s,g){return s+g.fm/g.fa;},0)/ftG.length*100):null;
+  var t3G=games.filter(function(g){return g.t3a>0;});
+  var avg3=t3G.length?Math.round(t3G.reduce(function(s,g){return s+g.t3m/g.t3a;},0)/t3G.length*100):null;
+  var avgCr=(games.reduce(function(s,g){return s+g.tcr;},0)/games.length).toFixed(1);
+  var avgCo=(games.reduce(function(s,g){return s+g.tco;},0)/games.length).toFixed(1);
 
-  grid.innerHTML =
+  grid.innerHTML=
     '<div class="ss-card"><div class="ss-val">'+games.length+'</div><div class="ss-lbl">Games</div></div>'+
     '<div class="ss-card"><div class="ss-val">'+avgPts+'</div><div class="ss-lbl">Avg Pts</div></div>'+
     '<div class="ss-card"><div class="ss-val">'+(avg3!==null?avg3+'%':'—')+'</div><div class="ss-lbl">Avg 3PT%</div></div>'+
     '<div class="ss-card"><div class="ss-val">'+(avgFT!==null?avgFT+'%':'—')+'</div><div class="ss-lbl">Avg FT%</div></div>'+
     '<div class="ss-card"><div class="ss-val">'+avgCr+':'+avgCo+'</div><div class="ss-lbl">Avg TO</div></div>';
 
-  var html = '';
+  var html='';
   for(var i=0;i<games.length;i++){
-    var g = games[i];
-    var d = new Date(g.date+'T12:00:00');
-    var ds = d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-    var efgBadge = g.efg!==null ? '<span class="badge b-purple">eFG '+g.efg+'%</span>' : '';
-    html +=
+    var g=games[i];
+    var d=new Date(g.date+'T12:00:00');
+    var ds=d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    var efgBadge=g.efg!==null?'<span class="badge b-purple">eFG '+g.efg+'%</span>':'';
+    html+=
       '<div class="game-card">'+
         '<div class="gc-top">'+
           '<div><div class="gc-opp">vs '+g.opp+'</div><div class="gc-date">'+ds+'</div></div>'+
@@ -489,70 +557,44 @@ function renderHistory(){
         '</div>'+
       '</div>';
   }
-  list.innerHTML = html;
-}
-
-// ── EXPORT FOR GITHUB ─────────────────────────────
-function showExportModal(){
-  var code = JSON.stringify(gamesList, null, 2);
-  document.getElementById('export-code').textContent = code;
-  document.getElementById('export-modal').classList.remove('hidden');
-}
-function closeExportModal(){
-  document.getElementById('export-modal').classList.add('hidden');
-}
-function copyCode(){
-  var text = document.getElementById('export-code').textContent;
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(text).then(function(){
-      showToast('Copied! Paste into GitHub.',false);
-      closeExportModal();
-    });
-  } else {
-    // fallback for older browsers
-    var ta = document.createElement('textarea');
-    ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
-    document.body.appendChild(ta); ta.focus(); ta.select();
-    try{ document.execCommand('copy'); showToast('Copied! Paste into GitHub.',false); closeExportModal(); }
-    catch(e){ showToast('Copy failed — select manually',true); }
-    document.body.removeChild(ta);
-  }
+  list.innerHTML=html;
 }
 
 function exportCSV(){
-  var games = gamesList;
-  if(!games.length){ showToast('No games to export',true); return; }
-  var hdr='Date,Opponent,Points,Layups M,Layups A,FT M,FT A,Mid M,Mid A,C&S M,C&S A,OP3 M,OP3 A,TO Created,TO Committed,eFG%';
-  var rows = games.map(function(g){
-    return [g.date,'"'+g.opp+'"',g.pts,g.lm,g.la,g.fm,g.fa,g.midm,g.mida,g.csm,g.csa,g.opm,g.opa,g.tcr,g.tco,g.efg!==null?g.efg+'%':''].join(',');
+  fetchGames(function(err,games){
+    if(err||!games.length){ showToast('No games to export',true); return; }
+    var hdr='Date,Opponent,Points,Layups M,Layups A,FT M,FT A,Mid M,Mid A,C&S M,C&S A,OP3 M,OP3 A,TO Created,TO Committed,eFG%';
+    var rows=games.map(function(g){
+      return [g.date,'"'+g.opp+'"',g.pts,g.lm,g.la,g.fm,g.fa,g.midm,g.mida,g.csm,g.csa,g.opm,g.opa,g.tcr,g.tco,g.efg!==null?g.efg+'%':''].join(',');
+    });
+    var blob=new Blob([[hdr].concat(rows).join('\n')],{type:'text/csv'});
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');a.href=url;a.download='wildcats-stats.csv';a.click();
+    URL.revokeObjectURL(url);
   });
-  var blob = new Blob([[hdr].concat(rows).join('\n')],{type:'text/csv'});
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a'); a.href=url; a.download='wildcats-stats.csv'; a.click();
-  URL.revokeObjectURL(url);
 }
 
 function setQtr(btn){
-  var btns = document.querySelectorAll('.qbtn');
+  var btns=document.querySelectorAll('.qbtn');
   for(var i=0;i<btns.length;i++) btns[i].classList.remove('active');
   btn.classList.add('active');
 }
 function showTab(name,btn){
-  var panels = document.querySelectorAll('.panel');
+  var panels=document.querySelectorAll('.panel');
   for(var i=0;i<panels.length;i++) panels[i].classList.remove('active');
-  var tabs = document.querySelectorAll('.tab');
+  var tabs=document.querySelectorAll('.tab');
   for(var i=0;i<tabs.length;i++) tabs[i].classList.remove('active');
   document.getElementById('panel-'+name).classList.add('active');
   btn.classList.add('active');
-  if(name==='history') renderHistory();
+  if(name==='history') loadHistory();
 }
 function showToast(msg,isErr){
-  var t = document.getElementById('toast');
+  var t=document.getElementById('toast');
   t.textContent=msg; t.className='toast '+(isErr?'err':'ok')+' show';
-  clearTimeout(t._timer); t._timer=setTimeout(function(){ t.classList.remove('show'); },3500);
+  clearTimeout(t._timer); t._timer=setTimeout(function(){ t.classList.remove('show'); },3000);
 }
 
-document.getElementById('date-input').value = new Date().toISOString().slice(0,10);
+document.getElementById('date-input').value=new Date().toISOString().slice(0,10);
 </script>
 </body>
 </html>
