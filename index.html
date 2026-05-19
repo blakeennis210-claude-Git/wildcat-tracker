@@ -334,6 +334,26 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         </div>
       </div>
     </div>
+
+    <div class="section-label">Rebounds</div>
+    <div class="to-grid">
+      <div class="to-card" style="background:#EEEDFE;border:1px solid #7F77DD;">
+        <div class="to-lbl" style="color:#3C3489;">WC Rebounds</div>
+        <div class="to-row">
+          <button class="to-btn" style="border-color:#7F77DD;color:#3C3489;" onclick="adjReb('rwc',-1)">−</button>
+          <span class="to-num" id="rwc" style="color:#3C3489;">0</span>
+          <button class="to-btn" style="border-color:#7F77DD;color:#3C3489;" onclick="adjReb('rwc',1)">+</button>
+        </div>
+      </div>
+      <div class="to-card" style="background:#f5f5f5;border:1px solid #ccc;">
+        <div class="to-lbl" style="color:#555;">OP Rebounds</div>
+        <div class="to-row">
+          <button class="to-btn" style="border-color:#ccc;color:#555;" onclick="adjReb('rop',-1)">−</button>
+          <span class="to-num" id="rop" style="color:#555;">0</span>
+          <button class="to-btn" style="border-color:#ccc;color:#555;" onclick="adjReb('rop',1)">+</button>
+        </div>
+      </div>
+    </div>
     <div class="sum-bar">
       <div class="sum-item"><div class="sum-val" id="s-pts">0</div><div class="sum-lbl">Est. Points</div></div>
       <div class="sum-item"><div class="sum-val" id="s-efg">—</div><div class="sum-lbl">eFG%</div></div>
@@ -402,8 +422,14 @@ var SHOT_KEYS = ['l','f','mid','cs','op'];
 var shots = {};
 SHOT_KEYS.forEach(function(k){ shots[k]={m:0,a:0,log:[]}; });
 var toVals = {tcr:0,tco:0};
+var rebVals = {rwc:0,rop:0};
 
 function pct(m,a){ return a===0?'—':Math.round(m/a*100)+'%'; }
+
+function adjReb(key,delta){
+  rebVals[key]=Math.max(0,rebVals[key]+delta);
+  document.getElementById(key).textContent=rebVals[key];
+}
 
 // ── TEAM SELECTION ────────────────────────────────
 function selectTeam(id){
@@ -459,6 +485,9 @@ function clearStats(){
   toVals.tcr=0; toVals.tco=0;
   document.getElementById('tcr').textContent=0;
   document.getElementById('tco').textContent=0;
+  rebVals.rwc=0; rebVals.rop=0;
+  document.getElementById('rwc').textContent=0;
+  document.getElementById('rop').textContent=0;
   document.getElementById('opp-input').value='';
   document.getElementById('tourn-input').value='';
   updateSummary();
@@ -524,6 +553,7 @@ function saveGame(){
     csm:shots.cs.m, csa:shots.cs.a,
     opm:shots.op.m, opa:shots.op.a,
     tcr:toVals.tcr, tco:toVals.tco,
+    rwc:rebVals.rwc, rop:rebVals.rop,
     pts:fgm*2+t3m+shots.f.m,
     efg:fga===0?null:Math.round((fgm+0.5*t3m)/fga*100),
     fgm:fgm, fga:fga, t3m:t3m, t3a:t3a
@@ -632,7 +662,9 @@ function renderHistory(games){
     '<div class="ss-card"><div class="ss-val">'+(avgMid!==null?avgMid+'%':'—')+'</div><div class="ss-lbl">Midrange %</div></div>'+
     '<div class="ss-card"><div class="ss-val">'+(avg3!==null?avg3+'%':'—')+'</div><div class="ss-lbl">3PT %</div></div>'+
     '<div class="ss-card"><div class="ss-val">'+(avgOP3!==null?avgOP3+'%':'—')+'</div><div class="ss-lbl">One Pass 3 %</div></div>'+
-    '<div class="ss-card"><div class="ss-val">'+avgCr+':'+avgCo+'</div><div class="ss-lbl">Avg TO</div></div>';
+    '<div class="ss-card"><div class="ss-val">'+avgCr+':'+avgCo+'</div><div class="ss-lbl">Avg TO</div></div>'+
+    '<div class="ss-card"><div class="ss-val">'+(games.reduce(function(s,g){return s+(g.rwc||0);},0)/games.length).toFixed(1)+'</div><div class="ss-lbl">Avg WC Reb</div></div>'+
+    '<div class="ss-card"><div class="ss-val">'+(games.reduce(function(s,g){return s+(g.rop||0);},0)/games.length).toFixed(1)+'</div><div class="ss-lbl">Avg OP Reb</div></div>';
 
   var html='';
   for(var i=0;i<games.length;i++){
@@ -652,11 +684,13 @@ function renderHistory(games){
           '<span class="badge b-purple">Layups '+g.lm+'/'+g.la+(g.la>0?' ('+Math.round(g.lm/g.la*100)+'%)':'')+'</span>'+
           '<span class="badge b-purple">FT '+g.fm+'/'+g.fa+(g.fa>0?' ('+Math.round(g.fm/g.fa*100)+'%)':'')+'</span>'+
           '<span class="badge b-purple">Mid '+g.midm+'/'+g.mida+(g.mida>0?' ('+Math.round(g.midm/g.mida*100)+'%)':'')+'</span>'+
-          '<span class="badge b-purple">C&S '+g.csm+'/'+g.csa+'</span>'+
+          '<span class="badge b-purple">C&S '+g.csm+'/'+g.csa+(g.csa>0?' ('+Math.round(g.csm/g.csa*100)+'%)':'')+'</span>'+
           '<span class="badge b-purple">OP3 '+g.opm+'/'+g.opa+(g.opa>0?' ('+Math.round(g.opm/g.opa*100)+'%)':'')+'</span>'+
           '<span class="badge b-purple">3PT '+(g.t3m)+'/'+g.t3a+(g.t3a>0?' ('+Math.round(g.t3m/g.t3a*100)+'%)':'')+'</span>'+
           '<span class="badge b-dark">TO Cr '+g.tcr+'</span>'+
           '<span class="badge b-red">TO Co '+g.tco+'</span>'+
+          '<span class="badge b-purple">WC Reb '+(g.rwc||0)+'</span>'+
+          '<span class="badge b-dark">OP Reb '+(g.rop||0)+'</span>'+
           efgBadge+
         '</div>'+
         '<div class="del-confirm" id="del-confirm-'+g.id+'">'+
