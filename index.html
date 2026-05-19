@@ -647,6 +647,8 @@ function renderHistory(games){
   var avg3=t3G.length?Math.round(t3G.reduce(function(s,g){return s+g.t3m/g.t3a;},0)/t3G.length*100):null;
   var op3G=games.filter(function(g){return g.opa>0;});
   var avgOP3=op3G.length?Math.round(op3G.reduce(function(s,g){return s+g.opm/g.opa;},0)/op3G.length*100):null;
+  var csG=games.filter(function(g){return g.csa>0;});
+  var avgCS=csG.length?Math.round(csG.reduce(function(s,g){return s+g.csm/g.csa;},0)/csG.length*100):null;
   var layG=games.filter(function(g){return g.la>0;});
   var avgLay=layG.length?Math.round(layG.reduce(function(s,g){return s+g.lm/g.la;},0)/layG.length*100):null;
   var midG=games.filter(function(g){return g.mida>0;});
@@ -660,9 +662,11 @@ function renderHistory(games){
     '<div class="ss-card"><div class="ss-val">'+(avgLay!==null?avgLay+'%':'—')+'</div><div class="ss-lbl">Layup %</div></div>'+
     '<div class="ss-card"><div class="ss-val">'+(avgFT!==null?avgFT+'%':'—')+'</div><div class="ss-lbl">FT %</div></div>'+
     '<div class="ss-card"><div class="ss-val">'+(avgMid!==null?avgMid+'%':'—')+'</div><div class="ss-lbl">Midrange %</div></div>'+
-    '<div class="ss-card"><div class="ss-val">'+(avg3!==null?avg3+'%':'—')+'</div><div class="ss-lbl">3PT %</div></div>'+
+    '<div class="ss-card"><div class="ss-val">'+(avgCS!==null?avgCS+'%':'—')+'</div><div class="ss-lbl">C&S 3 %</div></div>'+
     '<div class="ss-card"><div class="ss-val">'+(avgOP3!==null?avgOP3+'%':'—')+'</div><div class="ss-lbl">One Pass 3 %</div></div>'+
-    '<div class="ss-card"><div class="ss-val">'+avgCr+':'+avgCo+'</div><div class="ss-lbl">Avg TO</div></div>'+
+    '<div class="ss-card"><div class="ss-val">'+(avg3!==null?avg3+'%':'—')+'</div><div class="ss-lbl">Overall 3PT %</div></div>'+
+    '<div class="ss-card"><div class="ss-val">'+Math.round(games.reduce(function(s,g){return s+g.tcr;},0)/games.length*10)/10+'</div><div class="ss-lbl">Avg TO Cr</div></div>'+
+    '<div class="ss-card"><div class="ss-val">'+Math.round(games.reduce(function(s,g){return s+g.tco;},0)/games.length*10)/10+'</div><div class="ss-lbl">Avg TO Co</div></div>'+
     '<div class="ss-card"><div class="ss-val">'+(games.reduce(function(s,g){return s+(g.rwc||0);},0)/games.length).toFixed(1)+'</div><div class="ss-lbl">Avg WC Reb</div></div>'+
     '<div class="ss-card"><div class="ss-val">'+(games.reduce(function(s,g){return s+(g.rop||0);},0)/games.length).toFixed(1)+'</div><div class="ss-lbl">Avg OP Reb</div></div>';
 
