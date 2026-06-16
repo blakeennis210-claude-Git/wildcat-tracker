@@ -163,7 +163,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .b-dark{background:#1a1030;color:#AFA9EC;}
 .b-red{background:var(--red-bg);color:var(--red);}
 .b-gold{background:#FFF8E1;color:#856200;}
-.b-gray{background:#f0f0f0;color:#555;}
+.b-gc-green{background:#2B8A3E;color:#fff;}
+.b-gc-yellow{background:#E67700;color:#fff;}
+.b-gc-red{background:#E03131;color:#fff;}
 
 .del-confirm{display:none;align-items:center;gap:8px;margin-top:10px;padding:8px 10px;background:var(--red-bg);border:1px solid #F09595;border-radius:8px;}
 .del-confirm.show{display:flex;}
@@ -702,6 +704,23 @@ function renderHistory(games){
     var ds=d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
     var efgBadge=g.efg!==null&&g.efg!==undefined?'<span class="badge b-purple">eFG '+g.efg+'%</span>':'';
     var docId=g._docId;
+
+    // per-game color badge helper
+    function gb(val, yellow, green, hi, label) {
+      var cls = val===null ? 'b-purple' : (hi ? (val>=green?'b-gc-green':val>=yellow?'b-gc-yellow':'b-gc-red') : 'b-purple');
+      return '<span class="badge '+cls+'">'+label+'</span>';
+    }
+    var layPct = g.la>0?Math.round(g.lm/g.la*100):null;
+    var ftPct  = g.fa>0?Math.round(g.fm/g.fa*100):null;
+    var midPct = g.mida>0?Math.round(g.midm/g.mida*100):null;
+    var csPct  = g.csa>0?Math.round(g.csm/g.csa*100):null;
+    var op3Pct = g.opa>0?Math.round(g.opm/g.opa*100):null;
+    var t3Pct  = g.t3a>0?Math.round(g.t3m/g.t3a*100):null;
+    var toDiff = g.tcr - g.tco;
+    var rebDiff = (g.rwc||0) - (g.rop||0);
+    var toCls = toDiff>=10?'b-gc-green':toDiff>=1?'b-gc-yellow':'b-gc-red';
+    var rebCls = rebDiff>=10?'b-gc-green':rebDiff>=1?'b-gc-yellow':'b-gc-red';
+
     html+=
       '<div class="game-card">'+
         '<div class="gc-top">'+
@@ -710,16 +729,14 @@ function renderHistory(games){
         '</div>'+
         '<div class="badges">'+
           '<span class="badge b-purple">'+g.pts+' pts</span>'+
-          '<span class="badge b-purple">Layups '+g.lm+'/'+g.la+(g.la>0?' ('+Math.round(g.lm/g.la*100)+'%)':'')+'</span>'+
-          '<span class="badge b-purple">FT '+g.fm+'/'+g.fa+(g.fa>0?' ('+Math.round(g.fm/g.fa*100)+'%)':'')+'</span>'+
-          '<span class="badge b-purple">Mid '+g.midm+'/'+g.mida+(g.mida>0?' ('+Math.round(g.midm/g.mida*100)+'%)':'')+'</span>'+
-          '<span class="badge b-purple">C&S '+g.csm+'/'+g.csa+(g.csa>0?' ('+Math.round(g.csm/g.csa*100)+'%)':'')+'</span>'+
-          '<span class="badge b-purple">OP3 '+g.opm+'/'+g.opa+(g.opa>0?' ('+Math.round(g.opm/g.opa*100)+'%)':'')+'</span>'+
-          '<span class="badge b-purple">3PT '+g.t3m+'/'+g.t3a+(g.t3a>0?' ('+Math.round(g.t3m/g.t3a*100)+'%)':'')+'</span>'+
-          '<span class="badge b-dark">TO Cr '+g.tcr+'</span>'+
-          '<span class="badge b-red">TO Co '+g.tco+'</span>'+
-          '<span class="badge b-purple">WC Reb '+(g.rwc||0)+'</span>'+
-          '<span class="badge b-gray">OP Reb '+(g.rop||0)+'</span>'+
+          gb(layPct,40,46,true,'Layups '+g.lm+'/'+g.la+(layPct!==null?' ('+layPct+'%)':''))+
+          gb(ftPct,50,61,true,'FT '+g.fm+'/'+g.fa+(ftPct!==null?' ('+ftPct+'%)':''))+
+          gb(midPct,30,40,true,'Mid '+g.midm+'/'+g.mida+(midPct!==null?' ('+midPct+'%)':''))+
+          gb(csPct,20,30,true,'C&S '+g.csm+'/'+g.csa+(csPct!==null?' ('+csPct+'%)':''))+
+          gb(op3Pct,20,30,true,'OP3 '+g.opm+'/'+g.opa+(op3Pct!==null?' ('+op3Pct+'%)':''))+
+          gb(t3Pct,20,30,true,'3PT '+g.t3m+'/'+g.t3a+(t3Pct!==null?' ('+t3Pct+'%)':''))+
+          '<span class="badge '+toCls+'">TO '+g.tcr+' Cr / '+g.tco+' Co</span>'+
+          '<span class="badge '+rebCls+'">Reb '+(g.rwc||0)+' Us / '+(g.rop||0)+' Them</span>'+
           efgBadge+
         '</div>'+
         '<div class="del-confirm" id="del-confirm-'+docId+'">'+
