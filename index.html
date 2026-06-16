@@ -103,6 +103,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .lt-stat{font-size:13px;font-weight:700;color:var(--purple);text-align:center;}
 .lt-pct{font-size:12px;color:var(--purple-mid);}
 .lt-bignum{font-size:18px;font-weight:800;color:var(--purple-dark);}
+.lt-red{color:#E03131;}
+.lt-row-event{display:grid;grid-template-columns:1fr 36px 36px 1fr;align-items:center;padding:6px 10px;border-bottom:1px solid var(--border);}
+.lt-row-event:last-child{border-bottom:none;}
+.lt-row-event .lt-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.lb-wide{font-size:12px;font-weight:700;height:38px;}
+
+/* HISTORY color-coded summary cards */
+.ss-card.sc-neutral{background:var(--purple);border-color:var(--purple);}
+.ss-card.sc-neutral .ss-val,.ss-card.sc-neutral .ss-lbl{color:#fff;}
+.ss-card.sc-red{background:#E03131;border-color:#E03131;}
+.ss-card.sc-red .ss-val,.ss-card.sc-red .ss-lbl{color:#fff;}
+.ss-card.sc-yellow{background:#E67700;border-color:#E67700;}
+.ss-card.sc-yellow .ss-val,.ss-card.sc-yellow .ss-lbl{color:#fff;}
+.ss-card.sc-green{background:#2B8A3E;border-color:#2B8A3E;}
+.ss-card.sc-green .ss-val,.ss-card.sc-green .ss-lbl{color:#fff;}
 .lt-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;}
 .lb{height:36px;border-radius:8px;border:none;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;user-select:none;}
 .lb:active{transform:scale(0.9);}
@@ -158,20 +173,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .no-games{text-align:center;padding:3rem 1rem;color:#aaa;font-size:14px;line-height:1.8;}
 
 .compare-setup{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px;}
-.compare-setup h3{font-size:13px;font-weight:700;color:var(--purple-dark);margin-bottom:10px;}
-.compare-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
-.compare-label{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px;}
-.btn-compare{width:100%;height:40px;background:var(--purple);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;margin-top:4px;}
+.compare-setup h3{font-size:13px;font-weight:700;color:var(--purple-dark);margin-bottom:6px;}
+.btn-compare{width:100%;height:40px;background:var(--purple);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;}
 .btn-compare:active{background:var(--purple-dark);}
-.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
-.compare-card{background:var(--card);border:2px solid var(--border);border-radius:10px;padding:10px;}
-.cc-title{font-size:11px;font-weight:700;color:var(--purple);margin-bottom:8px;text-align:center;}
-.cc-stat-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:0.5px solid var(--border);}
-.cc-stat-row:last-child{border-bottom:none;}
-.cc-stat-lbl{font-size:11px;color:#999;}
-.cc-stat-val{font-size:13px;font-weight:700;color:var(--text);}
-.cc-stat-val.better{color:var(--green);}
-.cc-stat-val.worse{color:var(--red);}
+.cmp-table{width:100%;border-collapse:collapse;font-size:12px;background:var(--card);border-radius:10px;overflow:hidden;border:1px solid var(--border);}
+.cmp-head{background:var(--purple-dark);color:#fff;font-weight:700;font-size:11px;padding:8px 6px;text-align:center;border-right:1px solid #534AB7;}
+.cmp-lbl-cell{padding:6px 10px;font-size:11px;color:#666;font-weight:600;background:#f7f6ff;border-bottom:1px solid var(--border);border-right:1px solid var(--border);white-space:nowrap;}
+.cmp-cell{padding:6px 8px;text-align:center;font-weight:700;font-size:13px;border-bottom:1px solid var(--border);border-right:1px solid var(--border);color:var(--text);}
+.cmp-cell.cmp-green{background:#2B8A3E;color:#fff;}
+.cmp-cell.cmp-yellow{background:#E67700;color:#fff;}
+.cmp-cell.cmp-red{background:#E03131;color:#fff;}
+.cmp-cell.cmp-best{outline:3px solid var(--gold);outline-offset:-3px;}
 </style>
 </head>
 <body>
@@ -309,46 +321,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
 
       <div class="lt-section">TURNOVERS</div>
-      <div class="lt-row">
-        <span class="lt-name">Created</span>
+      <div class="lt-row lt-row-event">
+        <span class="lt-name">Turnovers</span>
         <span class="lt-stat lt-bignum" id="tcr">0</span>
-        <span class="lt-stat"></span>
+        <span class="lt-stat lt-bignum lt-red" id="tco">0</span>
         <span class="lt-btns">
-          <button class="lb lb-made" onclick="adjTO('tcr',1)">+</button>
-          <button class="lb lb-miss" onclick="adjTO('tcr',-1)">−</button>
-          <button class="lb lb-undo" style="opacity:0;pointer-events:none;">↩</button>
-        </span>
-      </div>
-      <div class="lt-row">
-        <span class="lt-name">Committed</span>
-        <span class="lt-stat lt-bignum" id="tco">0</span>
-        <span class="lt-stat"></span>
-        <span class="lt-btns">
-          <button class="lb lb-made" onclick="adjTO('tco',1)">+</button>
-          <button class="lb lb-miss" onclick="adjTO('tco',-1)">−</button>
-          <button class="lb lb-undo" style="opacity:0;pointer-events:none;">↩</button>
+          <button class="lb lb-made lb-wide" onclick="adjTO('tcr',1)">✓ Created</button>
+          <button class="lb lb-miss lb-wide" onclick="adjTO('tco',1)">✗ Committed</button>
         </span>
       </div>
 
       <div class="lt-section">REBOUNDS</div>
-      <div class="lt-row">
-        <span class="lt-name">WC Rebs</span>
+      <div class="lt-row lt-row-event">
+        <span class="lt-name">Rebounds</span>
         <span class="lt-stat lt-bignum" id="rwc">0</span>
-        <span class="lt-stat"></span>
+        <span class="lt-stat lt-bignum lt-red" id="rop">0</span>
         <span class="lt-btns">
-          <button class="lb lb-made" onclick="adjReb('rwc',1)">+</button>
-          <button class="lb lb-miss" onclick="adjReb('rwc',-1)">−</button>
-          <button class="lb lb-undo" style="opacity:0;pointer-events:none;">↩</button>
-        </span>
-      </div>
-      <div class="lt-row">
-        <span class="lt-name">OP Rebs</span>
-        <span class="lt-stat lt-bignum" id="rop">0</span>
-        <span class="lt-stat"></span>
-        <span class="lt-btns">
-          <button class="lb lb-made" onclick="adjReb('rop',1)">+</button>
-          <button class="lb lb-miss" onclick="adjReb('rop',-1)">−</button>
-          <button class="lb lb-undo" style="opacity:0;pointer-events:none;">↩</button>
+          <button class="lb lb-made lb-wide" onclick="adjReb('rwc',1)">✓ Ours</button>
+          <button class="lb lb-miss lb-wide" onclick="adjReb('rop',1)">✗ Theirs</button>
         </span>
       </div>
     </div>
@@ -379,15 +369,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <!-- COMPARE -->
   <div id="panel-compare" class="panel">
     <div class="compare-setup">
-      <h3>Compare Two Tournaments</h3>
-      <div class="compare-row">
-        <div><div class="compare-label">Tournament A</div><select class="filter-select" id="cmp-a" style="width:100%;"></select></div>
-        <div><div class="compare-label">Tournament B</div><select class="filter-select" id="cmp-b" style="width:100%;"></select></div>
-      </div>
-      <button class="btn-compare" onclick="runCompare()">Compare</button>
+      <h3>Compare Tournaments</h3>
+      <p style="font-size:12px;color:#999;margin-bottom:10px;">Select any tournaments to compare side by side</p>
+      <div id="cmp-checkboxes" style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;"></div>
+      <button class="btn-compare" onclick="runCompare()">Compare Selected</button>
     </div>
     <div id="status-cmp" class="status-bar hidden"></div>
-    <div id="compare-result"></div>
+    <div id="compare-result" style="overflow-x:auto;"></div>
   </div>
 
 </div>
@@ -637,18 +625,21 @@ function populateTournamentFilters(teamGames){
   var t={};
   teamGames.forEach(function(g){ if(g.tournament) t[g.tournament]=1; });
   var names=Object.keys(t).sort();
+
+  // History filter dropdown
   var hf=document.getElementById('hist-tourn-filter');
   var hval=hf.value;
   hf.innerHTML='<option value="">All Tournaments</option>';
   names.forEach(function(n){ var o=document.createElement('option');o.value=n;o.textContent=n;hf.appendChild(o); });
   hf.value=hval;
-  var ca=document.getElementById('cmp-a'),cb=document.getElementById('cmp-b');
-  ca.innerHTML='<option value="">Select…</option>';
-  cb.innerHTML='<option value="">Select…</option>';
-  names.forEach(function(n){
-    var oa=document.createElement('option');oa.value=n;oa.textContent=n;ca.appendChild(oa);
-    var ob=document.createElement('option');ob.value=n;ob.textContent=n;cb.appendChild(ob);
-  });
+
+  // Compare checkboxes
+  var cb=document.getElementById('cmp-checkboxes');
+  if(!cb) return;
+  cb.innerHTML=names.map(function(n){
+    return '<label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--text);background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 12px;cursor:pointer;">'+
+      '<input type="checkbox" value="'+n+'" style="width:16px;height:16px;accent-color:var(--purple);cursor:pointer;"> '+n+'</label>';
+  }).join('');
 }
 
 window.applyHistoryFilter = function(){
@@ -684,19 +675,25 @@ function renderHistory(games){
   var avgWCR=(games.reduce(function(s,g){return s+(g.rwc||0);},0)/games.length).toFixed(1);
   var avgOPR=(games.reduce(function(s,g){return s+(g.rop||0);},0)/games.length).toFixed(1);
 
+  function sc(val, yellow, green, higherBetter) {
+    if(val===null) return 'sc-neutral';
+    if(higherBetter) { return val>=green?'sc-green':val>=yellow?'sc-yellow':'sc-red'; }
+    else { return val<=green?'sc-green':val<=yellow?'sc-yellow':'sc-red'; }
+  }
+  var toDiff = parseFloat(avgTOCr)-parseFloat(avgTOCo);
+  var rebDiff = parseFloat(avgWCR)-parseFloat(avgOPR);
+
   grid.innerHTML=
-    '<div class="ss-card"><div class="ss-val">'+games.length+'</div><div class="ss-lbl">Games</div></div>'+
-    '<div class="ss-card"><div class="ss-val">'+avgPts+'</div><div class="ss-lbl">Avg Pts</div></div>'+
-    '<div class="ss-card"><div class="ss-val">'+(avgLay!==null?avgLay+'%':'—')+'</div><div class="ss-lbl">Layup %</div></div>'+
-    '<div class="ss-card"><div class="ss-val">'+(avgFT!==null?avgFT+'%':'—')+'</div><div class="ss-lbl">FT %</div></div>'+
-    '<div class="ss-card"><div class="ss-val">'+(avgMid!==null?avgMid+'%':'—')+'</div><div class="ss-lbl">Midrange %</div></div>'+
-    '<div class="ss-card"><div class="ss-val">'+(avgCS!==null?avgCS+'%':'—')+'</div><div class="ss-lbl">C&S 3 %</div></div>'+
-    '<div class="ss-card"><div class="ss-val">'+(avgOP3!==null?avgOP3+'%':'—')+'</div><div class="ss-lbl">One Pass 3 %</div></div>'+
-    '<div class="ss-card"><div class="ss-val">'+(avg3!==null?avg3+'%':'—')+'</div><div class="ss-lbl">Overall 3PT %</div></div>'+
-    '<div class="ss-card"><div class="ss-val">'+avgTOCr+'</div><div class="ss-lbl">Avg TO Cr</div></div>'+
-    '<div class="ss-card"><div class="ss-val">'+avgTOCo+'</div><div class="ss-lbl">Avg TO Co</div></div>'+
-    '<div class="ss-card"><div class="ss-val">'+avgWCR+'</div><div class="ss-lbl">Avg WC Reb</div></div>'+
-    '<div class="ss-card"><div class="ss-val">'+avgOPR+'</div><div class="ss-lbl">Avg OP Reb</div></div>';
+    '<div class="ss-card sc-neutral"><div class="ss-val">'+games.length+'</div><div class="ss-lbl">Games</div></div>'+
+    '<div class="ss-card sc-neutral"><div class="ss-val">'+avgPts+'</div><div class="ss-lbl">Avg Pts</div></div>'+
+    '<div class="ss-card '+sc(avgLay,40,46,true)+'"><div class="ss-val">'+(avgLay!==null?avgLay+'%':'—')+'</div><div class="ss-lbl">Layup %</div></div>'+
+    '<div class="ss-card '+sc(avgFT,50,61,true)+'"><div class="ss-val">'+(avgFT!==null?avgFT+'%':'—')+'</div><div class="ss-lbl">FT %</div></div>'+
+    '<div class="ss-card '+sc(avgMid,30,40,true)+'"><div class="ss-val">'+(avgMid!==null?avgMid+'%':'—')+'</div><div class="ss-lbl">Midrange %</div></div>'+
+    '<div class="ss-card '+sc(avgCS,20,30,true)+'"><div class="ss-val">'+(avgCS!==null?avgCS+'%':'—')+'</div><div class="ss-lbl">C&S 3 %</div></div>'+
+    '<div class="ss-card '+sc(avgOP3,20,30,true)+'"><div class="ss-val">'+(avgOP3!==null?avgOP3+'%':'—')+'</div><div class="ss-lbl">One Pass 3 %</div></div>'+
+    '<div class="ss-card '+sc(avg3,20,30,true)+'"><div class="ss-val">'+(avg3!==null?avg3+'%':'—')+'</div><div class="ss-lbl">Overall 3PT %</div></div>'+
+    '<div class="ss-card '+sc(toDiff,1,10,true)+'"><div class="ss-val">'+avgTOCr+' / '+avgTOCo+'</div><div class="ss-lbl">Avg TO Cr/Co</div></div>'+
+    '<div class="ss-card '+sc(rebDiff,1,10,true)+'"><div class="ss-val">'+avgWCR+' / '+avgOPR+'</div><div class="ss-lbl">Avg Reb Us/Them</div></div>';
 
   var html='';
   for(var i=0;i<games.length;i++){
@@ -737,21 +734,22 @@ function renderHistory(games){
 
 // ── COMPARE ──────────────────────────────────────
 window.runCompare = async function(){
-  var a=document.getElementById('cmp-a').value;
-  var b=document.getElementById('cmp-b').value;
-  if(!a||!b){showToast('Select two tournaments',true);return;}
-  if(a===b){showToast('Pick two different tournaments',true);return;}
+  var boxes=document.querySelectorAll('#cmp-checkboxes input[type=checkbox]:checked');
+  var selected=[];
+  boxes.forEach(function(b){ selected.push(b.value); });
+  if(selected.length<2){showToast('Select at least 2 tournaments',true);return;}
   setStatus('status-cmp','loading','Loading…');
   try {
     var snap=await getDocs(collection(db,COLL));
     var all=[];
     snap.forEach(function(d){ var data=d.data(); data._docId=d.id; all.push(data); });
     var teamGames=all.filter(function(g){ return g.team===currentTeam; });
-    var ga=teamGames.filter(function(g){ return g.tournament===a; });
-    var gb=teamGames.filter(function(g){ return g.tournament===b; });
+    var groups=selected.map(function(name){
+      return {name:name, games:teamGames.filter(function(g){ return g.tournament===name; })};
+    }).filter(function(g){ return g.games.length>0; });
     hideStatus('status-cmp');
-    if(!ga.length||!gb.length){showToast('No games found for one tournament',true);return;}
-    renderCompare(a,ga,b,gb);
+    if(!groups.length){showToast('No games found',true);return;}
+    renderCompare(groups);
   } catch(e){ setStatus('status-cmp','err','⚠ '+e.message); }
 };
 
@@ -760,41 +758,65 @@ function avgStat(games,fn){
   return vals.length?vals.reduce(function(s,v){return s+v;},0)/vals.length:null;
 }
 
-function renderCompare(nameA,ga,nameB,gb){
-  var stats=[
-    {lbl:'Games',fn:function(){return 1;},sum:true},
+function renderCompare(groups){
+  var STATS=[
+    {lbl:'Games',sum:true},
     {lbl:'Avg Points',fn:function(g){return g.pts;}},
-    {lbl:'Layup %',fn:function(g){return g.la?g.lm/g.la*100:null;},pct:true},
-    {lbl:'FT %',fn:function(g){return g.fa?g.fm/g.fa*100:null;},pct:true},
-    {lbl:'Midrange %',fn:function(g){return g.mida?g.midm/g.mida*100:null;},pct:true},
-    {lbl:'C&S 3 %',fn:function(g){return g.csa?g.csm/g.csa*100:null;},pct:true},
-    {lbl:'One Pass 3 %',fn:function(g){return g.opa?g.opm/g.opa*100:null;},pct:true},
-    {lbl:'Overall 3PT %',fn:function(g){return g.t3a?g.t3m/g.t3a*100:null;},pct:true},
+    {lbl:'Layup %',fn:function(g){return g.la?g.lm/g.la*100:null;},pct:true,yellow:40,green:46,hi:true},
+    {lbl:'FT %',fn:function(g){return g.fa?g.fm/g.fa*100:null;},pct:true,yellow:50,green:61,hi:true},
+    {lbl:'Midrange %',fn:function(g){return g.mida?g.midm/g.mida*100:null;},pct:true,yellow:30,green:40,hi:true},
+    {lbl:'C&S 3 %',fn:function(g){return g.csa?g.csm/g.csa*100:null;},pct:true,yellow:20,green:30,hi:true},
+    {lbl:'One Pass 3 %',fn:function(g){return g.opa?g.opm/g.opa*100:null;},pct:true,yellow:20,green:30,hi:true},
+    {lbl:'Overall 3PT %',fn:function(g){return g.t3a?g.t3m/g.t3a*100:null;},pct:true,yellow:20,green:30,hi:true},
     {lbl:'TO Created',fn:function(g){return g.tcr;}},
     {lbl:'TO Committed',fn:function(g){return g.tco;},lowerBetter:true},
     {lbl:'WC Rebounds',fn:function(g){return g.rwc||0;}},
     {lbl:'OP Rebounds',fn:function(g){return g.rop||0;},lowerBetter:true}
   ];
-  var rowsA='',rowsB='';
-  for(var i=0;i<stats.length;i++){
-    var s=stats[i];
-    var valA=s.sum?ga.length:avgStat(ga,s.fn);
-    var valB=s.sum?gb.length:avgStat(gb,s.fn);
-    var clsA='cc-stat-val',clsB='cc-stat-val';
-    if(valA!==null&&valB!==null&&valA!==valB){
-      var aWins=s.lowerBetter?(valA<valB):(valA>valB);
-      clsA+=aWins?' better':' worse';
-      clsB+=aWins?' worse':' better';
-    }
-    var fmt=function(v){ return v===null?'—':Math.round(v*10)/10+(s.pct?'%':''); };
-    rowsA+='<div class="cc-stat-row"><span class="cc-stat-lbl">'+s.lbl+'</span><span class="'+clsA+'">'+fmt(valA)+'</span></div>';
-    rowsB+='<div class="cc-stat-row"><span class="cc-stat-lbl">'+s.lbl+'</span><span class="'+clsB+'">'+fmt(valB)+'</span></div>';
+
+  // compute values
+  var cols=groups.map(function(grp){
+    return STATS.map(function(s){
+      if(s.sum) return grp.games.length;
+      return avgStat(grp.games,s.fn);
+    });
+  });
+
+  // build color for each cell based on absolute thresholds
+  function cellColor(val,stat){
+    if(val===null||stat.yellow===undefined) return '';
+    if(stat.hi){ return val>=stat.green?'cmp-green':val>=stat.yellow?'cmp-yellow':'cmp-red'; }
+    else if(stat.lowerBetter){ return ''; }
+    return '';
   }
+
+  // highlight best column per row
+  var n=groups.length;
+  var highlights=STATS.map(function(s,si){
+    var vals=cols.map(function(c){ return c[si]; });
+    var best=null;
+    vals.forEach(function(v){ if(v!==null){ if(best===null||(s.lowerBetter?v<best:v>best)) best=v; } });
+    return vals.map(function(v){ return (v!==null&&v===best&&n>1)?'cmp-best':''; });
+  });
+
+  // header row
+  var headerCells='<td class="cmp-lbl-cell"></td>'+groups.map(function(g){
+    return '<td class="cmp-head">'+g.name+'<br><span style="font-size:10px;font-weight:400;opacity:.7;">'+g.games.length+' games</span></td>';
+  }).join('');
+
+  // stat rows
+  var rows=STATS.map(function(s,si){
+    var cells=cols.map(function(c,ci){
+      var v=c[si];
+      var disp=v===null?'—':(s.pct?Math.round(v)+'%':Math.round(v*10)/10);
+      var cls=cellColor(v,s)+' '+highlights[si][ci];
+      return '<td class="cmp-cell '+cls+'">'+disp+'</td>';
+    }).join('');
+    return '<tr><td class="cmp-lbl-cell">'+s.lbl+'</td>'+cells+'</tr>';
+  }).join('');
+
   document.getElementById('compare-result').innerHTML=
-    '<div class="compare-grid">'+
-      '<div class="compare-card"><div class="cc-title">'+nameA+'</div>'+rowsA+'</div>'+
-      '<div class="compare-card"><div class="cc-title">'+nameB+'</div>'+rowsB+'</div>'+
-    '</div>';
+    '<table class="cmp-table"><thead><tr>'+headerCells+'</tr></thead><tbody>'+rows+'</tbody></table>';
 }
 
 // ── EXPORT ───────────────────────────────────────
@@ -829,7 +851,8 @@ function showTab(name,btn){
   if(name==='history') window.loadHistory();
   if(name==='compare'){
     var tg=cachedGames.filter(function(g){ return g.team===currentTeam; });
-    populateTournamentFilters(tg);
+    if(tg.length) populateTournamentFilters(tg);
+    else { window.loadHistory(); }
   }
 }
 window.showTab = showTab;
