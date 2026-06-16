@@ -44,77 +44,74 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .tab{flex:1;padding:9px 0;font-size:11px;font-weight:600;color:#AFA9EC;border:none;background:transparent;cursor:pointer;letter-spacing:.3px;border-bottom:2px solid transparent;}
 .tab.active{color:#fff;border-bottom-color:var(--gold);}
 
-.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 12px calc(env(safe-area-inset-bottom,0) + 12px);}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 8px calc(env(safe-area-inset-bottom,0) + 8px);}
 .panel{display:none;}
 .panel.active{display:block;}
 
-.setup-row{display:flex;gap:8px;margin-bottom:8px;}
-.setup-input{flex:1;height:40px;padding:0 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;background:var(--card);color:var(--text);}
-.setup-input:focus{outline:none;border-color:var(--purple-mid);}
-.btn-save{height:40px;padding:0 16px;background:var(--purple);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;flex:1;display:flex;align-items:center;justify-content:center;gap:6px;}
-.btn-save:active{background:var(--purple-dark);}
-.btn-save:disabled{background:#999;cursor:not-allowed;}
-.btn-reset{height:40px;padding:0 14px;background:transparent;color:var(--text2);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;}
-
-.reset-confirm{display:none;align-items:center;gap:8px;padding:8px 10px;background:var(--red-bg);border:1px solid #F09595;border-radius:8px;margin-bottom:8px;}
-.reset-confirm.show{display:flex;}
-.reset-confirm span{font-size:13px;color:var(--red);flex:1;font-weight:500;}
-.rc-yes{height:32px;padding:0 12px;background:var(--red);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;}
-.rc-no{height:32px;padding:0 10px;background:transparent;color:var(--red);border:1px solid #F09595;border-radius:6px;font-size:12px;cursor:pointer;}
-
-.legend{display:flex;gap:12px;padding:7px 10px;background:#fff;border:1px solid var(--border);border-radius:8px;margin-bottom:10px;flex-wrap:wrap;}
-.leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2);}
-.leg-dot{width:10px;height:10px;border-radius:3px;}
-
-.section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.9px;color:var(--text3);margin:12px 0 6px;}
-.shot-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;}
-.shot-row{display:flex;align-items:center;justify-content:space-between;}
-.shot-name{font-size:14px;font-weight:500;color:var(--text);flex:1;}
-.shot-stat{display:flex;flex-direction:column;align-items:center;min-width:56px;}
-.shot-made{font-size:20px;font-weight:700;color:var(--purple);line-height:1;}
-.shot-att{font-size:11px;color:#999;margin-top:1px;}
-.shot-pct{font-size:11px;color:var(--purple-mid);margin-top:1px;}
-.shot-btns{display:flex;gap:6px;align-items:center;}
-.sbtn{width:42px;height:42px;border-radius:8px;border:1px solid var(--border);font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;user-select:none;font-weight:500;}
-.sbtn:active{transform:scale(0.92);}
-.sbtn.made{background:var(--purple-light);border-color:var(--purple-mid);color:var(--purple);}
-.sbtn.miss{background:#f5f5f5;border-color:#ddd;color:#666;}
-.sbtn.undo{background:#fff;border-color:#ddd;color:#999;font-size:16px;}
-.sbtn.undo:active{background:var(--red-bg);border-color:#F09595;color:var(--red);}
-.three-total{display:flex;justify-content:space-between;align-items:center;padding-top:8px;margin-top:8px;border-top:1px solid var(--border);}
-.three-total-lbl{font-size:12px;color:#999;}
-.three-total-val{font-size:12px;color:var(--text2);font-weight:500;}
-
-.to-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
-.to-card{border-radius:10px;padding:12px;display:flex;flex-direction:column;align-items:center;gap:8px;}
-.to-created{background:var(--purple-light);border:1px solid var(--purple-mid);}
-.to-committed{background:var(--red-bg);border:1px solid #F09595;}
-.to-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;}
-.to-created .to-lbl{color:var(--purple);}
-.to-committed .to-lbl{color:var(--red);}
-.to-row{display:flex;align-items:center;gap:10px;}
-.to-num{font-size:32px;font-weight:700;min-width:44px;text-align:center;}
-.to-created .to-num{color:var(--purple);}
-.to-committed .to-num{color:var(--red);}
-.to-btn{width:36px;height:36px;border-radius:8px;border:1px solid;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;background:transparent;font-weight:500;}
-.to-created .to-btn{border-color:var(--purple-mid);color:var(--purple);}
-.to-created .to-btn:active{background:#CECBF6;}
-.to-committed .to-btn{border-color:#F09595;color:var(--red);}
-.to-committed .to-btn:active{background:#F7C1C1;}
+.setup-row{display:none;}
+.setup-input{display:none;}
+.legend{display:none;}
+.section-label{display:none;}
+.shot-card{display:none;}
+.to-grid{display:none;}
+.to-card{display:none;}
+.sbtn{display:none;}
+.three-total{display:none;}
 
 .sum-bar{display:none;}
-.dash-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;}
-.dash-card{border-radius:10px;padding:10px 8px;text-align:center;border:2px solid transparent;transition:background .2s,border-color .2s;}
-.dash-card.dash-red{background:#FCEBEB;border-color:#F09595;}
-.dash-card.dash-yellow{background:#FFFBEA;border-color:#F0C040;}
-.dash-card.dash-green{background:#E6F4EA;border-color:#6FCF97;}
-.dash-card.dash-neutral{background:#f5f4fc;border-color:#e0ddf7;}
-.dash-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#666;margin-bottom:4px;}
-.dash-val{font-size:22px;font-weight:800;line-height:1;color:#1a1a2e;}
-.dash-card.dash-red .dash-val{color:#A32D2D;}
-.dash-card.dash-yellow .dash-val{color:#856200;}
-.dash-card.dash-green .dash-val{color:#2d6a4f;}
-.dash-sub{font-size:10px;color:#999;margin-top:3px;}
+
+/* GAME INFO */
+.game-info-row{display:grid;grid-template-columns:1fr 1fr 130px;gap:6px;margin-bottom:6px;}
+.gi-input{height:36px;padding:0 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;background:var(--card);color:var(--text);width:100%;}
+.gi-input:focus{outline:none;border-color:var(--purple-mid);}
+.gi-date{font-size:12px;}
+.game-action-row{display:flex;gap:6px;margin-bottom:8px;}
+.btn-reset{height:36px;padding:0 12px;background:transparent;color:var(--text2);border:1px solid var(--border);border-radius:8px;font-size:13px;cursor:pointer;font-weight:600;}
+.btn-save{height:36px;padding:0 16px;background:var(--purple);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;flex:1;display:flex;align-items:center;justify-content:center;gap:6px;}
+.btn-save:active{background:var(--purple-dark);}
+.btn-save:disabled{background:#999;cursor:not-allowed;}
+
+/* RESET CONFIRM */
+.reset-confirm{display:none;align-items:center;gap:8px;padding:6px 10px;background:var(--red-bg);border:1px solid #F09595;border-radius:8px;margin-bottom:8px;}
+.reset-confirm.show{display:flex;}
+.reset-confirm span{font-size:13px;color:var(--red);flex:1;font-weight:500;}
+.rc-yes{height:30px;padding:0 12px;background:var(--red);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;}
+.rc-no{height:30px;padding:0 10px;background:transparent;color:var(--red);border:1px solid #F09595;border-radius:6px;font-size:12px;cursor:pointer;}
+
+/* DASHBOARD */
+.dash-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px;}
+.dash-card{border-radius:10px;padding:8px 4px;text-align:center;transition:background .15s;}
+.dash-card.dash-red{background:#E03131;box-shadow:0 3px 10px rgba(224,49,49,.5);}
+.dash-card.dash-yellow{background:#E67700;box-shadow:0 3px 10px rgba(230,119,0,.5);}
+.dash-card.dash-green{background:#2B8A3E;box-shadow:0 3px 10px rgba(43,138,62,.5);}
+.dash-card.dash-neutral{background:#3C3489;box-shadow:0 3px 10px rgba(60,52,137,.35);}
+.dash-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.85);margin-bottom:3px;}
+.dash-val{font-size:20px;font-weight:900;color:#fff;line-height:1;text-shadow:0 1px 4px rgba(0,0,0,.25);}
+.dash-sub{font-size:9px;color:rgba(255,255,255,.8);margin-top:2px;font-weight:500;}
+
+/* LIVE TABLE */
+.live-table{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:8px;}
+.lt-header{display:grid;grid-template-columns:1fr 52px 38px 126px;align-items:center;padding:5px 10px;background:#f0effe;border-bottom:1px solid var(--border);}
+.lt-header span{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text3);}
+.lt-header .lt-btns-hdr{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;text-align:center;}
+.lt-section{padding:4px 10px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--purple);background:#f7f6ff;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.lt-section-bad{color:#A32D2D;background:#fff5f5;}
+.lt-row{display:grid;grid-template-columns:1fr 52px 38px 126px;align-items:center;padding:5px 10px;border-bottom:1px solid var(--border);}
+.lt-row:last-child{border-bottom:none;}
+.lt-row-bad{background:#fffafa;}
+.lt-name{font-size:13px;font-weight:600;color:var(--text);}
+.lt-stat{font-size:13px;font-weight:700;color:var(--purple);text-align:center;}
+.lt-pct{font-size:12px;color:var(--purple-mid);}
+.lt-bignum{font-size:18px;font-weight:800;color:var(--purple-dark);}
+.lt-btns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;}
+.lb{height:36px;border-radius:8px;border:none;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;user-select:none;}
+.lb:active{transform:scale(0.9);}
+.lb-made{background:#2B8A3E;color:#fff;font-size:18px;}
+.lb-made:active{background:#1e6b2e;}
+.lb-miss{background:#E03131;color:#fff;font-size:18px;}
+.lb-miss:active{background:#b52828;}
+.lb-undo{background:#f0effe;color:var(--purple);font-size:14px;}
+.lb-undo:active{background:#CECBF6;}
 
 .status-bar{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;margin-bottom:8px;font-size:12px;font-weight:600;}
 .status-bar.loading{background:#f0effe;color:var(--purple);}
@@ -221,118 +218,148 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <!-- LIVE -->
   <div id="panel-live" class="panel active">
     <div id="status-live" class="status-bar hidden"></div>
-    <div class="setup-row">
-      <input class="setup-input" id="opp-input" placeholder="Opponent name" autocomplete="off">
-      <input class="setup-input" id="date-input" type="date" style="flex:0 0 140px;">
+
+    <!-- Game info row -->
+    <div class="game-info-row">
+      <input class="gi-input" id="opp-input" placeholder="Opponent" autocomplete="off">
+      <input class="gi-input" id="tourn-input" placeholder="Tournament" autocomplete="off">
+      <input class="gi-input gi-date" id="date-input" type="date">
     </div>
-    <div class="setup-row">
-      <input class="setup-input" id="tourn-input" placeholder="Tournament (optional)" autocomplete="off">
-    </div>
-    <div class="setup-row">
-      <button class="btn-reset" onclick="showResetConfirm()">↺ Reset</button>
+    <div class="game-action-row">
+      <button class="btn-reset" onclick="showResetConfirm()">↺</button>
       <button class="btn-save" id="save-btn" onclick="saveGame()">💾 Save Game</button>
     </div>
     <div class="reset-confirm" id="reset-confirm">
-      <span>Reset all current stats?</span>
+      <span>Reset all stats?</span>
       <button class="rc-yes" onclick="clearStats()">Yes</button>
       <button class="rc-no" onclick="hideResetConfirm()">Cancel</button>
     </div>
-    <div class="legend">
-      <div class="leg-item"><div class="leg-dot" style="background:#CECBF6;border:1px solid #AFA9EC;"></div> + = Made</div>
-      <div class="leg-item"><div class="leg-dot" style="background:#e8e8e8;border:1px solid #ccc;"></div> − = Missed</div>
-      <div class="leg-item"><div class="leg-dot" style="background:#F7C1C1;border:1px solid #F09595;"></div> ↩ = Undo</div>
+
+    <!-- DASHBOARD -->
+    <div class="dash-grid">
+      <div class="dash-card dash-neutral" id="dash-layup"><div class="dash-lbl">Layup%</div><div class="dash-val" id="d-layup">—</div><div class="dash-sub" id="d-layup-sub">0/0</div></div>
+      <div class="dash-card dash-neutral" id="dash-ft"><div class="dash-lbl">FT%</div><div class="dash-val" id="d-ft">—</div><div class="dash-sub" id="d-ft-sub">0/0</div></div>
+      <div class="dash-card dash-neutral" id="dash-3p"><div class="dash-lbl">3PT%</div><div class="dash-val" id="d-3p">—</div><div class="dash-sub" id="d-3p-sub">0/0</div></div>
+      <div class="dash-card dash-neutral" id="dash-bad"><div class="dash-lbl">Bad Shots</div><div class="dash-val" id="d-bad">0</div><div class="dash-sub" id="d-bad-sub">Mid+OP3</div></div>
+      <div class="dash-card dash-neutral" id="dash-to"><div class="dash-lbl">TO Cr–Co</div><div class="dash-val" id="d-to">0–0</div><div class="dash-sub">Caused–Committed</div></div>
+      <div class="dash-card dash-neutral" id="dash-reb"><div class="dash-lbl">Rebounds</div><div class="dash-val" id="d-reb">0–0</div><div class="dash-sub">Us–Them</div></div>
     </div>
 
-    <div class="section-label">Paint &amp; Free Throws</div>
-    <div class="shot-card"><div class="shot-row">
-      <span class="shot-name">Layups</span>
-      <div class="shot-stat"><span class="shot-made" id="disp-l-m">0</span><span class="shot-att" id="disp-l-a">0 att</span><span class="shot-pct" id="disp-l-p">—</span></div>
-      <div class="shot-btns"><button class="sbtn made" onclick="shotMade('l')">+</button><button class="sbtn miss" onclick="shotMiss('l')">−</button><button class="sbtn undo" onclick="shotUndo('l')">↩</button></div>
-    </div></div>
-    <div class="shot-card"><div class="shot-row">
-      <span class="shot-name">Free Throws</span>
-      <div class="shot-stat"><span class="shot-made" id="disp-f-m">0</span><span class="shot-att" id="disp-f-a">0 att</span><span class="shot-pct" id="disp-f-p">—</span></div>
-      <div class="shot-btns"><button class="sbtn made" onclick="shotMade('f')">+</button><button class="sbtn miss" onclick="shotMiss('f')">−</button><button class="sbtn undo" onclick="shotUndo('f')">↩</button></div>
-    </div></div>
-    <div class="shot-card"><div class="shot-row">
-      <span class="shot-name">Midrange</span>
-      <div class="shot-stat"><span class="shot-made" id="disp-mid-m">0</span><span class="shot-att" id="disp-mid-a">0 att</span><span class="shot-pct" id="disp-mid-p">—</span></div>
-      <div class="shot-btns"><button class="sbtn made" onclick="shotMade('mid')">+</button><button class="sbtn miss" onclick="shotMiss('mid')">−</button><button class="sbtn undo" onclick="shotUndo('mid')">↩</button></div>
-    </div></div>
-
-    <div class="section-label">Three-Pointers</div>
-    <div class="shot-card"><div class="shot-row">
-      <span class="shot-name">Catch &amp; Shoot</span>
-      <div class="shot-stat"><span class="shot-made" id="disp-cs-m">0</span><span class="shot-att" id="disp-cs-a">0 att</span><span class="shot-pct" id="disp-cs-p">—</span></div>
-      <div class="shot-btns"><button class="sbtn made" onclick="shotMade('cs')">+</button><button class="sbtn miss" onclick="shotMiss('cs')">−</button><button class="sbtn undo" onclick="shotUndo('cs')">↩</button></div>
-    </div></div>
-    <div class="shot-card">
-      <div class="shot-row">
-        <span class="shot-name">One Pass 3</span>
-        <div class="shot-stat"><span class="shot-made" id="disp-op-m">0</span><span class="shot-att" id="disp-op-a">0 att</span><span class="shot-pct" id="disp-op-p">—</span></div>
-        <div class="shot-btns"><button class="sbtn made" onclick="shotMade('op')">+</button><button class="sbtn miss" onclick="shotMiss('op')">−</button><button class="sbtn undo" onclick="shotUndo('op')">↩</button></div>
+    <!-- SHOT ROWS -->
+    <div class="live-table">
+      <div class="lt-header">
+        <span class="lt-name"></span>
+        <span class="lt-stat">M/A</span>
+        <span class="lt-stat">%</span>
+        <span class="lt-btns-hdr"><span>✓</span><span>✗</span><span>↩</span></span>
       </div>
-      <div class="three-total"><span class="three-total-lbl">Total 3s</span><span class="three-total-val" id="total3">0 / 0 — —</span></div>
+
+      <div class="lt-section">SHOTS</div>
+      <div class="lt-row">
+        <span class="lt-name">Layups</span>
+        <span class="lt-stat"><span id="disp-l-m">0</span>/<span id="disp-l-a-n">0</span></span>
+        <span class="lt-stat lt-pct" id="disp-l-p">—</span>
+        <span class="lt-btns">
+          <button class="lb lb-made" onclick="shotMade('l')">✓</button>
+          <button class="lb lb-miss" onclick="shotMiss('l')">✗</button>
+          <button class="lb lb-undo" onclick="shotUndo('l')">↩</button>
+        </span>
+      </div>
+      <div class="lt-row">
+        <span class="lt-name">Free Throws</span>
+        <span class="lt-stat"><span id="disp-f-m">0</span>/<span id="disp-f-a-n">0</span></span>
+        <span class="lt-stat lt-pct" id="disp-f-p">—</span>
+        <span class="lt-btns">
+          <button class="lb lb-made" onclick="shotMade('f')">✓</button>
+          <button class="lb lb-miss" onclick="shotMiss('f')">✗</button>
+          <button class="lb lb-undo" onclick="shotUndo('f')">↩</button>
+        </span>
+      </div>
+      <div class="lt-row">
+        <span class="lt-name">C&amp;S 3</span>
+        <span class="lt-stat"><span id="disp-cs-m">0</span>/<span id="disp-cs-a-n">0</span></span>
+        <span class="lt-stat lt-pct" id="disp-cs-p">—</span>
+        <span class="lt-btns">
+          <button class="lb lb-made" onclick="shotMade('cs')">✓</button>
+          <button class="lb lb-miss" onclick="shotMiss('cs')">✗</button>
+          <button class="lb lb-undo" onclick="shotUndo('cs')">↩</button>
+        </span>
+      </div>
+
+      <div class="lt-section lt-section-bad">BAD SHOTS</div>
+      <div class="lt-row lt-row-bad">
+        <span class="lt-name">Midrange</span>
+        <span class="lt-stat"><span id="disp-mid-m">0</span>/<span id="disp-mid-a-n">0</span></span>
+        <span class="lt-stat lt-pct" id="disp-mid-p">—</span>
+        <span class="lt-btns">
+          <button class="lb lb-made" onclick="shotMade('mid')">✓</button>
+          <button class="lb lb-miss" onclick="shotMiss('mid')">✗</button>
+          <button class="lb lb-undo" onclick="shotUndo('mid')">↩</button>
+        </span>
+      </div>
+      <div class="lt-row lt-row-bad">
+        <span class="lt-name">One Pass 3</span>
+        <span class="lt-stat"><span id="disp-op-m">0</span>/<span id="disp-op-a-n">0</span></span>
+        <span class="lt-stat lt-pct" id="disp-op-p">—</span>
+        <span class="lt-btns">
+          <button class="lb lb-made" onclick="shotMade('op')">✓</button>
+          <button class="lb lb-miss" onclick="shotMiss('op')">✗</button>
+          <button class="lb lb-undo" onclick="shotUndo('op')">↩</button>
+        </span>
+      </div>
+
+      <div class="lt-section">TURNOVERS</div>
+      <div class="lt-row">
+        <span class="lt-name">Created</span>
+        <span class="lt-stat lt-bignum" id="tcr">0</span>
+        <span class="lt-stat"></span>
+        <span class="lt-btns">
+          <button class="lb lb-made" onclick="adjTO('tcr',1)">+</button>
+          <button class="lb lb-miss" onclick="adjTO('tcr',-1)">−</button>
+          <button class="lb lb-undo" style="opacity:0;pointer-events:none;">↩</button>
+        </span>
+      </div>
+      <div class="lt-row">
+        <span class="lt-name">Committed</span>
+        <span class="lt-stat lt-bignum" id="tco">0</span>
+        <span class="lt-stat"></span>
+        <span class="lt-btns">
+          <button class="lb lb-made" onclick="adjTO('tco',1)">+</button>
+          <button class="lb lb-miss" onclick="adjTO('tco',-1)">−</button>
+          <button class="lb lb-undo" style="opacity:0;pointer-events:none;">↩</button>
+        </span>
+      </div>
+
+      <div class="lt-section">REBOUNDS</div>
+      <div class="lt-row">
+        <span class="lt-name">WC Rebs</span>
+        <span class="lt-stat lt-bignum" id="rwc">0</span>
+        <span class="lt-stat"></span>
+        <span class="lt-btns">
+          <button class="lb lb-made" onclick="adjReb('rwc',1)">+</button>
+          <button class="lb lb-miss" onclick="adjReb('rwc',-1)">−</button>
+          <button class="lb lb-undo" style="opacity:0;pointer-events:none;">↩</button>
+        </span>
+      </div>
+      <div class="lt-row">
+        <span class="lt-name">OP Rebs</span>
+        <span class="lt-stat lt-bignum" id="rop">0</span>
+        <span class="lt-stat"></span>
+        <span class="lt-btns">
+          <button class="lb lb-made" onclick="adjReb('rop',1)">+</button>
+          <button class="lb lb-miss" onclick="adjReb('rop',-1)">−</button>
+          <button class="lb lb-undo" style="opacity:0;pointer-events:none;">↩</button>
+        </span>
+      </div>
     </div>
 
-    <div class="section-label">Turnovers</div>
-    <div class="to-grid">
-      <div class="to-card to-created">
-        <div class="to-lbl">Created</div>
-        <div class="to-row"><button class="to-btn" onclick="adjTO('tcr',-1)">−</button><span class="to-num" id="tcr">0</span><button class="to-btn" onclick="adjTO('tcr',1)">+</button></div>
-      </div>
-      <div class="to-card to-committed">
-        <div class="to-lbl">Committed</div>
-        <div class="to-row"><button class="to-btn" onclick="adjTO('tco',-1)">−</button><span class="to-num" id="tco">0</span><button class="to-btn" onclick="adjTO('tco',1)">+</button></div>
-      </div>
-    </div>
-
-    <div class="section-label">Rebounds</div>
-    <div class="to-grid">
-      <div class="to-card" style="background:#EEEDFE;border:1px solid #7F77DD;">
-        <div class="to-lbl" style="color:#3C3489;">WC Rebounds</div>
-        <div class="to-row"><button class="to-btn" style="border-color:#7F77DD;color:#3C3489;" onclick="adjReb('rwc',-1)">−</button><span class="to-num" id="rwc" style="color:#3C3489;">0</span><button class="to-btn" style="border-color:#7F77DD;color:#3C3489;" onclick="adjReb('rwc',1)">+</button></div>
-      </div>
-      <div class="to-card" style="background:#f5f5f5;border:1px solid #ccc;">
-        <div class="to-lbl" style="color:#555;">OP Rebounds</div>
-        <div class="to-row"><button class="to-btn" style="border-color:#ccc;color:#555;" onclick="adjReb('rop',-1)">−</button><span class="to-num" id="rop" style="color:#555;">0</span><button class="to-btn" style="border-color:#ccc;color:#555;" onclick="adjReb('rop',1)">+</button></div>
-      </div>
-    </div>
-
-    <div id="dashboard">
-      <div class="dash-grid">
-        <div class="dash-card" id="dash-layup">
-          <div class="dash-lbl">Layup %</div>
-          <div class="dash-val" id="d-layup">—</div>
-          <div class="dash-sub" id="d-layup-sub">0 / 0</div>
-        </div>
-        <div class="dash-card" id="dash-ft">
-          <div class="dash-lbl">FT %</div>
-          <div class="dash-val" id="d-ft">—</div>
-          <div class="dash-sub" id="d-ft-sub">0 / 0</div>
-        </div>
-        <div class="dash-card" id="dash-3p">
-          <div class="dash-lbl">3PT %</div>
-          <div class="dash-val" id="d-3p">—</div>
-          <div class="dash-sub" id="d-3p-sub">0 / 0</div>
-        </div>
-        <div class="dash-card dash-neutral" id="dash-bad">
-          <div class="dash-lbl">Bad Shots</div>
-          <div class="dash-val" id="d-bad">0</div>
-          <div class="dash-sub" id="d-bad-sub">Mid + OP3 att</div>
-        </div>
-        <div class="dash-card" id="dash-to">
-          <div class="dash-lbl">Turnovers</div>
-          <div class="dash-val" id="d-to">0 – 0</div>
-          <div class="dash-sub">Caused – Committed</div>
-        </div>
-        <div class="dash-card" id="dash-reb">
-          <div class="dash-lbl">Rebounds</div>
-          <div class="dash-val" id="d-reb">0 – 0</div>
-          <div class="dash-sub">Us – Them</div>
-        </div>
-      </div>
-    </div>
+    <!-- hidden elements kept for JS compatibility -->
+    <span style="display:none" id="disp-l-a">0</span>
+    <span style="display:none" id="disp-f-a">0</span>
+    <span style="display:none" id="disp-mid-a">0</span>
+    <span style="display:none" id="disp-cs-a">0</span>
+    <span style="display:none" id="disp-op-a">0</span>
+    <span style="display:none" id="total3">0</span>
   </div>
 
   <!-- HISTORY -->
@@ -429,7 +456,11 @@ window.switchTeam = function() {
 function renderShot(k){
   var s=shots[k];
   document.getElementById('disp-'+k+'-m').textContent=s.m;
-  document.getElementById('disp-'+k+'-a').textContent=s.a+' att';
+  // update both old (hidden) and new display elements
+  var an = document.getElementById('disp-'+k+'-a-n');
+  if(an) an.textContent=s.a;
+  var ao = document.getElementById('disp-'+k+'-a');
+  if(ao) ao.textContent=s.a;
   document.getElementById('disp-'+k+'-p').textContent=pct(s.m,s.a);
 }
 window.shotMade = function(k){ shots[k].m++;shots[k].a++;shots[k].log.push('made');renderShot(k);updateSummary(); };
