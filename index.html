@@ -185,7 +185,42 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .cmp-cell.cmp-green{background:#2B8A3E;color:#fff;}
 .cmp-cell.cmp-yellow{background:#E67700;color:#fff;}
 .cmp-cell.cmp-red{background:#E03131;color:#fff;}
-.cmp-cell.cmp-best{outline:3px solid var(--gold);outline-offset:-3px;}
+/* PLAYERS PANEL */
+.pl-action-row{display:flex;gap:8px;margin-bottom:8px;}
+.pl-action-row .btn-outline{flex:1;justify-content:center;display:flex;align-items:center;}
+.pl-row{background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:6px;overflow:hidden;}
+.pl-name-bar{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:#f0effe;border-bottom:1px solid var(--border);}
+.pl-name{font-size:13px;font-weight:700;color:var(--purple-dark);}
+.pl-totals{font-size:11px;color:var(--purple-mid);}
+.pl-btns-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:6px 8px;}
+.pl-btn{height:44px;border:none;border-radius:8px;font-size:10px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;user-select:none;}
+.pl-btn:active{transform:scale(0.92);}
+.pl-btn span.pl-icon{font-size:14px;line-height:1;}
+.pl-btn span.pl-lbl{font-size:9px;font-weight:700;letter-spacing:.3px;}
+.pl-btn span.pl-cnt{font-size:12px;font-weight:800;}
+.pb-layup{background:#2B8A3E;color:#fff;}
+.pb-ft{background:#1971C2;color:#fff;}
+.pb-good3{background:#5C7CFA;color:#fff;}
+.pb-bad3{background:#E67700;color:#fff;}
+.pb-mid{background:#E03131;color:#fff;}
+.pb-reb{background:#0CA678;color:#fff;}
+.pb-ast{background:#7048E8;color:#fff;}
+.pb-blk{background:#343A40;color:#fff;}
+.pb-tocr{background:#2B8A3E;color:#fff;}
+.pb-toco{background:#C92A2A;color:#fff;}
+.pl-opp-reb{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.pl-opp-lbl{font-size:13px;font-weight:700;color:#555;}
+.pl-cnt-btn{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);font-size:20px;cursor:pointer;background:var(--card);font-weight:700;}
+.pl-plus{background:#2B8A3E;color:#fff;border-color:#2B8A3E;}
+.pl-minus{background:#E03131;color:#fff;border-color:#E03131;}
+.pl-cnt-val{font-size:24px;font-weight:800;color:var(--purple-dark);min-width:36px;text-align:center;}
+.pl-hist-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--purple);margin-bottom:8px;}
+.pl-hist-table{width:100%;border-collapse:collapse;font-size:11px;background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.pl-hist-table th{background:var(--purple-dark);color:#fff;padding:6px 4px;text-align:center;font-size:10px;font-weight:700;}
+.pl-hist-table th:first-child{text-align:left;padding-left:8px;}
+.pl-hist-table td{padding:5px 4px;text-align:center;border-bottom:1px solid var(--border);color:var(--text);font-weight:600;}
+.pl-hist-table td:first-child{text-align:left;padding-left:8px;font-weight:700;color:var(--purple-dark);}
+.pl-hist-table tr:last-child td{border-bottom:none;}
 </style>
 </head>
 <body>
@@ -223,6 +258,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
   <div class="tabs">
     <button class="tab active" onclick="showTab('live',this)">⚡ Live</button>
+    <button class="tab" onclick="showTab('players',this)">👤 Players</button>
     <button class="tab" onclick="showTab('history',this)">📋 History</button>
     <button class="tab" onclick="showTab('compare',this)">⚖ Compare</button>
   </div>
@@ -355,6 +391,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <span style="display:none" id="total3">0</span>
   </div>
 
+  <!-- PLAYERS -->
+  <div id="panel-players" class="panel">
+    <div class="pl-action-row">
+      <button class="btn-outline" onclick="savePlayerStats()">💾 Save Player Stats</button>
+      <button class="btn-outline" onclick="resetPlayerStats()">↺ Reset</button>
+    </div>
+    <div id="status-players" class="status-bar hidden"></div>
+    <div id="player-rows"></div>
+    <div class="pl-opp-reb">
+      <span class="pl-opp-lbl">Opponent Rebounds</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="pl-cnt-btn pl-minus" onclick="adjOppReb(-1)">−</button>
+        <span class="pl-cnt-val" id="opp-reb-cnt">0</span>
+        <button class="pl-cnt-btn pl-plus" onclick="adjOppReb(1)">+</button>
+      </div>
+    </div>
+    <div id="pl-history-wrap">
+      <div class="pl-hist-title">Season Totals</div>
+      <div id="pl-history-table"></div>
+    </div>
+  </div>
+
   <!-- HISTORY -->
   <div id="panel-history" class="panel">
     <div class="filter-row">
@@ -432,11 +490,196 @@ var rebVals = {rwc:0,rop:0};
 
 function pct(m,a){ return a===0?'—':Math.round(m/a*100)+'%'; }
 
+// ── ROSTERS ──────────────────────────────────────
+var ROSTERS = {
+  '2031': [
+    {num:'25',name:'Twin'},{num:'23',name:'El'},{num:'12',name:'Laylah'},
+    {num:'2',name:'Izzy'},{num:'30',name:'Avarie'},{num:'10',name:'Maria'},
+    {num:'21',name:'Jazzy'},{num:'00',name:'Everly'},{num:'1',name:'Mia'},
+    {num:'7',name:'Mac'}
+  ],
+  '2032': [
+    {num:'10',name:'Maria'},{num:'00',name:'Everly'},{num:'1',name:'Mia'},
+    {num:'21',name:'Jazzy'},{num:'7',name:'Mac'},{num:'11',name:'Brooklyn'},
+    {num:'5',name:'Bella'}
+  ],
+  '2033': [
+    {num:'7',name:'Mac'},{num:'11',name:'Brooklyn'},{num:'5',name:'Bella'},
+    {num:'9',name:'Jyzelle'},{num:'24',name:'Arya'},{num:'20',name:'Ky'},
+    {num:'10',name:'Issaly'}
+  ]
+};
+
+// player stats state: keyed by player num
+var playerStats = {};
+var oppRebCount = 0;
+
+var PSTAT_KEYS = ['layup','ft','good3','bad3','mid','reb','ast','blk','tocr','toco'];
+
+function initPlayerStats() {
+  playerStats = {};
+  oppRebCount = 0;
+  var roster = ROSTERS[currentTeam] || [];
+  roster.forEach(function(p) {
+    playerStats[p.num] = {layup:0,ft:0,good3:0,bad3:0,mid:0,reb:0,ast:0,blk:0,tocr:0,toco:0};
+  });
+}
+
+function adjPlayerStat(num, stat, delta) {
+  if(!playerStats[num]) return;
+  playerStats[num][stat] = Math.max(0, playerStats[num][stat] + delta);
+  // update the count display in the button
+  var el = document.getElementById('ps-'+num+'-'+stat);
+  if(el) el.textContent = playerStats[num][stat];
+  // update the totals line
+  updatePlayerTotalsLine(num);
+}
+window.adjPlayerStat = adjPlayerStat;
+
+window.adjOppReb = function(delta) {
+  oppRebCount = Math.max(0, oppRebCount + delta);
+  document.getElementById('opp-reb-cnt').textContent = oppRebCount;
+};
+
+function updatePlayerTotalsLine(num) {
+  var s = playerStats[num];
+  var pts = s.layup*2 + s.ft + s.good3*3 + s.bad3*3 + s.mid*2;
+  var el = document.getElementById('pl-totals-'+num);
+  if(el) el.textContent = pts+'pts · '+s.reb+'reb · '+s.ast+'ast · '+s.blk+'blk · '+s.tocr+'cr/'+s.toco+'co';
+}
+
+function renderPlayerRows() {
+  var roster = ROSTERS[currentTeam] || [];
+  var html = '';
+  var BTNS = [
+    {key:'layup', lbl:'Layup', icon:'🏀', cls:'pb-layup'},
+    {key:'ft',    lbl:'FT',    icon:'🎯', cls:'pb-ft'},
+    {key:'good3', lbl:'Good 3',icon:'✅', cls:'pb-good3'},
+    {key:'bad3',  lbl:'Bad 3', icon:'⚠️', cls:'pb-bad3'},
+    {key:'mid',   lbl:'Mid',   icon:'📍', cls:'pb-mid'},
+    {key:'reb',   lbl:'Reb',   icon:'💪', cls:'pb-reb'},
+    {key:'ast',   lbl:'Ast',   icon:'👐', cls:'pb-ast'},
+    {key:'blk',   lbl:'Blk',   icon:'🛑', cls:'pb-blk'},
+    {key:'tocr',  lbl:'TO Cr', icon:'🟢', cls:'pb-tocr'},
+    {key:'toco',  lbl:'TO Co', icon:'🔴', cls:'pb-toco'}
+  ];
+  roster.forEach(function(p) {
+    var btnHtml = BTNS.map(function(b) {
+      return '<button class="pl-btn '+b.cls+'" onclick="adjPlayerStat(\''+p.num+'\',\''+b.key+'\',1)">'+
+        '<span class="pl-icon">'+b.icon+'</span>'+
+        '<span class="pl-cnt" id="ps-'+p.num+'-'+b.key+'">0</span>'+
+        '<span class="pl-lbl">'+b.lbl+'</span>'+
+      '</button>';
+    }).join('');
+    html += '<div class="pl-row">'+
+      '<div class="pl-name-bar">'+
+        '<span class="pl-name">#'+p.num+' '+p.name+'</span>'+
+        '<span class="pl-totals" id="pl-totals-'+p.num+'">0pts · 0reb · 0ast · 0blk · 0cr/0co</span>'+
+      '</div>'+
+      '<div class="pl-btns-grid">'+btnHtml+'</div>'+
+    '</div>';
+  });
+  document.getElementById('player-rows').innerHTML = html;
+  document.getElementById('opp-reb-cnt').textContent = 0;
+}
+
+function resetPlayerStats() {
+  initPlayerStats();
+  renderPlayerRows();
+  showToast('Player stats reset', false);
+}
+window.resetPlayerStats = resetPlayerStats;
+
+async function savePlayerStats() {
+  if(!currentTeam) { showToast('Select a team first', true); return; }
+  var opp = document.getElementById('opp-input').value.trim();
+  var dateVal = document.getElementById('date-input').value;
+  var tourn = document.getElementById('tourn-input').value.trim();
+  if(!opp) { showToast('Enter opponent on Live tab first', true); return; }
+
+  setStatus('status-players','loading','Saving player stats…');
+  var roster = ROSTERS[currentTeam] || [];
+  var records = roster.map(function(p) {
+    var s = playerStats[p.num];
+    return {
+      team: currentTeam, opp: opp,
+      date: dateVal || new Date().toISOString().slice(0,10),
+      tournament: tourn || '',
+      playerNum: p.num, playerName: p.name,
+      layup:s.layup, ft:s.ft, good3:s.good3, bad3:s.bad3, mid:s.mid,
+      reb:s.reb, ast:s.ast, blk:s.blk, tocr:s.tocr, toco:s.toco,
+      pts: s.layup*2+s.ft+s.good3*3+s.bad3*3+s.mid*2,
+      oppReb: oppRebCount,
+      savedAt: Date.now()
+    };
+  });
+
+  try {
+    for(var i=0;i<records.length;i++) {
+      await addDoc(collection(db,'playerStats'), records[i]);
+    }
+    hideStatus('status-players');
+    showToast('Player stats saved!', false);
+    loadPlayerHistory();
+  } catch(e) {
+    setStatus('status-players','err','⚠ '+e.message);
+  }
+}
+window.savePlayerStats = savePlayerStats;
+
+async function loadPlayerHistory() {
+  try {
+    var snap = await getDocs(collection(db,'playerStats'));
+    var all = [];
+    snap.forEach(function(d){ all.push(d.data()); });
+    var teamStats = all.filter(function(r){ return r.team===currentTeam; });
+    renderPlayerHistory(teamStats);
+  } catch(e) { console.error(e); }
+}
+
+function renderPlayerHistory(records) {
+  var wrap = document.getElementById('pl-history-wrap');
+  var tbl = document.getElementById('pl-history-table');
+  if(!records.length) { tbl.innerHTML='<div class="no-games">No player stats saved yet.</div>'; return; }
+
+  // aggregate by player
+  var byPlayer = {};
+  records.forEach(function(r) {
+    var key = r.playerNum+'-'+r.playerName;
+    if(!byPlayer[key]) byPlayer[key] = {num:r.playerNum,name:r.playerName,games:0,pts:0,layup:0,ft:0,good3:0,bad3:0,mid:0,reb:0,ast:0,blk:0,tocr:0,toco:0};
+    var p = byPlayer[key];
+    p.games++; p.pts+=r.pts; p.layup+=r.layup; p.ft+=r.ft; p.good3+=r.good3;
+    p.bad3+=r.bad3; p.mid+=r.mid; p.reb+=r.reb; p.ast+=r.ast; p.blk+=r.blk;
+    p.tocr+=r.tocr; p.toco+=r.toco;
+  });
+
+  var players = Object.values(byPlayer).sort(function(a,b){ return parseInt(a.num)-parseInt(b.num); });
+  var rows = players.map(function(p) {
+    return '<tr>'+
+      '<td>#'+p.num+' '+p.name+'</td>'+
+      '<td>'+p.games+'</td>'+
+      '<td>'+(p.pts/p.games).toFixed(1)+'</td>'+
+      '<td>'+(p.reb/p.games).toFixed(1)+'</td>'+
+      '<td>'+(p.ast/p.games).toFixed(1)+'</td>'+
+      '<td>'+(p.blk/p.games).toFixed(1)+'</td>'+
+      '<td>'+(p.tocr/p.games).toFixed(1)+'</td>'+
+      '<td>'+(p.toco/p.games).toFixed(1)+'</td>'+
+    '</tr>';
+  }).join('');
+
+  tbl.innerHTML = '<table class="pl-hist-table">'+
+    '<thead><tr><th>Player</th><th>G</th><th>Pts</th><th>Reb</th><th>Ast</th><th>Blk</th><th>TOCr</th><th>TOCo</th></tr></thead>'+
+    '<tbody>'+rows+'</tbody>'+
+  '</table>';
+}
+
 // ── TEAM ─────────────────────────────────────────
 window.selectTeam = function(id) {
   currentTeam = id;
   document.getElementById('hdr-team').textContent = 'Class of '+id;
   document.getElementById('team-screen').classList.add('hidden');
+  initPlayerStats();
+  renderPlayerRows();
 };
 window.switchTeam = function() {
   document.getElementById('team-screen').classList.remove('hidden');
@@ -867,6 +1110,7 @@ function showTab(name,btn){
   document.getElementById('panel-'+name).classList.add('active');
   btn.classList.add('active');
   if(name==='history') window.loadHistory();
+  if(name==='players') loadPlayerHistory();
   if(name==='compare'){
     var tg=cachedGames.filter(function(g){ return g.team===currentTeam; });
     if(tg.length) populateTournamentFilters(tg);
