@@ -238,6 +238,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .pl-minus{background:#E03131;color:#fff;border-color:#E03131;}
 .pl-cnt-val{font-size:24px;font-weight:800;color:var(--purple-dark);min-width:36px;text-align:center;}
 .pl-hist-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--purple);margin:10px 0 8px;}
+.pl-log-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--purple);margin:12px 0 6px;}
+.pl-edit-tourn-btn{background:transparent;border:none;cursor:pointer;font-size:12px;padding:0 2px;opacity:.6;}
+.pl-edit-tourn-btn:active{opacity:1;}
+.pl-edit-tourn-form{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:12px;display:flex;flex-direction:column;gap:0;}
+.pl-edit-tourn-form.hidden{display:none;}
 .pl-hist-table{width:100%;border-collapse:collapse;font-size:11px;background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
 .pl-hist-table th{background:var(--purple-dark);color:#fff;padding:6px 4px;text-align:center;font-size:10px;font-weight:700;}
 .pl-hist-table th:first-child{text-align:left;padding-left:8px;}
@@ -677,7 +682,7 @@ async function loadPlayerHistory() {
   try {
     var snap = await getDocs(collection(db,'playerStats'));
     var all = [];
-    snap.forEach(function(d){ all.push(d.data()); });
+    snap.forEach(function(d){ var r=d.data(); r._plDocId=d.id; all.push(r); });
     cachedPlayerRecords = all.filter(function(r){ return r.team===currentTeam; });
     var tourneys={}, playerKeys={};
     cachedPlayerRecords.forEach(function(r){
@@ -714,11 +719,44 @@ function applyPlayerFilter() {
     var pOk=!pFilter||(r.playerNum+'-'+r.playerName)===pFilter;
     return tOk&&pOk;
   });
-  renderPlayerHistory(records, pFilter);
+  renderPlayerHistory(records, pFilter, tFilter);
 }
 window.applyPlayerFilter=applyPlayerFilter;
 
-function renderPlayerHistory(records, selectedPlayer) {
+// ── PLAYER TOURNAMENT EDIT ────────────────────────
+var _plTournEditId = null;
+window.editPlTourn = function(docId, date, opp) {
+  _plTournEditId = docId;
+  var form = document.getElementById('pl-tourn-edit-form');
+  var inp = document.getElementById('pl-tourn-edit-input');
+  // find current tournament value
+  var rec = cachedPlayerRecords.find(function(r){ return r._plDocId===docId; });
+  inp.value = rec ? (rec.tournament||'') : '';
+  form.classList.remove('hidden');
+  inp.focus();
+};
+window.cancelPlTourn = function() {
+  _plTournEditId = null;
+  var form=document.getElementById('pl-tourn-edit-form');
+  if(form) form.classList.add('hidden');
+};
+window.savePlTourn = async function() {
+  if(!_plTournEditId) return;
+  var newTourn = document.getElementById('pl-tourn-edit-input').value.trim();
+  try {
+    await updateDoc(doc(db,'playerStats',_plTournEditId), {tournament: newTourn});
+    // update cache
+    var rec = cachedPlayerRecords.find(function(r){ return r._plDocId===_plTournEditId; });
+    if(rec) rec.tournament = newTourn;
+    // update label in DOM
+    var lbl = document.getElementById('pl-tourn-label-'+_plTournEditId);
+    if(lbl) lbl.textContent = newTourn||'—';
+    window.cancelPlTourn();
+    showToast('Tournament updated!', false);
+  } catch(e){ showToast('Update failed: '+e.message, true); }
+};
+
+function renderPlayerHistory(records, selectedPlayer, selectedTournament) {
   var grid=document.getElementById('pl-season-grid');
   var tbl=document.getElementById('pl-history-table');
   if(!grid||!tbl) return;
@@ -727,6 +765,8 @@ function renderPlayerHistory(records, selectedPlayer) {
     tbl.innerHTML='<div class="no-games">No player stats saved yet.</div>';
     return;
   }
+
+  // aggregate by player
   var byPlayer={};
   records.forEach(function(r){
     var key=r.playerNum+'-'+r.playerName;
@@ -741,12 +781,16 @@ function renderPlayerHistory(records, selectedPlayer) {
     p.reb+=(r.reb||0); p.ast+=(r.ast||0); p.blk+=(r.blk||0);
     p.tocr+=(r.tocr||0); p.toco+=(r.toco||0);
   });
+
   function pp(m,a){ return a>0?Math.round(m/a*100)+'%':'—'; }
   var players=Object.values(byPlayer).sort(function(a,b){ return parseInt(a.num)-parseInt(b.num); });
   var uniqueGames=new Set(records.map(function(r){return r.date+'|'+r.opp;})).size;
+
   grid.innerHTML=
     '<div class="ss-card sc-neutral"><div class="ss-val">'+uniqueGames+'</div><div class="ss-lbl">Games</div></div>'+
     '<div class="ss-card sc-neutral"><div class="ss-val">'+players.length+'</div><div class="ss-lbl">Players</div></div>';
+
+  // Season averages table
   var rows=players.map(function(p){
     return '<tr>'+
       '<td>#'+p.num+' '+p.name+'</td>'+
@@ -762,30 +806,77 @@ function renderPlayerHistory(records, selectedPlayer) {
       '<td>'+(p.tocr/p.games).toFixed(1)+'/'+(p.toco/p.games).toFixed(1)+'</td>'+
     '</tr>';
   }).join('');
-  tbl.innerHTML='<div style="overflow-x:auto;margin-bottom:12px;"><table class="pl-hist-table">'+
+
+  tbl.innerHTML='<div style="overflow-x:auto;margin-bottom:16px;"><table class="pl-hist-table">'+
     '<thead><tr><th>Player</th><th>G</th><th>Pts</th><th>Lay%</th><th>FT%</th><th>G3%</th><th>B3%</th><th>Reb</th><th>Ast</th><th>Blk</th><th>TOCr/Co</th></tr></thead>'+
     '<tbody>'+rows+'</tbody></table></div>';
-  // if single player selected, also show game log
-  if(selectedPlayer){
-    var gameRows=records.slice().sort(function(a,b){return (b.date||'').localeCompare(a.date||'');}).map(function(r){
-      var d=new Date(r.date+'T12:00:00');
-      var ds=d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-      return '<tr>'+
-        '<td>'+ds+'</td><td>vs '+r.opp+'</td><td>'+(r.tournament||'—')+'</td>'+
-        '<td>'+(r.pts||0)+'</td>'+
-        '<td>'+(r.layupm||0)+'/'+(r.layupa||0)+'</td>'+
-        '<td>'+(r.ftm||0)+'/'+(r.fta||0)+'</td>'+
-        '<td>'+(r.good3m||0)+'/'+(r.good3a||0)+'</td>'+
-        '<td>'+(r.bad3m||0)+'/'+(r.bad3a||0)+'</td>'+
-        '<td>'+(r.reb||0)+'</td><td>'+(r.ast||0)+'</td><td>'+(r.blk||0)+'</td>'+
-        '<td>'+(r.tocr||0)+'/'+(r.toco||0)+'</td>'+
-      '</tr>';
-    }).join('');
-    tbl.innerHTML+='<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--purple);margin-bottom:6px;">Game Log</div>'+
-      '<div style="overflow-x:auto;"><table class="pl-hist-table">'+
-        '<thead><tr><th>Date</th><th>Opp</th><th>Tourn</th><th>Pts</th><th>Lay</th><th>FT</th><th>G3</th><th>B3</th><th>Reb</th><th>Ast</th><th>Blk</th><th>TO</th></tr></thead>'+
-        '<tbody>'+gameRows+'</tbody></table></div>';
+
+  // Game log header helper
+  var gameLogHdr='<tr><th>Date</th><th>Opponent</th><th>Tournament</th><th>Pts</th><th>Lay</th><th>FT</th><th>G3</th><th>B3</th><th>Reb</th><th>Ast</th><th>Blk</th><th>TO Cr/Co</th></tr>';
+
+  function makeGameRow(r) {
+    var d=new Date(r.date+'T12:00:00');
+    var ds=d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    var tid=r._plDocId||'';
+    var tournCell = tid
+      ? '<span id="pl-tourn-label-'+tid+'">'+(r.tournament||'—')+'</span> '+
+        '<button class="pl-edit-tourn-btn" onclick="editPlTourn(\''+tid+'\',\''+r.date+'\',\''+r.opp+'\')">✏️</button>'
+      : (r.tournament||'—');
+    return '<tr>'+
+      '<td>'+ds+'</td>'+
+      '<td>vs '+r.opp+'</td>'+
+      '<td style="white-space:nowrap;">'+tournCell+'</td>'+
+      '<td>'+(r.pts||0)+'</td>'+
+      '<td>'+(r.layupm||0)+'/'+(r.layupa||0)+'</td>'+
+      '<td>'+(r.ftm||0)+'/'+(r.fta||0)+'</td>'+
+      '<td>'+(r.good3m||0)+'/'+(r.good3a||0)+'</td>'+
+      '<td>'+(r.bad3m||0)+'/'+(r.bad3a||0)+'</td>'+
+      '<td>'+(r.reb||0)+'</td><td>'+(r.ast||0)+'</td><td>'+(r.blk||0)+'</td>'+
+      '<td>'+(r.tocr||0)+'/'+(r.toco||0)+'</td>'+
+    '</tr>';
   }
+
+  // CASE 1: single player selected — show their full game log
+  if(selectedPlayer) {
+    var sorted=records.slice().sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
+    var gameRows=sorted.map(makeGameRow).join('');
+    tbl.innerHTML+='<div class="pl-log-title">📋 Game Log</div>'+
+      '<div style="overflow-x:auto;"><table class="pl-hist-table">'+
+        '<thead>'+gameLogHdr+'</thead>'+
+        '<tbody>'+gameRows+'</tbody></table></div>';
+
+  // CASE 2: tournament selected (no specific player) — show each player's games in that tournament
+  } else if(selectedTournament) {
+    // group records by player
+    var byP={};
+    records.forEach(function(r){
+      var key=r.playerNum+'-'+r.playerName;
+      if(!byP[key]) byP[key]=[];
+      byP[key].push(r);
+    });
+    var pKeys=Object.keys(byP).sort(function(a,b){ return parseInt(a)-parseInt(b); });
+    var html='';
+    pKeys.forEach(function(key){
+      var parts=key.split('-');
+      var playerRecs=byP[key].slice().sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
+      var gameRows=playerRecs.map(makeGameRow).join('');
+      html+='<div class="pl-log-title">📋 #'+parts[0]+' '+parts.slice(1).join('-')+'</div>'+
+        '<div style="overflow-x:auto;margin-bottom:14px;"><table class="pl-hist-table">'+
+          '<thead>'+gameLogHdr+'</thead>'+
+          '<tbody>'+gameRows+'</tbody></table></div>';
+    });
+    tbl.innerHTML+=html;
+  }
+
+  // inline edit for tournament name
+  tbl.innerHTML+='<div class="pl-edit-tourn-form hidden" id="pl-tourn-edit-form">'+
+    '<span style="font-size:12px;font-weight:600;color:var(--purple);">Edit Tournament Name</span>'+
+    '<input class="gi-input" id="pl-tourn-edit-input" placeholder="Tournament name" style="margin-top:6px;">'+
+    '<div style="display:flex;gap:6px;margin-top:6px;">'+
+      '<button class="lb lb-made" style="flex:1;height:36px;font-size:13px;border-radius:8px;width:auto;" onclick="savePlTourn()">Save</button>'+
+      '<button class="lb lb-undo" style="height:36px;padding:0 14px;font-size:13px;border-radius:8px;width:auto;" onclick="cancelPlTourn()">Cancel</button>'+
+    '</div>'+
+  '</div>';
 }
 
 // ── TEAM ─────────────────────────────────────────
