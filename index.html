@@ -276,6 +276,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="tabs">
     <button class="tab active" onclick="showTab('game',this)">⚡ Game</button>
     <button class="tab" onclick="showTab('history',this)">📋 History</button>
+    <button class="tab" onclick="showTab('players',this)">👤 Players</button>
     <button class="tab" onclick="showTab('compare',this)">⚖ Compare</button>
   </div>
 </div>
@@ -374,6 +375,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div id="status-hist" class="status-bar hidden"></div>
     <div class="season-grid" id="season-grid"></div>
     <div id="game-list"></div>
+  </div>
+
+  <!-- PLAYER HISTORY -->
+  <div id="panel-players" class="panel">
+    <div class="filter-row">
+      <select class="filter-select" id="pl-tourn-filter" onchange="applyPlayerFilter()">
+        <option value="">All Tournaments</option>
+      </select>
+      <select class="filter-select" id="pl-player-filter" onchange="applyPlayerFilter()">
+        <option value="">All Players</option>
+      </select>
+      <button class="btn-outline" onclick="loadPlayerHistory()">↻ Refresh</button>
+    </div>
+    <div id="status-players" class="status-bar hidden"></div>
+    <div id="pl-season-grid" class="season-grid"></div>
+    <div id="pl-history-table"></div>
   </div>
 
   <!-- COMPARE -->
@@ -606,28 +623,70 @@ function resetPlayerStats() {
 }
 window.resetPlayerStats = resetPlayerStats;
 
+
+var cachedPlayerRecords = [];
+
 async function loadPlayerHistory() {
+  setStatus('status-players','loading','Loading player stats…');
   try {
     var snap = await getDocs(collection(db,'playerStats'));
     var all = [];
     snap.forEach(function(d){ all.push(d.data()); });
-    var teamStats = all.filter(function(r){ return r.team===currentTeam; });
-    renderPlayerHistory(teamStats);
-  } catch(e) { console.error(e); }
+    cachedPlayerRecords = all.filter(function(r){ return r.team===currentTeam; });
+    var tourneys={}, playerKeys={};
+    cachedPlayerRecords.forEach(function(r){
+      if(r.tournament) tourneys[r.tournament]=1;
+      playerKeys[r.playerNum+'-'+r.playerName]=1;
+    });
+    var tf=document.getElementById('pl-tourn-filter');
+    var pf=document.getElementById('pl-player-filter');
+    var tv=tf?tf.value:'', pv=pf?pf.value:'';
+    if(tf){
+      tf.innerHTML='<option value="">All Tournaments</option>';
+      Object.keys(tourneys).sort().forEach(function(t){ var o=document.createElement('option');o.value=t;o.textContent=t;tf.appendChild(o); });
+      tf.value=tv;
+    }
+    if(pf){
+      pf.innerHTML='<option value="">All Players</option>';
+      Object.keys(playerKeys).sort(function(a,b){ return parseInt(a)-parseInt(b); }).forEach(function(k){
+        var parts=k.split('-'); var o=document.createElement('option');o.value=k;o.textContent='#'+parts[0]+' '+parts[1];pf.appendChild(o);
+      });
+      pf.value=pv;
+    }
+    hideStatus('status-players');
+    applyPlayerFilter();
+  } catch(e){ setStatus('status-players','err','⚠ '+e.message); }
 }
 
-function renderPlayerHistory(records) {
-  var wrap = document.getElementById('pl-history-wrap');
-  var tbl = document.getElementById('pl-history-table');
-  if(!records.length) { tbl.innerHTML='<div class="no-games">No player stats saved yet.</div>'; return; }
+function applyPlayerFilter() {
+  var tf=document.getElementById('pl-tourn-filter');
+  var pf=document.getElementById('pl-player-filter');
+  var tFilter=tf?tf.value:'';
+  var pFilter=pf?pf.value:'';
+  var records=cachedPlayerRecords.filter(function(r){
+    var tOk=!tFilter||r.tournament===tFilter;
+    var pOk=!pFilter||(r.playerNum+'-'+r.playerName)===pFilter;
+    return tOk&&pOk;
+  });
+  renderPlayerHistory(records, pFilter);
+}
+window.applyPlayerFilter=applyPlayerFilter;
 
-  // aggregate by player
-  var byPlayer = {};
-  records.forEach(function(r) {
-    var key = r.playerNum+'-'+r.playerName;
-    if(!byPlayer[key]) byPlayer[key] = {num:r.playerNum,name:r.playerName,games:0,pts:0,layupm:0,layupa:0,ftm:0,fta:0,good3m:0,good3a:0,bad3m:0,bad3a:0,midm:0,mida:0,reb:0,ast:0,blk:0,stl:0,tocr:0,toco:0};
-    var p = byPlayer[key];
-    p.games++; p.pts+=r.pts||0;
+function renderPlayerHistory(records, selectedPlayer) {
+  var grid=document.getElementById('pl-season-grid');
+  var tbl=document.getElementById('pl-history-table');
+  if(!grid||!tbl) return;
+  if(!records.length){
+    grid.innerHTML='';
+    tbl.innerHTML='<div class="no-games">No player stats saved yet.</div>';
+    return;
+  }
+  var byPlayer={};
+  records.forEach(function(r){
+    var key=r.playerNum+'-'+r.playerName;
+    if(!byPlayer[key]) byPlayer[key]={num:r.playerNum,name:r.playerName,games:0,pts:0,layupm:0,layupa:0,ftm:0,fta:0,good3m:0,good3a:0,bad3m:0,bad3a:0,midm:0,mida:0,reb:0,ast:0,blk:0,tocr:0,toco:0};
+    var p=byPlayer[key];
+    p.games++; p.pts+=(r.pts||0);
     p.layupm+=(r.layupm||0); p.layupa+=(r.layupa||0);
     p.ftm+=(r.ftm||0); p.fta+=(r.fta||0);
     p.good3m+=(r.good3m||0); p.good3a+=(r.good3a||0);
@@ -636,11 +695,13 @@ function renderPlayerHistory(records) {
     p.reb+=(r.reb||0); p.ast+=(r.ast||0); p.blk+=(r.blk||0);
     p.tocr+=(r.tocr||0); p.toco+=(r.toco||0);
   });
-
   function pp(m,a){ return a>0?Math.round(m/a*100)+'%':'—'; }
-
-  var players = Object.values(byPlayer).sort(function(a,b){ return parseInt(a.num)-parseInt(b.num); });
-  var rows = players.map(function(p) {
+  var players=Object.values(byPlayer).sort(function(a,b){ return parseInt(a.num)-parseInt(b.num); });
+  var uniqueGames=new Set(records.map(function(r){return r.date+'|'+r.opp;})).size;
+  grid.innerHTML=
+    '<div class="ss-card sc-neutral"><div class="ss-val">'+uniqueGames+'</div><div class="ss-lbl">Games</div></div>'+
+    '<div class="ss-card sc-neutral"><div class="ss-val">'+players.length+'</div><div class="ss-lbl">Players</div></div>';
+  var rows=players.map(function(p){
     return '<tr>'+
       '<td>#'+p.num+' '+p.name+'</td>'+
       '<td>'+p.games+'</td>'+
@@ -648,17 +709,37 @@ function renderPlayerHistory(records) {
       '<td>'+pp(p.layupm,p.layupa)+'</td>'+
       '<td>'+pp(p.ftm,p.fta)+'</td>'+
       '<td>'+pp(p.good3m,p.good3a)+'</td>'+
+      '<td>'+pp(p.bad3m,p.bad3a)+'</td>'+
       '<td>'+(p.reb/p.games).toFixed(1)+'</td>'+
       '<td>'+(p.ast/p.games).toFixed(1)+'</td>'+
       '<td>'+(p.blk/p.games).toFixed(1)+'</td>'+
-      '<td>'+(p.tocr/p.games).toFixed(1)+'/'+( p.toco/p.games).toFixed(1)+'</td>'+
+      '<td>'+(p.tocr/p.games).toFixed(1)+'/'+(p.toco/p.games).toFixed(1)+'</td>'+
     '</tr>';
   }).join('');
-
-  tbl.innerHTML = '<table class="pl-hist-table">'+
-    '<thead><tr><th>Player</th><th>G</th><th>Pts</th><th>Lay%</th><th>FT%</th><th>3%</th><th>Reb</th><th>Ast</th><th>Blk</th><th>TO Cr/Co</th></tr></thead>'+
-    '<tbody>'+rows+'</tbody>'+
-  '</table>';
+  tbl.innerHTML='<div style="overflow-x:auto;margin-bottom:12px;"><table class="pl-hist-table">'+
+    '<thead><tr><th>Player</th><th>G</th><th>Pts</th><th>Lay%</th><th>FT%</th><th>G3%</th><th>B3%</th><th>Reb</th><th>Ast</th><th>Blk</th><th>TOCr/Co</th></tr></thead>'+
+    '<tbody>'+rows+'</tbody></table></div>';
+  // if single player selected, also show game log
+  if(selectedPlayer){
+    var gameRows=records.slice().sort(function(a,b){return (b.date||'').localeCompare(a.date||'');}).map(function(r){
+      var d=new Date(r.date+'T12:00:00');
+      var ds=d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+      return '<tr>'+
+        '<td>'+ds+'</td><td>vs '+r.opp+'</td><td>'+(r.tournament||'—')+'</td>'+
+        '<td>'+(r.pts||0)+'</td>'+
+        '<td>'+(r.layupm||0)+'/'+(r.layupa||0)+'</td>'+
+        '<td>'+(r.ftm||0)+'/'+(r.fta||0)+'</td>'+
+        '<td>'+(r.good3m||0)+'/'+(r.good3a||0)+'</td>'+
+        '<td>'+(r.bad3m||0)+'/'+(r.bad3a||0)+'</td>'+
+        '<td>'+(r.reb||0)+'</td><td>'+(r.ast||0)+'</td><td>'+(r.blk||0)+'</td>'+
+        '<td>'+(r.tocr||0)+'/'+(r.toco||0)+'</td>'+
+      '</tr>';
+    }).join('');
+    tbl.innerHTML+='<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--purple);margin-bottom:6px;">Game Log</div>'+
+      '<div style="overflow-x:auto;"><table class="pl-hist-table">'+
+        '<thead><tr><th>Date</th><th>Opp</th><th>Tourn</th><th>Pts</th><th>Lay</th><th>FT</th><th>G3</th><th>B3</th><th>Reb</th><th>Ast</th><th>Blk</th><th>TO</th></tr></thead>'+
+        '<tbody>'+gameRows+'</tbody></table></div>';
+  }
 }
 
 // ── TEAM ─────────────────────────────────────────
@@ -1126,6 +1207,7 @@ function showTab(name,btn){
   document.getElementById('panel-'+name).classList.add('active');
   btn.classList.add('active');
   if(name==='history') window.loadHistory();
+  if(name==='players') loadPlayerHistory();
   if(name==='compare'){
     var tg=cachedGames.filter(function(g){ return g.team===currentTeam; });
     if(tg.length) populateTournamentFilters(tg);
