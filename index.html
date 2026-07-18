@@ -167,6 +167,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .b-gc-yellow{background:#E67700;color:#fff;}
 .b-gc-red{background:#E03131;color:#fff;}
 
+.gc-edit{background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--text2);cursor:pointer;font-size:12px;padding:5px 9px;font-weight:600;}
+.gc-edit:active{background:var(--purple-light);}
+.edit-opp-row{display:flex;gap:6px;align-items:center;margin-top:8px;}
+.edit-opp-row.hidden{display:none;}
 .del-confirm{display:none;align-items:center;gap:8px;margin-top:10px;padding:8px 10px;background:var(--red-bg);border:1px solid #F09595;border-radius:8px;}
 .del-confirm.show{display:flex;}
 .del-confirm span{font-size:13px;color:var(--red);flex:1;font-weight:500;}
@@ -225,6 +229,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .team-to-bar{background:#1a1030;border-radius:10px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:10px;}
 .team-to-lbl{font-size:12px;font-weight:700;color:#AFA9EC;white-space:nowrap;}
 .team-to-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex:1;}
+.pl-reset-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:6px;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;cursor:pointer;}
+.pl-reset-btn:active{background:rgba(255,255,255,.3);}
 .pl-opp-reb{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
 .pl-opp-lbl{font-size:13px;font-weight:700;color:#555;}
 .pl-cnt-btn{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);font-size:20px;cursor:pointer;background:var(--card);font-weight:700;}
@@ -411,7 +417,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, where, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, where, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBbhBhuY1U57TN6qbIKVC378SitNepTe4M",
@@ -602,11 +608,17 @@ function renderPlayerRows() {
         '<span class="pl-totals" id="pl-totals-'+p.num+'">0pts · 0reb · 0ast · 0blk · 0cr/0co</span>'+
       '</div>'+
       '<div class="pl-section-shots">'+
-        '<div class="pl-section-hdr">🏀 Shot Tracker</div>'+
+        '<div class="pl-section-hdr" style="display:flex;justify-content:space-between;align-items:center;">'+
+          '<span>🏀 Shot Tracker</span>'+
+          '<button class="pl-reset-btn" onclick="resetPlayerShots(\''+p.num+'\')">↺ Reset Shots</button>'+
+        '</div>'+
         '<div class="pl-shot-grid">'+shotCols+'</div>'+
       '</div>'+
       '<div class="pl-section-play">'+
-        '<div class="pl-section-hdr">⚡ Playmaking &amp; Rebounds</div>'+
+        '<div class="pl-section-hdr" style="display:flex;justify-content:space-between;align-items:center;">'+
+          '<span>⚡ Playmaking &amp; Rebounds</span>'+
+          '<button class="pl-reset-btn" onclick="resetPlayerPlay(\''+p.num+'\')">↺ Reset</button>'+
+        '</div>'+
         '<div class="pl-play-grid">'+playBtns+'</div>'+
       '</div>'+
     '</div>';
@@ -622,6 +634,40 @@ function resetPlayerStats() {
   showToast('Player stats reset', false);
 }
 window.resetPlayerStats = resetPlayerStats;
+
+function resetPlayerShots(num) {
+  if(!playerStats[num]) return;
+  var s = playerStats[num];
+  // subtract from team totals first
+  shots.l.m=Math.max(0,shots.l.m-s.layupm); shots.l.a=Math.max(0,shots.l.a-s.layupa);
+  shots.f.m=Math.max(0,shots.f.m-s.ftm);    shots.f.a=Math.max(0,shots.f.a-s.fta);
+  shots.cs.m=Math.max(0,shots.cs.m-s.good3m); shots.cs.a=Math.max(0,shots.cs.a-s.good3a);
+  shots.op.m=Math.max(0,shots.op.m-s.bad3m);  shots.op.a=Math.max(0,shots.op.a-s.bad3a);
+  shots.mid.m=Math.max(0,shots.mid.m-s.midm); shots.mid.a=Math.max(0,shots.mid.a-s.mida);
+  // reset player shots
+  s.layupm=0; s.layupa=0; s.ftm=0; s.fta=0;
+  s.good3m=0; s.good3a=0; s.bad3m=0; s.bad3a=0; s.midm=0; s.mida=0;
+  ['l','f','cs','op','mid'].forEach(function(k){ renderShot(k); });
+  updateSummary();
+  updatePlayerDisplay(num);
+  showToast('Shots reset for #'+num, false);
+}
+window.resetPlayerShots = resetPlayerShots;
+
+function resetPlayerPlay(num) {
+  if(!playerStats[num]) return;
+  var s = playerStats[num];
+  // subtract from team totals
+  toVals.tcr=Math.max(0,toVals.tcr-s.tocr);
+  toVals.tco=Math.max(0,toVals.tco-s.toco);
+  rebVals.rwc=Math.max(0,rebVals.rwc-s.reb);
+  // reset player playmaking
+  s.reb=0; s.ast=0; s.blk=0; s.tocr=0; s.toco=0;
+  updateSummary();
+  updatePlayerDisplay(num);
+  showToast('Playmaking reset for #'+num, false);
+}
+window.resetPlayerPlay = resetPlayerPlay;
 
 
 var cachedPlayerRecords = [];
@@ -946,6 +992,29 @@ window.deleteGameConfirmed = async function(docId){
   }
 };
 
+window.editOpp = function(docId, currentOpp) {
+  document.getElementById('edit-row-'+docId).classList.remove('hidden');
+  document.getElementById('edit-btn-'+docId).style.display='none';
+  var inp=document.getElementById('edit-input-'+docId);
+  inp.value=currentOpp; inp.focus();
+};
+window.cancelEditOpp = function(docId) {
+  document.getElementById('edit-row-'+docId).classList.add('hidden');
+  document.getElementById('edit-btn-'+docId).style.display='';
+};
+window.saveOpp = async function(docId) {
+  var newOpp=document.getElementById('edit-input-'+docId).value.trim();
+  if(!newOpp){showToast('Name cannot be empty',true);return;}
+  try {
+    await updateDoc(doc(db,COLL,docId),{opp:newOpp});
+    document.getElementById('opp-label-'+docId).textContent='vs '+newOpp;
+    window.cancelEditOpp(docId);
+    showToast('Updated!',false);
+    var idx=cachedGames.findIndex(function(g){return g._docId===docId;});
+    if(idx>-1) cachedGames[idx].opp=newOpp;
+  } catch(e){showToast('Update failed: '+e.message,true);}
+};
+
 // ── HISTORY ──────────────────────────────────────
 window.loadHistory = async function(){
   setStatus('status-hist','loading','Loading…');
@@ -1065,8 +1134,16 @@ function renderHistory(games){
     html+=
       '<div class="game-card">'+
         '<div class="gc-top">'+
-          '<div><div class="gc-opp">vs '+g.opp+'</div><div class="gc-meta">'+ds+(g.tournament?' · '+g.tournament:'')+'</div></div>'+
-          '<button class="gc-del" onclick="deleteGame(\''+docId+'\')">🗑 Delete</button>'+
+          '<div><div class="gc-opp" id="opp-label-'+docId+'">vs '+g.opp+'</div><div class="gc-meta">'+ds+(g.tournament?' · '+g.tournament:'')+'</div></div>'+
+          '<div style="display:flex;gap:6px;">'+
+            '<button class="gc-edit" onclick="editOpp(\''+docId+'\',\''+g.opp.replace(/'/g,"\\'")+'\')" id="edit-btn-'+docId+'">✏️ Edit</button>'+
+            '<button class="gc-del" onclick="deleteGame(\''+docId+'\')">🗑 Delete</button>'+
+          '</div>'+
+        '</div>'+
+        '<div class="edit-opp-row hidden" id="edit-row-'+docId+'">'+
+          '<input class="gi-input" id="edit-input-'+docId+'" style="flex:1;" value="'+g.opp+'">'+
+          '<button class="lb lb-made" style="height:36px;padding:0 12px;font-size:13px;border-radius:8px;width:auto;" onclick="saveOpp(\''+docId+'\')">Save</button>'+
+          '<button class="lb lb-undo" style="height:36px;padding:0 10px;font-size:13px;border-radius:8px;width:auto;" onclick="cancelEditOpp(\''+docId+'\')">Cancel</button>'+
         '</div>'+
         '<div class="badges">'+
           '<span class="badge b-purple">'+g.pts+' pts</span>'+
