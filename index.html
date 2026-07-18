@@ -723,15 +723,17 @@ function applyPlayerFilter() {
 }
 window.applyPlayerFilter=applyPlayerFilter;
 
-// ── PLAYER TOURNAMENT EDIT ────────────────────────
+// ── PLAYER TOURNAMENT & OPP EDIT ─────────────────
 var _plTournEditId = null;
-window.editPlTourn = function(docId, date, opp) {
+var _plOppEditId = null;
+
+window.editPlTourn = function(docId) {
   _plTournEditId = docId;
   var form = document.getElementById('pl-tourn-edit-form');
   var inp = document.getElementById('pl-tourn-edit-input');
-  // find current tournament value
   var rec = cachedPlayerRecords.find(function(r){ return r._plDocId===docId; });
   inp.value = rec ? (rec.tournament||'') : '';
+  document.getElementById('pl-opp-edit-form') && document.getElementById('pl-opp-edit-form').classList.add('hidden');
   form.classList.remove('hidden');
   inp.focus();
 };
@@ -745,14 +747,42 @@ window.savePlTourn = async function() {
   var newTourn = document.getElementById('pl-tourn-edit-input').value.trim();
   try {
     await updateDoc(doc(db,'playerStats',_plTournEditId), {tournament: newTourn});
-    // update cache
     var rec = cachedPlayerRecords.find(function(r){ return r._plDocId===_plTournEditId; });
     if(rec) rec.tournament = newTourn;
-    // update label in DOM
     var lbl = document.getElementById('pl-tourn-label-'+_plTournEditId);
     if(lbl) lbl.textContent = newTourn||'—';
     window.cancelPlTourn();
     showToast('Tournament updated!', false);
+  } catch(e){ showToast('Update failed: '+e.message, true); }
+};
+
+window.editPlOpp = function(docId) {
+  _plOppEditId = docId;
+  var form = document.getElementById('pl-opp-edit-form');
+  var inp = document.getElementById('pl-opp-edit-input');
+  var rec = cachedPlayerRecords.find(function(r){ return r._plDocId===docId; });
+  inp.value = rec ? (rec.opp||'') : '';
+  document.getElementById('pl-tourn-edit-form') && document.getElementById('pl-tourn-edit-form').classList.add('hidden');
+  form.classList.remove('hidden');
+  inp.focus();
+};
+window.cancelPlOpp = function() {
+  _plOppEditId = null;
+  var form=document.getElementById('pl-opp-edit-form');
+  if(form) form.classList.add('hidden');
+};
+window.savePlOpp = async function() {
+  if(!_plOppEditId) return;
+  var newOpp = document.getElementById('pl-opp-edit-input').value.trim();
+  if(!newOpp){ showToast('Name cannot be empty', true); return; }
+  try {
+    await updateDoc(doc(db,'playerStats',_plOppEditId), {opp: newOpp});
+    var rec = cachedPlayerRecords.find(function(r){ return r._plDocId===_plOppEditId; });
+    if(rec) rec.opp = newOpp;
+    var lbl = document.getElementById('pl-opp-label-'+_plOppEditId);
+    if(lbl) lbl.textContent = newOpp;
+    window.cancelPlOpp();
+    showToast('Opponent updated!', false);
   } catch(e){ showToast('Update failed: '+e.message, true); }
 };
 
@@ -818,13 +848,17 @@ function renderPlayerHistory(records, selectedPlayer, selectedTournament) {
     var d=new Date(r.date+'T12:00:00');
     var ds=d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
     var tid=r._plDocId||'';
+    var oppCell = tid
+      ? '<span id="pl-opp-label-'+tid+'">'+(r.opp||'—')+'</span> '+
+        '<button class="pl-edit-tourn-btn" onclick="editPlOpp(\''+tid+'\')">✏️</button>'
+      : (r.opp||'—');
     var tournCell = tid
       ? '<span id="pl-tourn-label-'+tid+'">'+(r.tournament||'—')+'</span> '+
         '<button class="pl-edit-tourn-btn" onclick="editPlTourn(\''+tid+'\',\''+r.date+'\',\''+r.opp+'\')">✏️</button>'
       : (r.tournament||'—');
     return '<tr>'+
       '<td>'+ds+'</td>'+
-      '<td>vs '+r.opp+'</td>'+
+      '<td style="white-space:nowrap;">vs '+oppCell+'</td>'+
       '<td style="white-space:nowrap;">'+tournCell+'</td>'+
       '<td>'+(r.pts||0)+'</td>'+
       '<td>'+(r.layupm||0)+'/'+(r.layupa||0)+'</td>'+
@@ -875,6 +909,14 @@ function renderPlayerHistory(records, selectedPlayer, selectedTournament) {
     '<div style="display:flex;gap:6px;margin-top:6px;">'+
       '<button class="lb lb-made" style="flex:1;height:36px;font-size:13px;border-radius:8px;width:auto;" onclick="savePlTourn()">Save</button>'+
       '<button class="lb lb-undo" style="height:36px;padding:0 14px;font-size:13px;border-radius:8px;width:auto;" onclick="cancelPlTourn()">Cancel</button>'+
+    '</div>'+
+  '</div>'+
+  '<div class="pl-edit-tourn-form hidden" id="pl-opp-edit-form">'+
+    '<span style="font-size:12px;font-weight:600;color:var(--purple);">Edit Opponent Name</span>'+
+    '<input class="gi-input" id="pl-opp-edit-input" placeholder="Opponent name" style="margin-top:6px;">'+
+    '<div style="display:flex;gap:6px;margin-top:6px;">'+
+      '<button class="lb lb-made" style="flex:1;height:36px;font-size:13px;border-radius:8px;width:auto;" onclick="savePlOpp()">Save</button>'+
+      '<button class="lb lb-undo" style="height:36px;padding:0 14px;font-size:13px;border-radius:8px;width:auto;" onclick="cancelPlOpp()">Cancel</button>'+
     '</div>'+
   '</div>';
 }
@@ -1106,6 +1148,27 @@ window.saveOpp = async function(docId) {
   } catch(e){showToast('Update failed: '+e.message,true);}
 };
 
+window.editTourn = function(docId, currentTourn) {
+  document.getElementById('edit-tourn-row-'+docId).classList.remove('hidden');
+  document.getElementById('edit-tourn-btn-'+docId).style.display='none';
+  var inp=document.getElementById('edit-tourn-input-'+docId);
+  inp.value=currentTourn; inp.focus();
+};
+window.cancelEditTourn = function(docId) {
+  document.getElementById('edit-tourn-row-'+docId).classList.add('hidden');
+  document.getElementById('edit-tourn-btn-'+docId).style.display='';
+};
+window.saveTourn = async function(docId) {
+  var newTourn=document.getElementById('edit-tourn-input-'+docId).value.trim();
+  try {
+    await updateDoc(doc(db,COLL,docId),{tournament:newTourn});
+    document.getElementById('tourn-label-'+docId).textContent=newTourn||'No tournament';
+    window.cancelEditTourn(docId);
+    showToast('Tournament updated!',false);
+    var idx=cachedGames.findIndex(function(g){return g._docId===docId;});
+    if(idx>-1) cachedGames[idx].tournament=newTourn;
+  } catch(e){showToast('Update failed: '+e.message,true);}
+};
 // ── HISTORY ──────────────────────────────────────
 window.loadHistory = async function(){
   setStatus('status-hist','loading','Loading…');
@@ -1225,16 +1288,25 @@ function renderHistory(games){
     html+=
       '<div class="game-card">'+
         '<div class="gc-top">'+
-          '<div><div class="gc-opp" id="opp-label-'+docId+'">vs '+g.opp+'</div><div class="gc-meta">'+ds+(g.tournament?' · '+g.tournament:'')+'</div></div>'+
+          '<div>'+
+            '<div class="gc-opp" id="opp-label-'+docId+'">vs '+g.opp+'</div>'+
+            '<div class="gc-meta">'+ds+' · <span id="tourn-label-'+docId+'">'+(g.tournament||'No tournament')+'</span></div>'+
+          '</div>'+
           '<div style="display:flex;gap:6px;">'+
-            '<button class="gc-edit" onclick="editOpp(\''+docId+'\',\''+g.opp.replace(/'/g,"\\'")+'\')" id="edit-btn-'+docId+'">✏️ Edit</button>'+
-            '<button class="gc-del" onclick="deleteGame(\''+docId+'\')">🗑 Delete</button>'+
+            '<button class="gc-edit" onclick="editOpp(\''+docId+'\',\''+g.opp.replace(/'/g,"\\'")+'\')" id="edit-btn-'+docId+'">✏️ Opp</button>'+
+            '<button class="gc-edit" onclick="editTourn(\''+docId+'\',\''+((g.tournament||'').replace(/'/g,"\\'"))+'\')" id="edit-tourn-btn-'+docId+'">✏️ Tourn</button>'+
+            '<button class="gc-del" onclick="deleteGame(\''+docId+'\')">🗑</button>'+
           '</div>'+
         '</div>'+
         '<div class="edit-opp-row hidden" id="edit-row-'+docId+'">'+
           '<input class="gi-input" id="edit-input-'+docId+'" style="flex:1;" value="'+g.opp+'">'+
           '<button class="lb lb-made" style="height:36px;padding:0 12px;font-size:13px;border-radius:8px;width:auto;" onclick="saveOpp(\''+docId+'\')">Save</button>'+
           '<button class="lb lb-undo" style="height:36px;padding:0 10px;font-size:13px;border-radius:8px;width:auto;" onclick="cancelEditOpp(\''+docId+'\')">Cancel</button>'+
+        '</div>'+
+        '<div class="edit-opp-row hidden" id="edit-tourn-row-'+docId+'">'+
+          '<input class="gi-input" id="edit-tourn-input-'+docId+'" style="flex:1;" value="'+(g.tournament||'')+'">'+
+          '<button class="lb lb-made" style="height:36px;padding:0 12px;font-size:13px;border-radius:8px;width:auto;" onclick="saveTourn(\''+docId+'\')">Save</button>'+
+          '<button class="lb lb-undo" style="height:36px;padding:0 10px;font-size:13px;border-radius:8px;width:auto;" onclick="cancelEditTourn(\''+docId+'\')">Cancel</button>'+
         '</div>'+
         '<div class="badges">'+
           '<span class="badge b-purple">'+g.pts+' pts</span>'+
