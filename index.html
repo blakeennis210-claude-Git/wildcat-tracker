@@ -188,33 +188,47 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 /* PLAYERS PANEL */
 .pl-action-row{display:flex;gap:8px;margin-bottom:8px;}
 .pl-action-row .btn-outline{flex:1;justify-content:center;display:flex;align-items:center;}
-.pl-row{background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:6px;overflow:hidden;}
-.pl-name-bar{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:#f0effe;border-bottom:1px solid var(--border);}
-.pl-name{font-size:13px;font-weight:700;color:var(--purple-dark);}
-.pl-totals{font-size:11px;color:var(--purple-mid);}
-.pl-btns-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:6px 8px;}
-.pl-btn{height:44px;border:none;border-radius:8px;font-size:10px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;user-select:none;}
-.pl-btn:active{transform:scale(0.92);}
-.pl-btn span.pl-icon{font-size:14px;line-height:1;}
-.pl-btn span.pl-lbl{font-size:9px;font-weight:700;letter-spacing:.3px;}
-.pl-btn span.pl-cnt{font-size:12px;font-weight:800;}
-.pb-layup{background:#2B8A3E;color:#fff;}
-.pb-ft{background:#1971C2;color:#fff;}
-.pb-good3{background:#5C7CFA;color:#fff;}
-.pb-bad3{background:#E67700;color:#fff;}
-.pb-mid{background:#E03131;color:#fff;}
-.pb-reb{background:#0CA678;color:#fff;}
-.pb-ast{background:#7048E8;color:#fff;}
-.pb-blk{background:#343A40;color:#fff;}
-.pb-tocr{background:#2B8A3E;color:#fff;}
-.pb-toco{background:#C92A2A;color:#fff;}
+.pl-row{background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden;}
+.pl-name-bar{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--purple-dark);}
+.pl-name{font-size:14px;font-weight:700;color:#fff;}
+.pl-totals{font-size:10px;color:#AFA9EC;text-align:right;}
+
+/* SHOT TRACKER section */
+.pl-section-hdr{padding:4px 10px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:#fff;}
+.pl-section-shots{background:#1a1030;}
+.pl-section-play{background:#0d3b1a;}
+.pl-shot-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid rgba(255,255,255,.1);}
+.pl-shot-col{display:flex;flex-direction:column;border-right:1px solid rgba(255,255,255,.1);}
+.pl-shot-col:last-child{border-right:none;}
+.pl-shot-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;text-align:center;padding:3px 2px;color:rgba(255,255,255,.7);background:rgba(0,0,0,.2);}
+.pl-shot-made-val{font-size:13px;font-weight:800;text-align:center;padding:2px 0;color:#fff;}
+.pl-shot-att-val{font-size:9px;text-align:center;color:rgba(255,255,255,.6);padding-bottom:3px;}
+.pl-shot-btns{display:grid;grid-template-columns:1fr 1fr;gap:0;}
+.pl-shot-btn{height:38px;border:none;font-size:11px;font-weight:700;cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:center;gap:3px;}
+.pl-shot-btn:active{opacity:.75;transform:scale(.95);}
+.psb-made{background:#2B8A3E;color:#fff;}
+.psb-miss{background:#C92A2A;color:#fff;}
+
+/* PLAYMAKING section */
+.pl-play-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:6px 8px;border-top:1px solid rgba(255,255,255,.1);}
+.pl-play-btn{height:42px;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;user-select:none;color:#fff;}
+.pl-play-btn:active{opacity:.75;transform:scale(.94);}
+.pl-play-cnt{font-size:15px;font-weight:900;line-height:1;}
+.pl-play-lbl{font-size:9px;font-weight:700;letter-spacing:.3px;}
+.ppb-reb{background:#0CA678;}
+.ppb-ast{background:#7048E8;}
+.ppb-blk{background:#343A40;}
+.ppb-stl{background:#1971C2;}
+.ppb-tocr{background:#2B8A3E;}
+.ppb-toco{background:#C92A2A;}
+
 .pl-opp-reb{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
 .pl-opp-lbl{font-size:13px;font-weight:700;color:#555;}
 .pl-cnt-btn{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);font-size:20px;cursor:pointer;background:var(--card);font-weight:700;}
 .pl-plus{background:#2B8A3E;color:#fff;border-color:#2B8A3E;}
 .pl-minus{background:#E03131;color:#fff;border-color:#E03131;}
 .pl-cnt-val{font-size:24px;font-weight:800;color:var(--purple-dark);min-width:36px;text-align:center;}
-.pl-hist-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--purple);margin-bottom:8px;}
+.pl-hist-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--purple);margin:10px 0 8px;}
 .pl-hist-table{width:100%;border-collapse:collapse;font-size:11px;background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
 .pl-hist-table th{background:var(--purple-dark);color:#fff;padding:6px 4px;text-align:center;font-size:10px;font-weight:700;}
 .pl-hist-table th:first-child{text-align:left;padding-left:8px;}
@@ -514,25 +528,36 @@ var ROSTERS = {
 var playerStats = {};
 var oppRebCount = 0;
 
-var PSTAT_KEYS = ['layup','ft','good3','bad3','mid','reb','ast','blk','tocr','toco'];
+var PSTAT_KEYS = ['layupm','layupa','ftm','fta','good3m','good3a','bad3m','bad3a','midm','mida','reb','ast','blk','stl','tocr','toco'];
 
 function initPlayerStats() {
   playerStats = {};
   oppRebCount = 0;
   var roster = ROSTERS[currentTeam] || [];
   roster.forEach(function(p) {
-    playerStats[p.num] = {layup:0,ft:0,good3:0,bad3:0,mid:0,reb:0,ast:0,blk:0,tocr:0,toco:0};
+    playerStats[p.num] = {layupm:0,layupa:0,ftm:0,fta:0,good3m:0,good3a:0,bad3m:0,bad3a:0,midm:0,mida:0,reb:0,ast:0,blk:0,stl:0,tocr:0,toco:0};
   });
 }
+
+// Shot: made = +m +a, miss = +a only
+function playerShotMade(num, mKey, aKey) {
+  if(!playerStats[num]) return;
+  playerStats[num][mKey]++;
+  playerStats[num][aKey]++;
+  updatePlayerDisplay(num);
+}
+function playerShotMiss(num, aKey) {
+  if(!playerStats[num]) return;
+  playerStats[num][aKey]++;
+  updatePlayerDisplay(num);
+}
+window.playerShotMade = playerShotMade;
+window.playerShotMiss = playerShotMiss;
 
 function adjPlayerStat(num, stat, delta) {
   if(!playerStats[num]) return;
   playerStats[num][stat] = Math.max(0, playerStats[num][stat] + delta);
-  // update the count display in the button
-  var el = document.getElementById('ps-'+num+'-'+stat);
-  if(el) el.textContent = playerStats[num][stat];
-  // update the totals line
-  updatePlayerTotalsLine(num);
+  updatePlayerDisplay(num);
 }
 window.adjPlayerStat = adjPlayerStat;
 
@@ -541,44 +566,88 @@ window.adjOppReb = function(delta) {
   document.getElementById('opp-reb-cnt').textContent = oppRebCount;
 };
 
-function updatePlayerTotalsLine(num) {
+function updatePlayerDisplay(num) {
   var s = playerStats[num];
-  var pts = s.layup*2 + s.ft + s.good3*3 + s.bad3*3 + s.mid*2;
+  // update shot section displays
+  var shots = [
+    {mKey:'layupm',aKey:'layupa',id:'layup'},
+    {mKey:'ftm',aKey:'fta',id:'ft'},
+    {mKey:'good3m',aKey:'good3a',id:'good3'},
+    {mKey:'bad3m',aKey:'bad3a',id:'bad3'},
+    {mKey:'midm',aKey:'mida',id:'mid'}
+  ];
+  shots.forEach(function(sh) {
+    var mEl = document.getElementById('ps-'+num+'-'+sh.id+'-m');
+    var aEl = document.getElementById('ps-'+num+'-'+sh.id+'-a');
+    if(mEl) mEl.textContent = s[sh.mKey]+'/'+s[sh.aKey];
+  });
+  // update playmaking counts
+  ['reb','ast','blk','stl','tocr','toco'].forEach(function(k) {
+    var el = document.getElementById('ps-'+num+'-'+k);
+    if(el) el.textContent = s[k];
+  });
+  // update totals line
+  var pts = s.layupm*2 + s.ftm + s.good3m*3 + s.bad3m*3 + s.midm*2;
   var el = document.getElementById('pl-totals-'+num);
-  if(el) el.textContent = pts+'pts · '+s.reb+'reb · '+s.ast+'ast · '+s.blk+'blk · '+s.tocr+'cr/'+s.toco+'co';
+  if(el) el.textContent = pts+'pts · '+s.reb+'reb · '+s.ast+'ast · '+s.blk+'blk · '+s.stl+'stl · '+s.tocr+'cr/'+s.toco+'co';
 }
 
 function renderPlayerRows() {
   var roster = ROSTERS[currentTeam] || [];
-  var html = '';
-  var BTNS = [
-    {key:'layup', lbl:'Layup', icon:'🏀', cls:'pb-layup'},
-    {key:'ft',    lbl:'FT',    icon:'🎯', cls:'pb-ft'},
-    {key:'good3', lbl:'Good 3',icon:'✅', cls:'pb-good3'},
-    {key:'bad3',  lbl:'Bad 3', icon:'⚠️', cls:'pb-bad3'},
-    {key:'mid',   lbl:'Mid',   icon:'📍', cls:'pb-mid'},
-    {key:'reb',   lbl:'Reb',   icon:'💪', cls:'pb-reb'},
-    {key:'ast',   lbl:'Ast',   icon:'👐', cls:'pb-ast'},
-    {key:'blk',   lbl:'Blk',   icon:'🛑', cls:'pb-blk'},
-    {key:'tocr',  lbl:'TO Cr', icon:'🟢', cls:'pb-tocr'},
-    {key:'toco',  lbl:'TO Co', icon:'🔴', cls:'pb-toco'}
+  var SHOTS = [
+    {id:'layup', lbl:'LAYUP',   mKey:'layupm', aKey:'layupa'},
+    {id:'ft',    lbl:'FT',      mKey:'ftm',    aKey:'fta'},
+    {id:'good3', lbl:'GOOD 3',  mKey:'good3m', aKey:'good3a'},
+    {id:'bad3',  lbl:'BAD 3',   mKey:'bad3m',  aKey:'bad3a'},
+    {id:'mid',   lbl:'MID',     mKey:'midm',   aKey:'mida'}
   ];
+  var PLAY = [
+    {key:'reb',  lbl:'Rebound',  cls:'ppb-reb'},
+    {key:'ast',  lbl:'Assist',   cls:'ppb-ast'},
+    {key:'blk',  lbl:'Block',    cls:'ppb-blk'},
+    {key:'stl',  lbl:'Steal',    cls:'ppb-stl'},
+    {key:'tocr', lbl:'TO Created', cls:'ppb-tocr'},
+    {key:'toco', lbl:'TO Committed', cls:'ppb-toco'}
+  ];
+
+  var html = '';
   roster.forEach(function(p) {
-    var btnHtml = BTNS.map(function(b) {
-      return '<button class="pl-btn '+b.cls+'" onclick="adjPlayerStat(\''+p.num+'\',\''+b.key+'\',1)">'+
-        '<span class="pl-icon">'+b.icon+'</span>'+
-        '<span class="pl-cnt" id="ps-'+p.num+'-'+b.key+'">0</span>'+
-        '<span class="pl-lbl">'+b.lbl+'</span>'+
+    // Shot tracker columns
+    var shotCols = SHOTS.map(function(sh) {
+      return '<div class="pl-shot-col">'+
+        '<div class="pl-shot-lbl">'+sh.lbl+'</div>'+
+        '<div class="pl-shot-made-val" id="ps-'+p.num+'-'+sh.id+'-m">0/0</div>'+
+        '<div class="pl-shot-btns">'+
+          '<button class="pl-shot-btn psb-made" onclick="playerShotMade(\''+p.num+'\',\''+sh.mKey+'\',\''+sh.aKey+'\')">✓</button>'+
+          '<button class="pl-shot-btn psb-miss" onclick="playerShotMiss(\''+p.num+'\',\''+sh.aKey+'\')">✗</button>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+
+    // Playmaking buttons
+    var playBtns = PLAY.map(function(pl) {
+      return '<button class="pl-play-btn '+pl.cls+'" onclick="adjPlayerStat(\''+p.num+'\',\''+pl.key+'\',1)">'+
+        '<span class="pl-play-cnt" id="ps-'+p.num+'-'+pl.key+'">0</span>'+
+        '<span class="pl-play-lbl">'+pl.lbl+'</span>'+
       '</button>';
     }).join('');
+
     html += '<div class="pl-row">'+
       '<div class="pl-name-bar">'+
         '<span class="pl-name">#'+p.num+' '+p.name+'</span>'+
-        '<span class="pl-totals" id="pl-totals-'+p.num+'">0pts · 0reb · 0ast · 0blk · 0cr/0co</span>'+
+        '<span class="pl-totals" id="pl-totals-'+p.num+'">0pts · 0reb · 0ast · 0blk · 0stl · 0cr/0co</span>'+
       '</div>'+
-      '<div class="pl-btns-grid">'+btnHtml+'</div>'+
+      '<div class="pl-section-shots">'+
+        '<div class="pl-section-hdr">🏀 Shot Tracker</div>'+
+        '<div class="pl-shot-grid">'+shotCols+'</div>'+
+      '</div>'+
+      '<div class="pl-section-play">'+
+        '<div class="pl-section-hdr">⚡ Playmaking &amp; Rebounds</div>'+
+        '<div class="pl-play-grid">'+playBtns+'</div>'+
+      '</div>'+
     '</div>';
   });
+
   document.getElementById('player-rows').innerHTML = html;
   document.getElementById('opp-reb-cnt').textContent = 0;
 }
@@ -606,9 +675,14 @@ async function savePlayerStats() {
       date: dateVal || new Date().toISOString().slice(0,10),
       tournament: tourn || '',
       playerNum: p.num, playerName: p.name,
-      layup:s.layup, ft:s.ft, good3:s.good3, bad3:s.bad3, mid:s.mid,
-      reb:s.reb, ast:s.ast, blk:s.blk, tocr:s.tocr, toco:s.toco,
-      pts: s.layup*2+s.ft+s.good3*3+s.bad3*3+s.mid*2,
+      layupm:s.layupm, layupa:s.layupa,
+      ftm:s.ftm, fta:s.fta,
+      good3m:s.good3m, good3a:s.good3a,
+      bad3m:s.bad3m, bad3a:s.bad3a,
+      midm:s.midm, mida:s.mida,
+      reb:s.reb, ast:s.ast, blk:s.blk, stl:s.stl,
+      tocr:s.tocr, toco:s.toco,
+      pts: s.layupm*2+s.ftm+s.good3m*3+s.bad3m*3+s.midm*2,
       oppReb: oppRebCount,
       savedAt: Date.now()
     };
@@ -646,12 +720,19 @@ function renderPlayerHistory(records) {
   var byPlayer = {};
   records.forEach(function(r) {
     var key = r.playerNum+'-'+r.playerName;
-    if(!byPlayer[key]) byPlayer[key] = {num:r.playerNum,name:r.playerName,games:0,pts:0,layup:0,ft:0,good3:0,bad3:0,mid:0,reb:0,ast:0,blk:0,tocr:0,toco:0};
+    if(!byPlayer[key]) byPlayer[key] = {num:r.playerNum,name:r.playerName,games:0,pts:0,layupm:0,layupa:0,ftm:0,fta:0,good3m:0,good3a:0,bad3m:0,bad3a:0,midm:0,mida:0,reb:0,ast:0,blk:0,stl:0,tocr:0,toco:0};
     var p = byPlayer[key];
-    p.games++; p.pts+=r.pts; p.layup+=r.layup; p.ft+=r.ft; p.good3+=r.good3;
-    p.bad3+=r.bad3; p.mid+=r.mid; p.reb+=r.reb; p.ast+=r.ast; p.blk+=r.blk;
-    p.tocr+=r.tocr; p.toco+=r.toco;
+    p.games++; p.pts+=r.pts||0;
+    p.layupm+=(r.layupm||0); p.layupa+=(r.layupa||0);
+    p.ftm+=(r.ftm||0); p.fta+=(r.fta||0);
+    p.good3m+=(r.good3m||0); p.good3a+=(r.good3a||0);
+    p.bad3m+=(r.bad3m||0); p.bad3a+=(r.bad3a||0);
+    p.midm+=(r.midm||0); p.mida+=(r.mida||0);
+    p.reb+=(r.reb||0); p.ast+=(r.ast||0); p.blk+=(r.blk||0);
+    p.stl+=(r.stl||0); p.tocr+=(r.tocr||0); p.toco+=(r.toco||0);
   });
+
+  function pp(m,a){ return a>0?Math.round(m/a*100)+'%':'—'; }
 
   var players = Object.values(byPlayer).sort(function(a,b){ return parseInt(a.num)-parseInt(b.num); });
   var rows = players.map(function(p) {
@@ -659,16 +740,19 @@ function renderPlayerHistory(records) {
       '<td>#'+p.num+' '+p.name+'</td>'+
       '<td>'+p.games+'</td>'+
       '<td>'+(p.pts/p.games).toFixed(1)+'</td>'+
+      '<td>'+pp(p.layupm,p.layupa)+'</td>'+
+      '<td>'+pp(p.ftm,p.fta)+'</td>'+
+      '<td>'+pp(p.good3m,p.good3a)+'</td>'+
       '<td>'+(p.reb/p.games).toFixed(1)+'</td>'+
       '<td>'+(p.ast/p.games).toFixed(1)+'</td>'+
       '<td>'+(p.blk/p.games).toFixed(1)+'</td>'+
-      '<td>'+(p.tocr/p.games).toFixed(1)+'</td>'+
-      '<td>'+(p.toco/p.games).toFixed(1)+'</td>'+
+      '<td>'+(p.stl/p.games).toFixed(1)+'</td>'+
+      '<td>'+(p.tocr/p.games).toFixed(1)+'/'+( p.toco/p.games).toFixed(1)+'</td>'+
     '</tr>';
   }).join('');
 
   tbl.innerHTML = '<table class="pl-hist-table">'+
-    '<thead><tr><th>Player</th><th>G</th><th>Pts</th><th>Reb</th><th>Ast</th><th>Blk</th><th>TOCr</th><th>TOCo</th></tr></thead>'+
+    '<thead><tr><th>Player</th><th>G</th><th>Pts</th><th>Lay%</th><th>FT%</th><th>3%</th><th>Reb</th><th>Ast</th><th>Blk</th><th>Stl</th><th>TO Cr/Co</th></tr></thead>'+
     '<tbody>'+rows+'</tbody>'+
   '</table>';
 }
