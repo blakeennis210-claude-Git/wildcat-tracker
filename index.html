@@ -911,7 +911,7 @@ function renderPlayerHistory(records, selectedPlayer, selectedTournament) {
     var apg = p.ast/p.games;
     var spg = p.tocr/p.games;
     var bpg = p.blk/p.games;
-    var off = ppg + (apg * 2.2);
+    var off = ppg + (apg * 2.5);
     var def = (spg * 1.8) + (bpg * 1.5);
     var total = off + def;
     return {off: off.toFixed(1), def: def.toFixed(1), total: total.toFixed(1), totalRaw: total};
@@ -948,30 +948,6 @@ function renderPlayerHistory(records, selectedPlayer, selectedTournament) {
     '<th class="imp-off-hdr">OFF</th><th class="imp-def-hdr">DEF</th><th class="imp-total-hdr">TOTAL</th>'+
     '</tr></thead>'+
     '<tbody>'+rows+'</tbody></table></div>';
-
-  // Impact leaderboard — sorted by total impact
-  var ranked = players.slice().map(function(p){
-    var imp=calcImpact(p);
-    return {num:p.num, name:p.name, off:imp.off, def:imp.def, total:imp.total, totalRaw:imp.totalRaw};
-  }).sort(function(a,b){ return b.totalRaw - a.totalRaw; });
-
-  var lbRows = ranked.map(function(p, i){
-    var medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':''+(i+1)+'.';
-    // color the total based on rank
-    var totalCls = i===0?'imp-rank-1':i===1?'imp-rank-2':i===2?'imp-rank-3':'imp-rank-other';
-    return '<div class="imp-lb-row">'+
-      '<span class="imp-lb-rank">'+medal+'</span>'+
-      '<span class="imp-lb-name">#'+p.num+' '+p.name+'</span>'+
-      '<span class="imp-lb-scores">'+
-        '<span class="imp-lb-off">OFF '+p.off+'</span>'+
-        '<span class="imp-lb-def">DEF '+p.def+'</span>'+
-        '<span class="imp-lb-total '+totalCls+'">'+p.total+'</span>'+
-      '</span>'+
-    '</div>';
-  }).join('');
-
-  tbl.innerHTML += '<div class="imp-lb-title">⚡ Impact Leaderboard</div>'+
-    '<div class="imp-leaderboard">'+lbRows+'</div>';
 
   // Game log header helper
   var gameLogHdr='<tr><th>Date</th><th>Opponent</th><th>Tournament</th><th>Pts</th><th>Lay</th><th>FT</th><th>G3</th><th>B3</th><th>Reb</th><th>Ast</th><th>Blk</th><th>Stl</th><th>TO</th></tr>';
