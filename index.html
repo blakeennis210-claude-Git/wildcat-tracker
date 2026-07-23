@@ -37,6 +37,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .logo{width:34px;height:34px;border-radius:50%;background:#1a1030;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:600;color:var(--gold);letter-spacing:.5px;flex-shrink:0;}
 .team-name{font-size:15px;font-weight:600;color:#fff;}
 .switch-btn{font-size:11px;color:var(--gold);background:transparent;border:1px solid var(--gold);border-radius:5px;padding:3px 8px;cursor:pointer;font-weight:600;}
+.auth-btn{font-size:11px;color:#AFA9EC;background:transparent;border:1px solid #534AB7;border-radius:5px;padding:3px 8px;cursor:pointer;font-weight:600;white-space:nowrap;}
+.auth-btn:active{background:#3C3489;}
+.auth-avatar{display:flex;align-items:center;gap:5px;cursor:pointer;padding:2px 6px;border-radius:20px;background:rgba(255,255,255,.1);}
+.auth-avatar:active{background:rgba(255,255,255,.2);}
+.auth-img{width:22px;height:22px;border-radius:50%;object-fit:cover;border:1px solid var(--gold);}
+.auth-name{font-size:11px;color:#fff;font-weight:600;max-width:60px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .qtr-wrap{display:flex;gap:4px;}
 .qbtn{padding:4px 7px;font-size:11px;border:1px solid #534AB7;border-radius:6px;background:transparent;color:#AFA9EC;cursor:pointer;font-weight:500;}
 .qbtn.active{background:#534AB7;color:#fff;border-color:#534AB7;}
@@ -282,6 +288,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <button class="qbtn" onclick="setQtr(this)">OT</button>
       </div>
       <button class="switch-btn" onclick="switchTeam()">Switch</button>
+      <button class="auth-btn" id="auth-btn" onclick="signInWithGoogle()" title="Sign in to save stats">🔑 Sign In</button>
+      <div class="auth-avatar" id="auth-avatar" style="display:none;" onclick="signOutUser()" title="Sign out">
+        <img id="auth-img" src="" alt="" class="auth-img">
+        <span id="auth-name" class="auth-name"></span>
+      </div>
     </div>
   </div>
   <div class="tabs">
@@ -423,6 +434,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, updateDoc, query, where, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyBbhBhuY1U57TN6qbIKVC378SitNepTe4M",
@@ -435,7 +447,59 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
 const COLL = 'games';
+
+// ── APPROVED EMAILS ───────────────────────────────
+const APPROVED = ['seebee210@gmail.com','coachennisccf@gmail.com'];
+
+var currentUser = null;
+
+function isAuthorized() {
+  return currentUser && APPROVED.indexOf(currentUser.email) > -1;
+}
+
+function updateAuthUI(user) {
+  currentUser = user;
+  var btn = document.getElementById('auth-btn');
+  var avatar = document.getElementById('auth-avatar');
+  if(user && isAuthorized()) {
+    btn.style.display = 'none';
+    avatar.style.display = 'flex';
+    var img = document.getElementById('auth-img');
+    var name = document.getElementById('auth-name');
+    if(user.photoURL) img.src = user.photoURL;
+    name.textContent = user.displayName ? user.displayName.split(' ')[0] : user.email.split('@')[0];
+  } else if(user && !isAuthorized()) {
+    // logged in but not approved
+    btn.style.display = 'none';
+    avatar.style.display = 'flex';
+    var img = document.getElementById('auth-img');
+    var name = document.getElementById('auth-name');
+    if(user.photoURL) img.src = user.photoURL;
+    name.textContent = '⛔';
+    showToast('Not authorized to edit',true);
+    signOut(auth);
+  } else {
+    btn.style.display = 'flex';
+    avatar.style.display = 'none';
+  }
+}
+
+window.signInWithGoogle = function() {
+  signInWithPopup(auth, provider).catch(function(e){ showToast('Sign in failed: '+e.message,true); });
+};
+window.signOutUser = function() {
+  signOut(auth).then(function(){ showToast('Signed out',false); });
+};
+
+function requireAuth(action) {
+  if(isAuthorized()) { action(); }
+  else { showToast('Sign in required to save or edit',true); }
+}
+
+onAuthStateChanged(auth, function(user){ updateAuthUI(user); });
 
 // ── SEED EXISTING GAMES ──────────────────────────
 const SEED_GAMES = [
@@ -743,6 +807,7 @@ window.cancelPlTourn = function() {
   if(form) form.classList.add('hidden');
 };
 window.savePlTourn = async function() {
+  if(!isAuthorized()){ showToast('Sign in required',true); return; }
   if(!_plTournEditId) return;
   var newTourn = document.getElementById('pl-tourn-edit-input').value.trim();
   try {
@@ -772,6 +837,7 @@ window.cancelPlOpp = function() {
   if(form) form.classList.add('hidden');
 };
 window.savePlOpp = async function() {
+  if(!isAuthorized()){ showToast('Sign in required',true); return; }
   if(!_plOppEditId) return;
   var newOpp = document.getElementById('pl-opp-edit-input').value.trim();
   if(!newOpp){ showToast('Name cannot be empty', true); return; }
@@ -1042,6 +1108,7 @@ window.clearStats = function(){
 
 // ── SAVE ─────────────────────────────────────────
 window.saveGame = async function(){
+  if(!isAuthorized()){ showToast('Sign in required to save',true); return; }
   if(!currentTeam){showToast('Select a team first',true);return;}
   var opp=document.getElementById('opp-input').value.trim();
   if(!opp){showToast('Enter opponent name first',true);return;}
@@ -1114,6 +1181,7 @@ window.deleteGame = function(docId){
 };
 window.cancelDelete = function(docId){ document.getElementById('del-confirm-'+docId).classList.remove('show'); };
 window.deleteGameConfirmed = async function(docId){
+  if(!isAuthorized()){ showToast('Sign in required',true); return; }
   setStatus('status-hist','loading','Deleting…');
   try {
     await deleteDoc(doc(db, COLL, docId));
@@ -1136,6 +1204,7 @@ window.cancelEditOpp = function(docId) {
   document.getElementById('edit-btn-'+docId).style.display='';
 };
 window.saveOpp = async function(docId) {
+  if(!isAuthorized()){ showToast('Sign in required',true); return; }
   var newOpp=document.getElementById('edit-input-'+docId).value.trim();
   if(!newOpp){showToast('Name cannot be empty',true);return;}
   try {
@@ -1159,6 +1228,7 @@ window.cancelEditTourn = function(docId) {
   document.getElementById('edit-tourn-btn-'+docId).style.display='';
 };
 window.saveTourn = async function(docId) {
+  if(!isAuthorized()){ showToast('Sign in required',true); return; }
   var newTourn=document.getElementById('edit-tourn-input-'+docId).value.trim();
   try {
     await updateDoc(doc(db,COLL,docId),{tournament:newTourn});
