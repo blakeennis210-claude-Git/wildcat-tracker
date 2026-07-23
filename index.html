@@ -245,6 +245,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .pl-cnt-val{font-size:24px;font-weight:800;color:var(--purple-dark);min-width:36px;text-align:center;}
 .pl-hist-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--purple);margin:10px 0 8px;}
 .pl-log-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--purple);margin:12px 0 6px;}
+
+/* Impact columns in table */
+.imp-off-hdr{background:#1971C2;color:#fff !important;}
+.imp-def-hdr{background:#2B8A3E;color:#fff !important;}
+.imp-total-hdr{background:var(--purple-dark);color:#fff !important;}
+.imp-off{color:#1971C2;font-weight:800;}
+.imp-def{color:#2B8A3E;font-weight:800;}
+.imp-total{color:var(--purple-dark);font-weight:900;font-size:13px;}
+
+/* Impact leaderboard */
+.imp-lb-title{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--purple-dark);margin:16px 0 8px;padding-bottom:6px;border-bottom:2px solid var(--purple);}
+.imp-leaderboard{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;}
+.imp-lb-row{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 14px;}
+.imp-lb-rank{font-size:16px;min-width:28px;}
+.imp-lb-name{font-size:14px;font-weight:700;color:var(--text);flex:1;}
+.imp-lb-scores{display:flex;align-items:center;gap:8px;}
+.imp-lb-off{font-size:12px;font-weight:600;color:#1971C2;background:#E8F4FD;padding:3px 8px;border-radius:5px;}
+.imp-lb-def{font-size:12px;font-weight:600;color:#2B8A3E;background:#E6F4EA;padding:3px 8px;border-radius:5px;}
+.imp-lb-total{font-size:15px;font-weight:900;padding:4px 10px;border-radius:8px;min-width:48px;text-align:center;}
+.imp-rank-1{background:#FFD700;color:#1a1030;}
+.imp-rank-2{background:#C0C0C0;color:#1a1030;}
+.imp-rank-3{background:#CD7F32;color:#fff;}
+.imp-rank-other{background:var(--purple-light);color:var(--purple);}
 .pl-edit-tourn-btn{background:transparent;border:none;cursor:pointer;font-size:12px;padding:0 2px;opacity:.6;}
 .pl-edit-tourn-btn:active{opacity:1;}
 .pl-edit-tourn-form{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:12px;display:flex;flex-direction:column;gap:0;}
@@ -882,12 +905,25 @@ function renderPlayerHistory(records, selectedPlayer, selectedTournament) {
   var players=Object.values(byPlayer).sort(function(a,b){ return parseInt(a.num)-parseInt(b.num); });
   var uniqueGames=new Set(records.map(function(r){return r.date+'|'+r.opp;})).size;
 
+  // Calculate impact scores
+  function calcImpact(p) {
+    var ppg = p.pts/p.games;
+    var apg = p.ast/p.games;
+    var spg = p.tocr/p.games;
+    var bpg = p.blk/p.games;
+    var off = ppg + (apg * 2.2);
+    var def = (spg * 1.8) + (bpg * 1.5);
+    var total = off + def;
+    return {off: off.toFixed(1), def: def.toFixed(1), total: total.toFixed(1), totalRaw: total};
+  }
+
   grid.innerHTML=
     '<div class="ss-card sc-neutral"><div class="ss-val">'+uniqueGames+'</div><div class="ss-lbl">Games</div></div>'+
     '<div class="ss-card sc-neutral"><div class="ss-val">'+players.length+'</div><div class="ss-lbl">Players</div></div>';
 
-  // Season averages table
+  // Season averages table with impact columns
   var rows=players.map(function(p){
+    var imp=calcImpact(p);
     return '<tr>'+
       '<td>#'+p.num+' '+p.name+'</td>'+
       '<td>'+p.games+'</td>'+
@@ -901,12 +937,41 @@ function renderPlayerHistory(records, selectedPlayer, selectedTournament) {
       '<td>'+(p.blk/p.games).toFixed(1)+'</td>'+
       '<td>'+(p.tocr/p.games).toFixed(1)+'</td>'+
       '<td>'+(p.toco/p.games).toFixed(1)+'</td>'+
+      '<td class="imp-off">'+imp.off+'</td>'+
+      '<td class="imp-def">'+imp.def+'</td>'+
+      '<td class="imp-total">'+imp.total+'</td>'+
     '</tr>';
   }).join('');
 
   tbl.innerHTML='<div style="overflow-x:auto;margin-bottom:16px;"><table class="pl-hist-table">'+
-    '<thead><tr><th>Player</th><th>G</th><th>Pts</th><th>Lay%</th><th>FT%</th><th>G3%</th><th>B3%</th><th>Reb</th><th>Ast</th><th>Blk</th><th>Stl</th><th>TO</th></tr></thead>'+
+    '<thead><tr><th>Player</th><th>G</th><th>Pts</th><th>Lay%</th><th>FT%</th><th>G3%</th><th>B3%</th><th>Reb</th><th>Ast</th><th>Blk</th><th>Stl</th><th>TO</th>'+
+    '<th class="imp-off-hdr">OFF</th><th class="imp-def-hdr">DEF</th><th class="imp-total-hdr">TOTAL</th>'+
+    '</tr></thead>'+
     '<tbody>'+rows+'</tbody></table></div>';
+
+  // Impact leaderboard — sorted by total impact
+  var ranked = players.slice().map(function(p){
+    var imp=calcImpact(p);
+    return {num:p.num, name:p.name, off:imp.off, def:imp.def, total:imp.total, totalRaw:imp.totalRaw};
+  }).sort(function(a,b){ return b.totalRaw - a.totalRaw; });
+
+  var lbRows = ranked.map(function(p, i){
+    var medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':''+(i+1)+'.';
+    // color the total based on rank
+    var totalCls = i===0?'imp-rank-1':i===1?'imp-rank-2':i===2?'imp-rank-3':'imp-rank-other';
+    return '<div class="imp-lb-row">'+
+      '<span class="imp-lb-rank">'+medal+'</span>'+
+      '<span class="imp-lb-name">#'+p.num+' '+p.name+'</span>'+
+      '<span class="imp-lb-scores">'+
+        '<span class="imp-lb-off">OFF '+p.off+'</span>'+
+        '<span class="imp-lb-def">DEF '+p.def+'</span>'+
+        '<span class="imp-lb-total '+totalCls+'">'+p.total+'</span>'+
+      '</span>'+
+    '</div>';
+  }).join('');
+
+  tbl.innerHTML += '<div class="imp-lb-title">⚡ Impact Leaderboard</div>'+
+    '<div class="imp-leaderboard">'+lbRows+'</div>';
 
   // Game log header helper
   var gameLogHdr='<tr><th>Date</th><th>Opponent</th><th>Tournament</th><th>Pts</th><th>Lay</th><th>FT</th><th>G3</th><th>B3</th><th>Reb</th><th>Ast</th><th>Blk</th><th>Stl</th><th>TO</th></tr>';
