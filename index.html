@@ -629,7 +629,7 @@ function updatePlayerDisplay(num) {
   });
   var pts = s.layupm*2 + s.ftm + s.good3m*3 + s.bad3m*3 + s.midm*2;
   var el = document.getElementById('pl-totals-'+num);
-  if(el) el.textContent = pts+'pts · '+s.reb+'reb · '+s.ast+'ast · '+s.blk+'blk · '+s.tocr+'cr/'+s.toco+'co';
+  if(el) el.textContent = pts+'pts · '+s.reb+'reb · '+s.ast+'ast · '+s.blk+'blk · '+s.tocr+'stl/'+s.toco+'to';
 }
 
 function renderPlayerRows() {
@@ -642,11 +642,11 @@ function renderPlayerRows() {
     {id:'mid',   lbl:'MID',     mKey:'midm',   aKey:'mida'}
   ];
   var PLAY = [
-    {key:'reb',  lbl:'Rebound',      cls:'ppb-reb'},
-    {key:'ast',  lbl:'Assist',       cls:'ppb-ast'},
-    {key:'blk',  lbl:'Block',        cls:'ppb-blk'},
-    {key:'tocr', lbl:'TO Created',   cls:'ppb-tocr'},
-    {key:'toco', lbl:'TO Committed', cls:'ppb-toco'}
+    {key:'reb',  lbl:'Rebound',  cls:'ppb-reb'},
+    {key:'ast',  lbl:'Assist',   cls:'ppb-ast'},
+    {key:'blk',  lbl:'Block',    cls:'ppb-blk'},
+    {key:'tocr', lbl:'Steal',    cls:'ppb-tocr'},
+    {key:'toco', lbl:'Turnover', cls:'ppb-toco'}
   ];
 
   var html = '';
@@ -899,16 +899,17 @@ function renderPlayerHistory(records, selectedPlayer, selectedTournament) {
       '<td>'+(p.reb/p.games).toFixed(1)+'</td>'+
       '<td>'+(p.ast/p.games).toFixed(1)+'</td>'+
       '<td>'+(p.blk/p.games).toFixed(1)+'</td>'+
-      '<td>'+(p.tocr/p.games).toFixed(1)+'/'+(p.toco/p.games).toFixed(1)+'</td>'+
+      '<td>'+(p.tocr/p.games).toFixed(1)+'</td>'+
+      '<td>'+(p.toco/p.games).toFixed(1)+'</td>'+
     '</tr>';
   }).join('');
 
   tbl.innerHTML='<div style="overflow-x:auto;margin-bottom:16px;"><table class="pl-hist-table">'+
-    '<thead><tr><th>Player</th><th>G</th><th>Pts</th><th>Lay%</th><th>FT%</th><th>G3%</th><th>B3%</th><th>Reb</th><th>Ast</th><th>Blk</th><th>TOCr/Co</th></tr></thead>'+
+    '<thead><tr><th>Player</th><th>G</th><th>Pts</th><th>Lay%</th><th>FT%</th><th>G3%</th><th>B3%</th><th>Reb</th><th>Ast</th><th>Blk</th><th>Stl</th><th>TO</th></tr></thead>'+
     '<tbody>'+rows+'</tbody></table></div>';
 
   // Game log header helper
-  var gameLogHdr='<tr><th>Date</th><th>Opponent</th><th>Tournament</th><th>Pts</th><th>Lay</th><th>FT</th><th>G3</th><th>B3</th><th>Reb</th><th>Ast</th><th>Blk</th><th>TO Cr/Co</th></tr>';
+  var gameLogHdr='<tr><th>Date</th><th>Opponent</th><th>Tournament</th><th>Pts</th><th>Lay</th><th>FT</th><th>G3</th><th>B3</th><th>Reb</th><th>Ast</th><th>Blk</th><th>Stl</th><th>TO</th></tr>';
 
   function makeGameRow(r) {
     var d=new Date(r.date+'T12:00:00');
@@ -932,7 +933,7 @@ function renderPlayerHistory(records, selectedPlayer, selectedTournament) {
       '<td>'+(r.good3m||0)+'/'+(r.good3a||0)+'</td>'+
       '<td>'+(r.bad3m||0)+'/'+(r.bad3a||0)+'</td>'+
       '<td>'+(r.reb||0)+'</td><td>'+(r.ast||0)+'</td><td>'+(r.blk||0)+'</td>'+
-      '<td>'+(r.tocr||0)+'/'+(r.toco||0)+'</td>'+
+      '<td>'+(r.tocr||0)+'</td><td>'+(r.toco||0)+'</td>'+
     '</tr>';
   }
 
@@ -1184,9 +1185,26 @@ window.deleteGameConfirmed = async function(docId){
   if(!isAuthorized()){ showToast('Sign in required',true); return; }
   setStatus('status-hist','loading','Deleting…');
   try {
+    // find the game to get date+opp for matching player records
+    var game = cachedGames.find(function(g){ return g._docId===docId; });
+    // delete the team game
     await deleteDoc(doc(db, COLL, docId));
+    // cascade delete matching player stat records
+    if(game) {
+      var plSnap = await getDocs(collection(db,'playerStats'));
+      var toDelete = [];
+      plSnap.forEach(function(d){
+        var r = d.data();
+        if(r.team===game.team && r.date===game.date && r.opp===game.opp) {
+          toDelete.push(d.id);
+        }
+      });
+      for(var i=0;i<toDelete.length;i++){
+        await deleteDoc(doc(db,'playerStats',toDelete[i]));
+      }
+    }
     hideStatus('status-hist');
-    showToast('Game deleted',false);
+    showToast('Game and player stats deleted',false);
     loadHistory();
   } catch(e){
     setStatus('status-hist','err','⚠ '+e.message);
