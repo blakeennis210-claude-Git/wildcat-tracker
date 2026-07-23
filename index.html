@@ -231,6 +231,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .ppb-stl{background:#1971C2;}
 .ppb-tocr{background:#2B8A3E;}
 .ppb-toco{background:#C92A2A;}
+.ppb-wow{background:var(--gold);color:#1a1030;}
 
 .team-to-bar{background:#1a1030;border-radius:10px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:10px;}
 .team-to-lbl{font-size:12px;font-weight:700;color:#AFA9EC;white-space:nowrap;}
@@ -578,19 +579,19 @@ var ROSTERS = {
 var playerStats = {};
 var oppRebCount = 0;
 
-var PSTAT_KEYS = ['layupm','layupa','ftm','fta','good3m','good3a','bad3m','bad3a','midm','mida','reb','ast','blk','tocr','toco'];
+var PSTAT_KEYS = ['layupm','layupa','ftm','fta','threem','threea','midm','mida','reb','ast','blk','tocr','toco','wow'];
 
 function initPlayerStats() {
   playerStats = {};
   oppRebCount = 0;
   var roster = ROSTERS[currentTeam] || [];
   roster.forEach(function(p) {
-    playerStats[p.num] = {layupm:0,layupa:0,ftm:0,fta:0,good3m:0,good3a:0,bad3m:0,bad3a:0,midm:0,mida:0,reb:0,ast:0,blk:0,tocr:0,toco:0};
+    playerStats[p.num] = {layupm:0,layupa:0,ftm:0,fta:0,threem:0,threea:0,midm:0,mida:0,reb:0,ast:0,blk:0,tocr:0,toco:0,wow:0};
   });
 }
 
 // Shot map: player shot key -> team shot key
-var SHOT_ROLLUP = {layupa:'l', fta:'f', good3a:'cs', bad3a:'op', mida:'mid'};
+var SHOT_ROLLUP = {layupa:'l', fta:'f', threea:'cs', mida:'mid'};
 
 // Player shot made: +1 to player made+att AND team made+att
 function playerShotMade(num, mKey, aKey) {
@@ -634,42 +635,41 @@ window.adjOppReb = function(delta) {
 };
 
 function updatePlayerDisplay(num) {
-  var s = playerStats[num];
+  var s=playerStats[num];
   var shotDefs = [
     {mKey:'layupm',aKey:'layupa',id:'layup'},
     {mKey:'ftm',aKey:'fta',id:'ft'},
-    {mKey:'good3m',aKey:'good3a',id:'good3'},
-    {mKey:'bad3m',aKey:'bad3a',id:'bad3'},
+    {mKey:'threem',aKey:'threea',id:'three'},
     {mKey:'midm',aKey:'mida',id:'mid'}
   ];
   shotDefs.forEach(function(sh) {
     var el = document.getElementById('ps-'+num+'-'+sh.id+'-m');
     if(el) el.textContent = s[sh.mKey]+'/'+s[sh.aKey];
   });
-  ['reb','ast','blk','tocr','toco'].forEach(function(k) {
+  ['reb','ast','blk','tocr','toco','wow'].forEach(function(k) {
     var el = document.getElementById('ps-'+num+'-'+k);
     if(el) el.textContent = s[k];
   });
-  var pts = s.layupm*2 + s.ftm + s.good3m*3 + s.bad3m*3 + s.midm*2;
+  var pts = s.layupm*2 + s.ftm + s.threem*3 + s.midm*2;
   var el = document.getElementById('pl-totals-'+num);
-  if(el) el.textContent = pts+'pts · '+s.reb+'reb · '+s.ast+'ast · '+s.blk+'blk · '+s.tocr+'stl/'+s.toco+'to';
+  if(el) el.textContent = pts+'pts · '+s.reb+'reb · '+s.ast+'ast · '+s.blk+'blk · '+s.tocr+'stl/'+s.toco+'to · '+s.wow+'wow';
 }
 
 function renderPlayerRows() {
   var roster = ROSTERS[currentTeam] || [];
   var SHOTS = [
-    {id:'layup', lbl:'LAYUP',   mKey:'layupm', aKey:'layupa'},
-    {id:'ft',    lbl:'FT',      mKey:'ftm',    aKey:'fta'},
-    {id:'good3', lbl:'GOOD 3',  mKey:'good3m', aKey:'good3a'},
-    {id:'bad3',  lbl:'BAD 3',   mKey:'bad3m',  aKey:'bad3a'},
-    {id:'mid',   lbl:'MID',     mKey:'midm',   aKey:'mida'}
+    {id:'layup', lbl:'LAYUP', mKey:'layupm', aKey:'layupa'},
+    {id:'ft',    lbl:'FT',    mKey:'ftm',    aKey:'fta'},
+    {id:'three', lbl:'3PT',   mKey:'threem', aKey:'threea'},
+    {id:'mid',   lbl:'MID',   mKey:'midm',   aKey:'mida'}
   ];
   var PLAY = [
     {key:'reb',  lbl:'Rebound',  cls:'ppb-reb'},
     {key:'ast',  lbl:'Assist',   cls:'ppb-ast'},
     {key:'blk',  lbl:'Block',    cls:'ppb-blk'},
     {key:'tocr', lbl:'Steal',    cls:'ppb-tocr'},
-    {key:'toco', lbl:'Turnover', cls:'ppb-toco'}
+    {key:'toco', lbl:'Turnover', cls:'ppb-toco'},
+    {key:'wow',  lbl:'WOW',      cls:'ppb-wow'}
   ];
 
   var html = '';
@@ -733,12 +733,10 @@ function resetPlayerShots(num) {
   // subtract from team totals first
   shots.l.m=Math.max(0,shots.l.m-s.layupm); shots.l.a=Math.max(0,shots.l.a-s.layupa);
   shots.f.m=Math.max(0,shots.f.m-s.ftm);    shots.f.a=Math.max(0,shots.f.a-s.fta);
-  shots.cs.m=Math.max(0,shots.cs.m-s.good3m); shots.cs.a=Math.max(0,shots.cs.a-s.good3a);
-  shots.op.m=Math.max(0,shots.op.m-s.bad3m);  shots.op.a=Math.max(0,shots.op.a-s.bad3a);
+  shots.cs.m=Math.max(0,shots.cs.m-s.threem); shots.cs.a=Math.max(0,shots.cs.a-s.threea);
   shots.mid.m=Math.max(0,shots.mid.m-s.midm); shots.mid.a=Math.max(0,shots.mid.a-s.mida);
-  // reset player shots
   s.layupm=0; s.layupa=0; s.ftm=0; s.fta=0;
-  s.good3m=0; s.good3a=0; s.bad3m=0; s.bad3a=0; s.midm=0; s.mida=0;
+  s.threem=0; s.threea=0; s.midm=0; s.mida=0;
   ['l','f','cs','op','mid'].forEach(function(k){ renderShot(k); });
   updateSummary();
   updatePlayerDisplay(num);
@@ -809,6 +807,18 @@ function applyPlayerFilter() {
   renderPlayerHistory(records, pFilter, tFilter);
 }
 window.applyPlayerFilter=applyPlayerFilter;
+
+window.toggleTip = function(th) {
+  var tip = th.getAttribute('data-tip');
+  var box = document.getElementById('stat-tooltip');
+  if(!box) return;
+  if(box.style.display==='none'||box.innerHTML!==tip) {
+    box.innerHTML = '<strong>'+th.textContent.replace(' ℹ','').trim()+'</strong> — '+tip;
+    box.style.display='block';
+  } else {
+    box.style.display='none';
+  }
+};
 
 // ── PLAYER TOURNAMENT & OPP EDIT ─────────────────
 var _plTournEditId = null;
@@ -889,16 +899,15 @@ function renderPlayerHistory(records, selectedPlayer, selectedTournament) {
   var byPlayer={};
   records.forEach(function(r){
     var key=r.playerNum+'-'+r.playerName;
-    if(!byPlayer[key]) byPlayer[key]={num:r.playerNum,name:r.playerName,games:0,pts:0,layupm:0,layupa:0,ftm:0,fta:0,good3m:0,good3a:0,bad3m:0,bad3a:0,midm:0,mida:0,reb:0,ast:0,blk:0,tocr:0,toco:0};
+    if(!byPlayer[key]) byPlayer[key]={num:r.playerNum,name:r.playerName,games:0,pts:0,layupm:0,layupa:0,ftm:0,fta:0,threem:0,threea:0,midm:0,mida:0,reb:0,ast:0,blk:0,tocr:0,toco:0,wow:0};
     var p=byPlayer[key];
     p.games++; p.pts+=(r.pts||0);
     p.layupm+=(r.layupm||0); p.layupa+=(r.layupa||0);
     p.ftm+=(r.ftm||0); p.fta+=(r.fta||0);
-    p.good3m+=(r.good3m||0); p.good3a+=(r.good3a||0);
-    p.bad3m+=(r.bad3m||0); p.bad3a+=(r.bad3a||0);
+    p.threem+=(r.threem||0); p.threea+=(r.threea||0);
     p.midm+=(r.midm||0); p.mida+=(r.mida||0);
     p.reb+=(r.reb||0); p.ast+=(r.ast||0); p.blk+=(r.blk||0);
-    p.tocr+=(r.tocr||0); p.toco+=(r.toco||0);
+    p.tocr+=(r.tocr||0); p.toco+=(r.toco||0); p.wow+=(r.wow||0);
   });
 
   function pp(m,a){ return a>0?Math.round(m/a*100)+'%':'—'; }
@@ -911,8 +920,10 @@ function renderPlayerHistory(records, selectedPlayer, selectedTournament) {
     var apg = p.ast/p.games;
     var spg = p.tocr/p.games;
     var bpg = p.blk/p.games;
+    var rpg = p.reb/p.games;
+    var wpg = p.wow/p.games;
     var off = ppg + (apg * 2.5);
-    var def = (spg * 1.8) + (bpg * 1.5);
+    var def = (spg * 1.8) + (bpg * 1.5) + (rpg * 1.2) + (wpg * 1.5);
     var total = off + def;
     return {off: off.toFixed(1), def: def.toFixed(1), total: total.toFixed(1), totalRaw: total};
   }
@@ -922,6 +933,29 @@ function renderPlayerHistory(records, selectedPlayer, selectedTournament) {
     '<div class="ss-card sc-neutral"><div class="ss-val">'+players.length+'</div><div class="ss-lbl">Players</div></div>';
 
   // Season averages table with impact columns
+  var TOOLTIPS = {
+    'Pts':  'Points per game',
+    'Lay%': 'Layup shooting percentage',
+    'FT%':  'Free throw shooting percentage',
+    'Mid%': 'Midrange shooting percentage. Tracked to monitor shot selection',
+    '3PT%': 'Three point shooting percentage',
+    'Reb':  'Rebounds per game. Includes offensive and defensive',
+    'Ast':  'Assists per game. Only true assists that directly created a scored basket',
+    'Blk':  'Blocks per game',
+    'Stl':  'Steals per game. Also counts as a team Turnover Created',
+    'TO':   'Turnovers per game committed by this player',
+    'WOW':  'WOW plays per game — hustle plays, momentum plays, and clutch moments that do not show up in traditional stats',
+    'OPI':  'Offensive Performance Index: Pts + (Ast × 2.5)',
+    'DPI':  'Defensive Performance Index: (Stl × 1.8) + (Blk × 1.5) + (Reb × 1.2) + (WOW × 1.5)',
+    'TPI':  'Total Performance Index: OPI + DPI. The complete measure of a player\'s impact on the game'
+  };
+
+  function thTip(lbl, cls) {
+    var tip = TOOLTIPS[lbl]||'';
+    var c = cls?' class="'+cls+'"':'';
+    return '<th'+c+' onclick="toggleTip(this)" style="cursor:pointer;" data-tip="'+tip+'">'+lbl+' <span style="font-size:9px;opacity:.7;">ℹ</span></th>';
+  }
+
   var rows=players.map(function(p){
     var imp=calcImpact(p);
     return '<tr>'+
@@ -930,27 +964,32 @@ function renderPlayerHistory(records, selectedPlayer, selectedTournament) {
       '<td>'+(p.pts/p.games).toFixed(1)+'</td>'+
       '<td>'+pp(p.layupm,p.layupa)+'</td>'+
       '<td>'+pp(p.ftm,p.fta)+'</td>'+
-      '<td>'+pp(p.good3m,p.good3a)+'</td>'+
-      '<td>'+pp(p.bad3m,p.bad3a)+'</td>'+
+      '<td>'+pp(p.midm,p.mida)+'</td>'+
+      '<td>'+pp(p.threem,p.threea)+'</td>'+
       '<td>'+(p.reb/p.games).toFixed(1)+'</td>'+
       '<td>'+(p.ast/p.games).toFixed(1)+'</td>'+
       '<td>'+(p.blk/p.games).toFixed(1)+'</td>'+
       '<td>'+(p.tocr/p.games).toFixed(1)+'</td>'+
       '<td>'+(p.toco/p.games).toFixed(1)+'</td>'+
+      '<td>'+(p.wow/p.games).toFixed(1)+'</td>'+
       '<td class="imp-off">'+imp.off+'</td>'+
       '<td class="imp-def">'+imp.def+'</td>'+
       '<td class="imp-total">'+imp.total+'</td>'+
     '</tr>';
   }).join('');
 
-  tbl.innerHTML='<div style="overflow-x:auto;margin-bottom:16px;"><table class="pl-hist-table">'+
-    '<thead><tr><th>Player</th><th>G</th><th>Pts</th><th>Lay%</th><th>FT%</th><th>G3%</th><th>B3%</th><th>Reb</th><th>Ast</th><th>Blk</th><th>Stl</th><th>TO</th>'+
-    '<th class="imp-off-hdr">OFF</th><th class="imp-def-hdr">DEF</th><th class="imp-total-hdr">TOTAL</th>'+
+  tbl.innerHTML='<div style="overflow-x:auto;margin-bottom:16px;">'+
+    '<div id="stat-tooltip" style="display:none;background:#1a1030;color:#AFA9EC;font-size:11px;padding:8px 12px;border-radius:8px;margin-bottom:8px;line-height:1.5;"></div>'+
+    '<table class="pl-hist-table">'+
+    '<thead><tr><th>Player</th><th>G</th>'+
+    thTip('Pts')+thTip('Lay%')+thTip('FT%')+thTip('Mid%')+thTip('3PT%')+
+    thTip('Reb')+thTip('Ast')+thTip('Blk')+thTip('Stl')+thTip('TO')+thTip('WOW')+
+    thTip('OPI','imp-off-hdr')+thTip('DPI','imp-def-hdr')+thTip('TPI','imp-total-hdr')+
     '</tr></thead>'+
     '<tbody>'+rows+'</tbody></table></div>';
 
   // Game log header helper
-  var gameLogHdr='<tr><th>Date</th><th>Opponent</th><th>Tournament</th><th>Pts</th><th>Lay</th><th>FT</th><th>G3</th><th>B3</th><th>Reb</th><th>Ast</th><th>Blk</th><th>Stl</th><th>TO</th></tr>';
+  var gameLogHdr='<tr><th>Date</th><th>Opponent</th><th>Tournament</th><th>Pts</th><th>Lay</th><th>FT</th><th>Mid</th><th>3PT</th><th>Reb</th><th>Ast</th><th>Blk</th><th>Stl</th><th>TO</th><th>WOW</th></tr>';
 
   function makeGameRow(r) {
     var d=new Date(r.date+'T12:00:00');
@@ -971,10 +1010,10 @@ function renderPlayerHistory(records, selectedPlayer, selectedTournament) {
       '<td>'+(r.pts||0)+'</td>'+
       '<td>'+(r.layupm||0)+'/'+(r.layupa||0)+'</td>'+
       '<td>'+(r.ftm||0)+'/'+(r.fta||0)+'</td>'+
-      '<td>'+(r.good3m||0)+'/'+(r.good3a||0)+'</td>'+
-      '<td>'+(r.bad3m||0)+'/'+(r.bad3a||0)+'</td>'+
+      '<td>'+(r.midm||0)+'/'+(r.mida||0)+'</td>'+
+      '<td>'+(r.threem||0)+'/'+(r.threea||0)+'</td>'+
       '<td>'+(r.reb||0)+'</td><td>'+(r.ast||0)+'</td><td>'+(r.blk||0)+'</td>'+
-      '<td>'+(r.tocr||0)+'</td><td>'+(r.toco||0)+'</td>'+
+      '<td>'+(r.tocr||0)+'</td><td>'+(r.toco||0)+'</td><td>'+(r.wow||0)+'</td>'+
     '</tr>';
   }
 
@@ -1183,12 +1222,11 @@ window.saveGame = async function(){
       playerNum:p.num, playerName:p.name,
       layupm:s.layupm||0, layupa:s.layupa||0,
       ftm:s.ftm||0, fta:s.fta||0,
-      good3m:s.good3m||0, good3a:s.good3a||0,
-      bad3m:s.bad3m||0, bad3a:s.bad3a||0,
+      threem:s.threem||0, threea:s.threea||0,
       midm:s.midm||0, mida:s.mida||0,
       reb:s.reb||0, ast:s.ast||0, blk:s.blk||0,
-      tocr:s.tocr||0, toco:s.toco||0,
-      pts:(s.layupm||0)*2+(s.ftm||0)+(s.good3m||0)*3+(s.bad3m||0)*3+(s.midm||0)*2,
+      tocr:s.tocr||0, toco:s.toco||0, wow:s.wow||0,
+      pts:(s.layupm||0)*2+(s.ftm||0)+(s.threem||0)*3+(s.midm||0)*2,
       oppReb:oppRebCount, savedAt:Date.now()
     };
   });
