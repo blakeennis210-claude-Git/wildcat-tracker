@@ -236,6 +236,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .team-to-bar{background:#1a1030;border-radius:10px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:10px;}
 .team-to-lbl{font-size:12px;font-weight:700;color:#AFA9EC;white-space:nowrap;}
 .team-to-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex:1;}
+.dnp-btn{font-size:10px;font-weight:800;padding:3px 8px;border-radius:6px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:rgba(255,255,255,.6);cursor:pointer;letter-spacing:.5px;}
+.dnp-btn.dnp-active{background:#E03131;border-color:#E03131;color:#fff;}
 .pl-reset-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:6px;color:#fff;font-size:10px;font-weight:700;padding:3px 8px;cursor:pointer;}
 .pl-reset-btn:active{background:rgba(255,255,255,.3);}
 .pl-opp-reb{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
@@ -433,6 +435,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <option value="">All Players</option>
       </select>
       <button class="btn-outline" onclick="loadPlayerHistory()">↻ Refresh</button>
+      <button class="btn-outline" style="color:var(--red);border-color:#F09595;" onclick="cleanupZeroRecords()">🧹 Clean DNP</button>
     </div>
     <div id="status-players" class="status-bar hidden"></div>
     <div id="pl-season-grid" class="season-grid"></div>
@@ -581,14 +584,35 @@ var oppRebCount = 0;
 
 var PSTAT_KEYS = ['layupm','layupa','ftm','fta','threem','threea','midm','mida','reb','ast','blk','tocr','toco','wow'];
 
+var dnpSet = {};
+
 function initPlayerStats() {
   playerStats = {};
+  dnpSet = {};
   oppRebCount = 0;
   var roster = ROSTERS[currentTeam] || [];
   roster.forEach(function(p) {
     playerStats[p.num] = {layupm:0,layupa:0,ftm:0,fta:0,threem:0,threea:0,midm:0,mida:0,reb:0,ast:0,blk:0,tocr:0,toco:0,wow:0};
+    dnpSet[p.num] = false;
   });
 }
+
+function toggleDNP(num) {
+  dnpSet[num] = !dnpSet[num];
+  var btn = document.getElementById('dnp-btn-'+num);
+  var content = document.getElementById('pl-content-'+num);
+  var row = document.getElementById('pl-row-'+num);
+  if(dnpSet[num]) {
+    btn.classList.add('dnp-active');
+    content.style.display = 'none';
+    row.style.opacity = '0.45';
+  } else {
+    btn.classList.remove('dnp-active');
+    content.style.display = '';
+    row.style.opacity = '1';
+  }
+}
+window.toggleDNP = toggleDNP;
 
 // Shot map: player shot key -> team shot key
 var SHOT_ROLLUP = {layupa:'l', fta:'f', threea:'cs', mida:'mid'};
@@ -694,24 +718,29 @@ function renderPlayerRows() {
       '</button>';
     }).join('');
 
-    html += '<div class="pl-row">'+
+    html += '<div class="pl-row" id="pl-row-'+p.num+'">'+
       '<div class="pl-name-bar">'+
         '<span class="pl-name">#'+p.num+' '+p.name+'</span>'+
-        '<span class="pl-totals" id="pl-totals-'+p.num+'">0pts · 0reb · 0ast · 0blk · 0cr/0co</span>'+
-      '</div>'+
-      '<div class="pl-section-shots">'+
-        '<div class="pl-section-hdr" style="display:flex;justify-content:space-between;align-items:center;">'+
-          '<span>🏀 Shot Tracker</span>'+
-          '<button class="pl-reset-btn" onclick="resetPlayerShots(\''+p.num+'\')">↺ Reset Shots</button>'+
+        '<div style="display:flex;align-items:center;gap:8px;">'+
+          '<span class="pl-totals" id="pl-totals-'+p.num+'">0pts · 0reb · 0ast · 0blk · 0stl/0to</span>'+
+          '<button class="dnp-btn" id="dnp-btn-'+p.num+'" onclick="toggleDNP(\''+p.num+'\')">DNP</button>'+
         '</div>'+
-        '<div class="pl-shot-grid">'+shotCols+'</div>'+
       '</div>'+
-      '<div class="pl-section-play">'+
-        '<div class="pl-section-hdr" style="display:flex;justify-content:space-between;align-items:center;">'+
-          '<span>⚡ Playmaking &amp; Rebounds</span>'+
-          '<button class="pl-reset-btn" onclick="resetPlayerPlay(\''+p.num+'\')">↺ Reset</button>'+
+      '<div id="pl-content-'+p.num+'">'+
+        '<div class="pl-section-shots">'+
+          '<div class="pl-section-hdr" style="display:flex;justify-content:space-between;align-items:center;">'+
+            '<span>🏀 Shot Tracker</span>'+
+            '<button class="pl-reset-btn" onclick="resetPlayerShots(\''+p.num+'\')">↺ Reset Shots</button>'+
+          '</div>'+
+          '<div class="pl-shot-grid">'+shotCols+'</div>'+
         '</div>'+
-        '<div class="pl-play-grid">'+playBtns+'</div>'+
+        '<div class="pl-section-play">'+
+          '<div class="pl-section-hdr" style="display:flex;justify-content:space-between;align-items:center;">'+
+            '<span>⚡ Playmaking &amp; Rebounds</span>'+
+            '<button class="pl-reset-btn" onclick="resetPlayerPlay(\''+p.num+'\')">↺ Reset</button>'+
+          '</div>'+
+          '<div class="pl-play-grid">'+playBtns+'</div>'+
+        '</div>'+
       '</div>'+
     '</div>';
   });
@@ -794,7 +823,36 @@ async function loadPlayerHistory() {
   } catch(e){ setStatus('status-players','err','⚠ '+e.message); }
 }
 
-function applyPlayerFilter() {
+window.cleanupZeroRecords = async function() {
+  if(!isAuthorized()){ showToast('Sign in required',true); return; }
+  setStatus('status-players','loading','Scanning for zero records…');
+  try {
+    var snap = await getDocs(collection(db,'playerStats'));
+    var toDelete = [];
+    snap.forEach(function(d){
+      var r = d.data();
+      if(r.team === currentTeam) {
+        var totalActivity = (r.pts||0)+(r.reb||0)+(r.ast||0)+(r.blk||0)+
+          (r.tocr||0)+(r.toco||0)+(r.wow||0)+
+          (r.layupa||0)+(r.fta||0)+(r.threea||0)+(r.mida||0);
+        if(totalActivity === 0) toDelete.push(d.id);
+      }
+    });
+    if(!toDelete.length){
+      hideStatus('status-players');
+      showToast('No zero records found — all clean!', false);
+      return;
+    }
+    for(var i=0;i<toDelete.length;i++){
+      await deleteDoc(doc(db,'playerStats',toDelete[i]));
+    }
+    hideStatus('status-players');
+    showToast('Removed '+toDelete.length+' DNP records!', false);
+    loadPlayerHistory();
+  } catch(e){
+    setStatus('status-players','err','⚠ '+e.message);
+  }
+};
   var tf=document.getElementById('pl-tourn-filter');
   var pf=document.getElementById('pl-player-filter');
   var tFilter=tf?tf.value:'';
@@ -1215,7 +1273,9 @@ window.saveGame = async function(){
 
   // Build player stat records
   var roster = ROSTERS[currentTeam]||[];
-  var playerRecords = roster.map(function(p){
+  var playerRecords = roster.filter(function(p){
+    return !dnpSet[p.num]; // skip DNP players
+  }).map(function(p){
     var s=playerStats[p.num]||{};
     return {
       team:currentTeam, opp:opp, date:gameDate, tournament:tourn||'',
