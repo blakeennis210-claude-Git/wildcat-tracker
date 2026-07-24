@@ -853,6 +853,8 @@ window.cleanupZeroRecords = async function() {
     setStatus('status-players','err','⚠ '+e.message);
   }
 };
+
+function applyPlayerFilter() {
   var tf=document.getElementById('pl-tourn-filter');
   var pf=document.getElementById('pl-player-filter');
   var tFilter=tf?tf.value:'';
