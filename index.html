@@ -273,8 +273,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .imp-rank-other{background:var(--purple-light);color:var(--purple);}
 .pl-edit-tourn-btn{background:transparent;border:none;cursor:pointer;font-size:12px;padding:0 2px;opacity:.6;}
 .pl-edit-tourn-btn:active{opacity:1;}
-.pl-edit-tourn-form{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-top:12px;display:flex;flex-direction:column;gap:0;}
-.pl-edit-tourn-form.hidden{display:none;}
+.pl-stat-edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px;}
+.pl-stat-edit-row{display:flex;flex-direction:column;gap:3px;}
+.pl-stat-edit-row label{font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;}
+.pl-stat-input{height:34px;padding:0 8px;border:1px solid var(--border);border-radius:7px;font-size:14px;font-weight:700;color:var(--text);background:var(--card);width:100%;}
 .pl-hist-table{width:100%;border-collapse:collapse;font-size:11px;background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
 .pl-hist-table th{background:var(--purple-dark);color:#fff;padding:6px 4px;text-align:center;font-size:10px;font-weight:700;}
 .pl-hist-table th:first-child{text-align:left;padding-left:8px;}
@@ -880,7 +882,52 @@ window.toggleTip = function(th) {
   }
 };
 
-// ── PLAYER TOURNAMENT & OPP EDIT ─────────────────
+var _plStatsEditId = null;
+
+window.editPlStats = function(docId) {
+  if(!isAuthorized()){ showToast('Sign in required',true); return; }
+  _plStatsEditId = docId;
+  var rec = cachedPlayerRecords.find(function(r){ return r._plDocId===docId; });
+  if(!rec) return;
+  // hide other forms
+  ['pl-tourn-edit-form','pl-opp-edit-form'].forEach(function(id){
+    var f=document.getElementById(id); if(f) f.classList.add('hidden');
+  });
+  // populate fields
+  var fields = ['layupm','layupa','ftm','fta','midm','mida','threem','threea','reb','ast','blk','tocr','toco','wow'];
+  fields.forEach(function(f){
+    var el = document.getElementById('pse-'+f);
+    if(el) el.value = rec[f]||0;
+  });
+  document.getElementById('pl-stats-edit-form').classList.remove('hidden');
+  document.getElementById('pl-stats-edit-form').scrollIntoView({behavior:'smooth'});
+};
+window.cancelPlStats = function() {
+  _plStatsEditId = null;
+  var f=document.getElementById('pl-stats-edit-form');
+  if(f) f.classList.add('hidden');
+};
+window.savePlStats = async function() {
+  if(!isAuthorized()){ showToast('Sign in required',true); return; }
+  if(!_plStatsEditId) return;
+  var fields = ['layupm','layupa','ftm','fta','midm','mida','threem','threea','reb','ast','blk','tocr','toco','wow'];
+  var updates = {};
+  fields.forEach(function(f){
+    var el = document.getElementById('pse-'+f);
+    updates[f] = el ? parseInt(el.value)||0 : 0;
+  });
+  // recalculate pts
+  updates.pts = updates.layupm*2 + updates.ftm + updates.threem*3 + updates.midm*2;
+  try {
+    await updateDoc(doc(db,'playerStats',_plStatsEditId), updates);
+    // update cache
+    var rec = cachedPlayerRecords.find(function(r){ return r._plDocId===_plStatsEditId; });
+    if(rec) Object.assign(rec, updates);
+    window.cancelPlStats();
+    showToast('Stats updated!', false);
+    applyPlayerFilter(); // refresh the view
+  } catch(e){ showToast('Update failed: '+e.message, true); }
+};
 var _plTournEditId = null;
 var _plOppEditId = null;
 
@@ -1050,7 +1097,7 @@ function renderPlayerHistory(records, selectedPlayer, selectedTournament) {
     '<tbody>'+rows+'</tbody></table></div>';
 
   // Game log header helper
-  var gameLogHdr='<tr><th>Date</th><th>Opponent</th><th>Tournament</th><th>Pts</th><th>Lay</th><th>FT</th><th>Mid</th><th>3PT</th><th>Reb</th><th>Ast</th><th>Blk</th><th>Stl</th><th>TO</th><th>WOW</th></tr>';
+  var gameLogHdr='<tr><th>Date</th><th>Opponent</th><th>Tournament</th><th>Pts</th><th>Lay</th><th>FT</th><th>Mid</th><th>3PT</th><th>Reb</th><th>Ast</th><th>Blk</th><th>Stl</th><th>TO</th><th>WOW</th><th></th></tr>';
 
   function makeGameRow(r) {
     var d=new Date(r.date+'T12:00:00');
@@ -1062,8 +1109,11 @@ function renderPlayerHistory(records, selectedPlayer, selectedTournament) {
       : (r.opp||'—');
     var tournCell = tid
       ? '<span id="pl-tourn-label-'+tid+'">'+(r.tournament||'—')+'</span> '+
-        '<button class="pl-edit-tourn-btn" onclick="editPlTourn(\''+tid+'\',\''+r.date+'\',\''+r.opp+'\')">✏️</button>'
+        '<button class="pl-edit-tourn-btn" onclick="editPlTourn(\''+tid+'\')">✏️</button>'
       : (r.tournament||'—');
+    var editBtn = tid
+      ? '<button class="pl-edit-tourn-btn" onclick="editPlStats(\''+tid+'\')" title="Edit stats">📝</button>'
+      : '';
     return '<tr>'+
       '<td>'+ds+'</td>'+
       '<td style="white-space:nowrap;">vs '+oppCell+'</td>'+
@@ -1075,6 +1125,7 @@ function renderPlayerHistory(records, selectedPlayer, selectedTournament) {
       '<td>'+(r.threem||0)+'/'+(r.threea||0)+'</td>'+
       '<td>'+(r.reb||0)+'</td><td>'+(r.ast||0)+'</td><td>'+(r.blk||0)+'</td>'+
       '<td>'+(r.tocr||0)+'</td><td>'+(r.toco||0)+'</td><td>'+(r.wow||0)+'</td>'+
+      '<td>'+editBtn+'</td>'+
     '</tr>';
   }
 
@@ -1110,7 +1161,7 @@ function renderPlayerHistory(records, selectedPlayer, selectedTournament) {
     tbl.innerHTML+=html;
   }
 
-  // inline edit for tournament name
+  // inline edit forms
   tbl.innerHTML+='<div class="pl-edit-tourn-form hidden" id="pl-tourn-edit-form">'+
     '<span style="font-size:12px;font-weight:600;color:var(--purple);">Edit Tournament Name</span>'+
     '<input class="gi-input" id="pl-tourn-edit-input" placeholder="Tournament name" style="margin-top:6px;">'+
@@ -1125,6 +1176,29 @@ function renderPlayerHistory(records, selectedPlayer, selectedTournament) {
     '<div style="display:flex;gap:6px;margin-top:6px;">'+
       '<button class="lb lb-made" style="flex:1;height:36px;font-size:13px;border-radius:8px;width:auto;" onclick="savePlOpp()">Save</button>'+
       '<button class="lb lb-undo" style="height:36px;padding:0 14px;font-size:13px;border-radius:8px;width:auto;" onclick="cancelPlOpp()">Cancel</button>'+
+    '</div>'+
+  '</div>'+
+  '<div class="pl-edit-tourn-form hidden" id="pl-stats-edit-form">'+
+    '<span style="font-size:12px;font-weight:700;color:var(--purple);">Edit Player Stats</span>'+
+    '<div class="pl-stat-edit-grid">'+
+      '<div class="pl-stat-edit-row"><label>Layup M</label><input type="number" min="0" class="pl-stat-input" id="pse-layupm"></div>'+
+      '<div class="pl-stat-edit-row"><label>Layup Att</label><input type="number" min="0" class="pl-stat-input" id="pse-layupa"></div>'+
+      '<div class="pl-stat-edit-row"><label>FT M</label><input type="number" min="0" class="pl-stat-input" id="pse-ftm"></div>'+
+      '<div class="pl-stat-edit-row"><label>FT Att</label><input type="number" min="0" class="pl-stat-input" id="pse-fta"></div>'+
+      '<div class="pl-stat-edit-row"><label>Mid M</label><input type="number" min="0" class="pl-stat-input" id="pse-midm"></div>'+
+      '<div class="pl-stat-edit-row"><label>Mid Att</label><input type="number" min="0" class="pl-stat-input" id="pse-mida"></div>'+
+      '<div class="pl-stat-edit-row"><label>3PT M</label><input type="number" min="0" class="pl-stat-input" id="pse-threem"></div>'+
+      '<div class="pl-stat-edit-row"><label>3PT Att</label><input type="number" min="0" class="pl-stat-input" id="pse-threea"></div>'+
+      '<div class="pl-stat-edit-row"><label>Rebounds</label><input type="number" min="0" class="pl-stat-input" id="pse-reb"></div>'+
+      '<div class="pl-stat-edit-row"><label>Assists</label><input type="number" min="0" class="pl-stat-input" id="pse-ast"></div>'+
+      '<div class="pl-stat-edit-row"><label>Blocks</label><input type="number" min="0" class="pl-stat-input" id="pse-blk"></div>'+
+      '<div class="pl-stat-edit-row"><label>Steals</label><input type="number" min="0" class="pl-stat-input" id="pse-tocr"></div>'+
+      '<div class="pl-stat-edit-row"><label>Turnovers</label><input type="number" min="0" class="pl-stat-input" id="pse-toco"></div>'+
+      '<div class="pl-stat-edit-row"><label>WOW</label><input type="number" min="0" class="pl-stat-input" id="pse-wow"></div>'+
+    '</div>'+
+    '<div style="display:flex;gap:6px;margin-top:8px;">'+
+      '<button class="lb lb-made" style="flex:1;height:36px;font-size:13px;border-radius:8px;width:auto;" onclick="savePlStats()">Save Stats</button>'+
+      '<button class="lb lb-undo" style="height:36px;padding:0 14px;font-size:13px;border-radius:8px;width:auto;" onclick="cancelPlStats()">Cancel</button>'+
     '</div>'+
   '</div>';
 }
