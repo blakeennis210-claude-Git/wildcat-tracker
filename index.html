@@ -982,7 +982,8 @@ function renderPlayerHistory(records, selectedPlayer, selectedTournament) {
     var bpg = p.blk/p.games;
     var rpg = p.reb/p.games;
     var wpg = p.wow/p.games;
-    var off = ppg + (apg * 2.5);
+    var topg = p.toco/p.games;
+    var off = ppg + (apg * 2.5) - (topg * 1.0);
     var def = (spg * 1.8) + (bpg * 1.5) + (rpg * 1.2) + (wpg * 1.5);
     var total = off + def;
     return {off: off.toFixed(1), def: def.toFixed(1), total: total.toFixed(1), totalRaw: total};
@@ -1005,7 +1006,7 @@ function renderPlayerHistory(records, selectedPlayer, selectedTournament) {
     'Stl':  'Steals per game. Also counts as a team Turnover Created',
     'TO':   'Turnovers per game committed by this player',
     'WOW':  'WOW plays per game — hustle plays, momentum plays, and clutch moments that do not show up in traditional stats',
-    'OPI':  'Offensive Performance Index: Pts + (Ast × 2.5)',
+    'OPI':  'Offensive Performance Index: Pts + (Ast × 2.5) − (TO × 1.0)',
     'DPI':  'Defensive Performance Index: (Stl × 1.8) + (Blk × 1.5) + (Reb × 1.2) + (WOW × 1.5)',
     'TPI':  'Total Performance Index: OPI + DPI. The complete measure of a player\'s impact on the game'
   };
