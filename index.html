@@ -236,6 +236,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .ppb-toco{background:#C92A2A;}
 .ppb-wow{background:var(--gold);color:#1a1030;}
 
+.team-only-toggle{display:flex;align-items:center;gap:8px;margin-bottom:8px;cursor:pointer;}
+.team-only-toggle input[type=checkbox]{width:18px;height:18px;accent-color:var(--purple);cursor:pointer;}
+.team-only-label{font-size:13px;font-weight:700;color:var(--text);}
+.team-only-form{background:var(--card);border:2px solid var(--purple);border-radius:12px;padding:12px;margin-bottom:8px;}
+.team-only-form.hidden{display:none;}
+.to-form-section{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--purple);margin:10px 0 6px;}
+.to-form-section:first-child{margin-top:0;}
+.to-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.to-form-row{display:flex;flex-direction:column;gap:3px;}
+.to-form-row label{font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.4px;}
+.to-form-input{height:36px;padding:0 10px;border:1px solid var(--border);border-radius:8px;font-size:15px;font-weight:700;color:var(--text);background:var(--card);width:100%;}
 .team-to-bar{background:#1a1030;border-radius:10px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;gap:10px;}
 .team-to-lbl{font-size:12px;font-weight:700;color:#AFA9EC;white-space:nowrap;}
 .team-to-btns{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex:1;}
@@ -352,13 +363,44 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </div>
     <div class="game-action-row">
       <button class="btn-reset" onclick="showResetConfirm()">↺</button>
-      <button class="btn-save-team" id="save-team-btn" onclick="saveTeamOnly()">💾 Team Only</button>
       <button class="btn-save" id="save-btn" onclick="saveGame()">💾 Save All</button>
     </div>
     <div class="reset-confirm" id="reset-confirm">
       <span>Reset all stats?</span>
       <button class="rc-yes" onclick="clearStats()">Yes</button>
       <button class="rc-no" onclick="hideResetConfirm()">Cancel</button>
+    </div>
+
+    <!-- TEAM ONLY TOGGLE -->
+    <label class="team-only-toggle">
+      <input type="checkbox" id="team-only-check" onchange="toggleTeamOnlyMode()">
+      <span class="team-only-label">Team Stats Only</span>
+    </label>
+
+    <!-- TEAM ONLY MANUAL INPUT FORM -->
+    <div id="team-only-form" class="team-only-form hidden">
+      <div class="to-form-section">SHOTS</div>
+      <div class="to-form-grid">
+        <div class="to-form-row"><label>Layup Made</label><input type="number" min="0" class="to-form-input" id="tf-lm"></div>
+        <div class="to-form-row"><label>Layup Att</label><input type="number" min="0" class="to-form-input" id="tf-la"></div>
+        <div class="to-form-row"><label>FT Made</label><input type="number" min="0" class="to-form-input" id="tf-fm"></div>
+        <div class="to-form-row"><label>FT Att</label><input type="number" min="0" class="to-form-input" id="tf-fa"></div>
+        <div class="to-form-row"><label>Mid Made</label><input type="number" min="0" class="to-form-input" id="tf-midm"></div>
+        <div class="to-form-row"><label>Mid Att</label><input type="number" min="0" class="to-form-input" id="tf-mida"></div>
+        <div class="to-form-row"><label>3PT Made</label><input type="number" min="0" class="to-form-input" id="tf-csm"></div>
+        <div class="to-form-row"><label>3PT Att</label><input type="number" min="0" class="to-form-input" id="tf-csa"></div>
+      </div>
+      <div class="to-form-section">TURNOVERS</div>
+      <div class="to-form-grid">
+        <div class="to-form-row"><label>TO Created</label><input type="number" min="0" class="to-form-input" id="tf-tcr"></div>
+        <div class="to-form-row"><label>TO Committed</label><input type="number" min="0" class="to-form-input" id="tf-tco"></div>
+      </div>
+      <div class="to-form-section">REBOUNDS</div>
+      <div class="to-form-grid">
+        <div class="to-form-row"><label>Our Rebounds</label><input type="number" min="0" class="to-form-input" id="tf-rwc"></div>
+        <div class="to-form-row"><label>Their Rebounds</label><input type="number" min="0" class="to-form-input" id="tf-rop"></div>
+      </div>
+      <button class="btn-save" style="margin-top:10px;" onclick="saveTeamOnlyManual()">💾 Save Team Stats</button>
     </div>
 
     <!-- TEAM DASHBOARD -->
@@ -1309,7 +1351,91 @@ window.clearStats = function(){
   updateSummary();
 };
 
-// ── SAVE TEAM ONLY ───────────────────────────────
+// ── TEAM ONLY MODE ───────────────────────────────
+window.toggleTeamOnlyMode = function() {
+  var checked = document.getElementById('team-only-check').checked;
+  var form = document.getElementById('team-only-form');
+  var dashboard = document.querySelector('.dash-grid');
+  var teamToBar = document.querySelector('.team-to-bar');
+  var oppReb = document.querySelector('.pl-opp-reb');
+  var playerRows = document.getElementById('player-rows');
+  var saveAllBtn = document.getElementById('save-btn');
+
+  if(checked) {
+    form.classList.remove('hidden');
+    dashboard.style.display = 'none';
+    teamToBar.style.display = 'none';
+    oppReb.style.display = 'none';
+    playerRows.style.display = 'none';
+    saveAllBtn.style.display = 'none';
+    // reset form inputs
+    ['tf-lm','tf-la','tf-fm','tf-fa','tf-midm','tf-mida','tf-csm','tf-csa','tf-tcr','tf-tco','tf-rwc','tf-rop'].forEach(function(id){
+      var el=document.getElementById(id); if(el) el.value=0;
+    });
+  } else {
+    form.classList.add('hidden');
+    dashboard.style.display = '';
+    teamToBar.style.display = '';
+    oppReb.style.display = '';
+    playerRows.style.display = '';
+    saveAllBtn.style.display = '';
+  }
+};
+
+window.saveTeamOnlyManual = async function() {
+  if(!isAuthorized()){ showToast('Sign in required to save',true); return; }
+  if(!currentTeam){ showToast('Select a team first',true); return; }
+  var opp=document.getElementById('opp-input').value.trim();
+  if(!opp){ showToast('Enter opponent name first',true); return; }
+  var dateVal=document.getElementById('date-input').value;
+  var tourn=document.getElementById('tourn-input').value.trim();
+
+  function gi(id){ return parseInt(document.getElementById(id).value)||0; }
+  var lm=gi('tf-lm'), la=gi('tf-la');
+  var fm=gi('tf-fm'), fa=gi('tf-fa');
+  var midm=gi('tf-midm'), mida=gi('tf-mida');
+  var csm=gi('tf-csm'), csa=gi('tf-csa');
+  var tcr=gi('tf-tcr'), tco=gi('tf-tco');
+  var rwc=gi('tf-rwc'), rop=gi('tf-rop');
+  var t3m=csm, t3a=csa;
+  var fgm=lm+midm+t3m, fga=la+mida+t3a;
+  var pts=fgm*2+t3m+fm;
+
+  var game={
+    id:Date.now(), team:currentTeam, opp:opp,
+    date:dateVal||new Date().toISOString().slice(0,10),
+    tournament:tourn||'',
+    lm:lm, la:la, fm:fm, fa:fa,
+    midm:midm, mida:mida,
+    csm:csm, csa:csa,
+    opm:0, opa:0,
+    tcr:tcr, tco:tco,
+    rwc:rwc, rop:rop,
+    pts:pts,
+    efg:fga===0?null:Math.round((fgm+0.5*t3m)/fga*100),
+    fgm:fgm, fga:fga, t3m:t3m, t3a:t3a
+  };
+
+  var btn=document.querySelector('#team-only-form .btn-save');
+  btn.disabled=true; btn.textContent='Saving…';
+  setStatus('status-live','loading','Saving team stats…');
+  try {
+    await addDoc(collection(db,COLL), game);
+    btn.disabled=false; btn.innerHTML='💾 Save Team Stats';
+    hideStatus('status-live');
+    // uncheck and reset
+    document.getElementById('team-only-check').checked=false;
+    window.toggleTeamOnlyMode();
+    document.getElementById('opp-input').value='';
+    document.getElementById('tourn-input').value='';
+    showToast('Team stats saved vs '+opp+'!', false);
+  } catch(e){
+    btn.disabled=false; btn.innerHTML='💾 Save Team Stats';
+    setStatus('status-live','err','⚠ Save failed: '+e.message);
+  }
+};
+
+// ── SAVE TEAM ONLY (DNP all) ─────────────────────
 window.saveTeamOnly = async function(){
   if(!isAuthorized()){ showToast('Sign in required to save',true); return; }
   if(!currentTeam){showToast('Select a team first',true);return;}
