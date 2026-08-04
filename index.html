@@ -261,6 +261,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .pl-minus{background:#E03131;color:#fff;border-color:#E03131;}
 .pl-cnt-val{font-size:24px;font-weight:800;color:var(--purple-dark);min-width:36px;text-align:center;}
 .pl-hist-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--purple);margin:10px 0 8px;}
+.roster-section{background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden;}
+.roster-header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;cursor:pointer;background:#f0effe;}
+.roster-title{font-size:13px;font-weight:700;color:var(--purple-dark);}
+.roster-chevron{font-size:11px;color:var(--purple);transition:transform .2s;}
+.roster-chevron.open{transform:rotate(180deg);}
+.roster-panel{padding:10px 12px;}
+.roster-panel.hidden{display:none;}
+.roster-player-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);}
+.roster-player-row:last-child{border-bottom:none;}
+.roster-player-name{font-size:13px;font-weight:600;color:var(--text);}
+.roster-remove-btn{background:transparent;border:1px solid #F09595;color:var(--red);border-radius:6px;font-size:11px;font-weight:700;padding:3px 8px;cursor:pointer;}
+.roster-remove-btn:active{background:var(--red-bg);}
+.add-player-form{margin-top:8px;}
+.add-player-row{display:flex;gap:6px;align-items:center;}
+.roster-add-btn{width:100%;margin-top:10px;height:36px;background:var(--purple-light);color:var(--purple);border:1px solid var(--purple-mid);border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;}
+.roster-add-btn:active{background:#CECBF6;}
 .pl-log-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--purple);margin:12px 0 6px;}
 
 /* Impact columns in table */
@@ -490,6 +506,27 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <button class="btn-outline" style="color:var(--red);border-color:#F09595;" onclick="cleanupZeroRecords()">🧹 Clean DNP</button>
     </div>
     <div id="status-players" class="status-bar hidden"></div>
+
+    <!-- ROSTER MANAGEMENT -->
+    <div class="roster-section">
+      <div class="roster-header" onclick="toggleRosterPanel()">
+        <span class="roster-title">👥 Manage Roster</span>
+        <span class="roster-chevron" id="roster-chevron">▼</span>
+      </div>
+      <div id="roster-panel" class="roster-panel hidden">
+        <div id="roster-list"></div>
+        <div id="add-player-form" class="add-player-form hidden">
+          <div class="add-player-row">
+            <input class="gi-input" id="new-player-num" placeholder="#" style="width:60px;flex:none;">
+            <input class="gi-input" id="new-player-name" placeholder="Player name" style="flex:1;">
+            <button class="lb lb-made" style="height:36px;padding:0 14px;font-size:13px;border-radius:8px;width:auto;" onclick="addPlayer()">Add</button>
+            <button class="lb lb-undo" style="height:36px;padding:0 10px;font-size:13px;border-radius:8px;width:auto;" onclick="cancelAddPlayer()">✕</button>
+          </div>
+        </div>
+        <button class="roster-add-btn" id="show-add-btn" onclick="showAddPlayer()">+ Add Player</button>
+      </div>
+    </div>
+
     <div id="pl-season-grid" class="season-grid"></div>
     <div id="pl-history-table"></div>
   </div>
@@ -840,6 +877,89 @@ function resetPlayerPlay(num) {
 }
 window.resetPlayerPlay = resetPlayerPlay;
 
+// ── ROSTER MANAGEMENT ────────────────────────────
+async function loadRoster() {
+  try {
+    var snap = await getDocs(collection(db,'rosters'));
+    var custom = [];
+    snap.forEach(function(d){ var r=d.data(); r._docId=d.id; custom.push(r); });
+    var teamCustom = custom.filter(function(r){ return r.team===currentTeam; });
+    var hardcoded = ROSTERS[currentTeam]||[];
+    var hardcodedNums = hardcoded.map(function(p){ return p.num; });
+    teamCustom.forEach(function(p){
+      if(hardcodedNums.indexOf(p.num)===-1){
+        ROSTERS[currentTeam].push({num:p.num, name:p.name, _docId:p._docId, custom:true});
+      }
+    });
+    renderRosterList();
+  } catch(e){ console.error('Roster load error:',e); }
+}
+
+function renderRosterList() {
+  var roster = ROSTERS[currentTeam]||[];
+  var html = roster.map(function(p){
+    var removeBtn = isAuthorized() && p.custom
+      ? '<button class="roster-remove-btn" onclick="removePlayer(\''+p._docId+'\',\''+p.num+'\')">Remove</button>'
+      : (isAuthorized() ? '<span style="font-size:10px;color:#ccc;">Built-in</span>' : '');
+    return '<div class="roster-player-row">'+
+      '<span class="roster-player-name">#'+p.num+' '+p.name+'</span>'+
+      removeBtn+
+    '</div>';
+  }).join('');
+  var el=document.getElementById('roster-list');
+  if(el) el.innerHTML=html;
+}
+
+window.toggleRosterPanel = function() {
+  var panel=document.getElementById('roster-panel');
+  var chevron=document.getElementById('roster-chevron');
+  var hidden=panel.classList.contains('hidden');
+  panel.classList.toggle('hidden');
+  chevron.classList.toggle('open',hidden);
+  if(hidden) renderRosterList();
+};
+
+window.showAddPlayer = function() {
+  if(!isAuthorized()){ showToast('Sign in required',true); return; }
+  document.getElementById('add-player-form').classList.remove('hidden');
+  document.getElementById('show-add-btn').style.display='none';
+  document.getElementById('new-player-num').focus();
+};
+
+window.cancelAddPlayer = function() {
+  document.getElementById('add-player-form').classList.add('hidden');
+  document.getElementById('show-add-btn').style.display='';
+  document.getElementById('new-player-num').value='';
+  document.getElementById('new-player-name').value='';
+};
+
+window.addPlayer = async function() {
+  if(!isAuthorized()){ showToast('Sign in required',true); return; }
+  var num=document.getElementById('new-player-num').value.trim();
+  var name=document.getElementById('new-player-name').value.trim();
+  if(!num||!name){ showToast('Enter number and name',true); return; }
+  var existing=(ROSTERS[currentTeam]||[]).find(function(p){ return p.num===num; });
+  if(existing){ showToast('#'+num+' already on roster',true); return; }
+  try {
+    var docRef=await addDoc(collection(db,'rosters'),{team:currentTeam,num:num,name:name});
+    ROSTERS[currentTeam].push({num:num,name:name,_docId:docRef.id,custom:true});
+    window.cancelAddPlayer();
+    renderRosterList();
+    renderPlayerRows();
+    showToast('#'+num+' '+name+' added!',false);
+  } catch(e){ showToast('Error: '+e.message,true); }
+};
+
+window.removePlayer = async function(docId, num) {
+  if(!isAuthorized()){ showToast('Sign in required',true); return; }
+  try {
+    await deleteDoc(doc(db,'rosters',docId));
+    ROSTERS[currentTeam]=ROSTERS[currentTeam].filter(function(p){ return p.num!==num; });
+    renderRosterList();
+    renderPlayerRows();
+    showToast('Player removed',false);
+  } catch(e){ showToast('Error: '+e.message,true); }
+};
 
 var cachedPlayerRecords = [];
 
@@ -1239,6 +1359,7 @@ window.selectTeam = function(id) {
   document.getElementById('team-screen').classList.add('hidden');
   initPlayerStats();
   renderPlayerRows();
+  loadRoster();
 };
 window.switchTeam = function() {
   document.getElementById('team-screen').classList.remove('hidden');
@@ -1885,7 +2006,7 @@ function showTab(name,btn){
   document.getElementById('panel-'+name).classList.add('active');
   btn.classList.add('active');
   if(name==='history') window.loadHistory();
-  if(name==='players') loadPlayerHistory();
+  if(name==='players'){ loadPlayerHistory(); loadRoster(); }
   if(name==='compare'){
     var tg=cachedGames.filter(function(g){ return g.team===currentTeam; });
     if(tg.length) populateTournamentFilters(tg);
