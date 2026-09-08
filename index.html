@@ -1198,15 +1198,15 @@ function renderPlayerHistory(records, selectedPlayer, selectedTournament) {
   // Calculate impact scores
   function calcImpact(p) {
     var ppg  = p.pts/p.games;
-    var apg  = p.ast/p.games;   // simple assists only
-    var pcpg = p.pc/p.games;    // play creations
+    var apg  = p.ast/p.games;
+    var pcpg = p.pc/p.games;
     var spg  = p.tocr/p.games;
     var bpg  = p.blk/p.games;
     var rpg  = p.reb/p.games;
     var wpg  = p.wow/p.games;
     var topg = p.toco/p.games;
-    var off  = ppg + (apg * 2.5) + (pcpg * 1.5) - (topg * 1.0);
-    var def  = (spg * 1.8) + (bpg * 1.5) + (rpg * 1.2) + (wpg * 1.5);
+    var off  = ppg + (apg * 1.0) + (pcpg * 1.5) - (topg * 1.5);
+    var def  = (rpg * 1.2) + (spg * 1.2) + (bpg * 1.2) + (wpg * 2.0);
     var total = off + def;
     return {off: off.toFixed(1), def: def.toFixed(1), total: total.toFixed(1), totalRaw: total};
   }
@@ -1229,8 +1229,8 @@ function renderPlayerHistory(records, selectedPlayer, selectedTournament) {
     'Stl':  'Steals per game. Also counts as a team Turnover Created',
     'TO':   'Turnovers per game committed by this player',
     'WOW':  'WOW plays per game — hustle plays, momentum plays, and clutch moments that do not show up in traditional stats',
-    'OPI':  'Offensive Performance Index: Pts + (Ast × 2.5) + (PC × 1.5) − (TO × 1.0)',
-    'DPI':  'Defensive Performance Index: (Stl × 1.8) + (Blk × 1.5) + (Reb × 1.2) + (WOW × 1.5)',
+    'OPI':  'Offensive Performance Index: Pts + (Ast × 1.0) + (PC × 1.5) − (TO × 1.5)',
+    'DPI':  'Defensive Performance Index: (Reb × 1.2) + (Stl × 1.2) + (Blk × 1.2) + (WOW × 2.0)',
     'TPI':  'Total Performance Index: OPI + DPI. The complete measure of a player\'s impact on the game'
   };
 
