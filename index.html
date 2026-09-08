@@ -538,6 +538,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <button class="lb lb-undo" style="height:36px;padding:0 14px;font-size:13px;border-radius:8px;width:auto;" onclick="cancelPlDate()">Cancel</button>
       </div>
     </div>
+    <div class="pl-edit-tourn-form hidden" id="pl-tourn-edit-form">
+      <span style="font-size:12px;font-weight:600;color:var(--purple);">Edit Tournament Name</span>
+      <input class="gi-input" id="pl-tourn-edit-input" placeholder="Tournament name" style="margin-top:6px;">
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <button class="lb lb-made" style="flex:1;height:36px;font-size:13px;border-radius:8px;width:auto;" onclick="savePlTourn()">Save</button>
+        <button class="lb lb-undo" style="height:36px;padding:0 14px;font-size:13px;border-radius:8px;width:auto;" onclick="cancelPlTourn()">Cancel</button>
+      </div>
+    </div>
+    <div class="pl-edit-tourn-form hidden" id="pl-opp-edit-form">
+      <span style="font-size:12px;font-weight:600;color:var(--purple);">Edit Opponent Name</span>
+      <input class="gi-input" id="pl-opp-edit-input" placeholder="Opponent name" style="margin-top:6px;">
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <button class="lb lb-made" style="flex:1;height:36px;font-size:13px;border-radius:8px;width:auto;" onclick="savePlOpp()">Save</button>
+        <button class="lb lb-undo" style="height:36px;padding:0 14px;font-size:13px;border-radius:8px;width:auto;" onclick="cancelPlOpp()">Cancel</button>
+      </div>
+    </div>
   </div>
 
   <!-- COMPARE -->
@@ -1334,13 +1350,19 @@ function renderPlayerHistory(records, selectedPlayer, selectedTournament) {
     var dateCell = tid && isAuthorized()
       ? '<span id="pl-date-label-'+tid+'">'+ds+'</span> <button class="pl-edit-tourn-btn" onclick="editPlDate(\''+tid+'\',\''+r.date+'\')">✏️</button>'
       : ds;
+    var oppCell = tid && isAuthorized()
+      ? '<span id="pl-opp-label-'+tid+'">'+(r.opp||'—')+'</span> <button class="pl-edit-tourn-btn" onclick="editPlOpp(\''+tid+'\')">✏️</button>'
+      : (r.opp||'—');
+    var tournCell = tid && isAuthorized()
+      ? '<span id="pl-tourn-label-'+tid+'">'+(r.tournament||'—')+'</span> <button class="pl-edit-tourn-btn" onclick="editPlTourn(\''+tid+'\')">✏️</button>'
+      : (r.tournament||'—');
     var editBtn = tid && isAuthorized()
       ? '<button class="pl-edit-stats-btn" onclick="editPlStats(\''+tid+'\')">✏️ Edit</button>'
       : '';
     return '<tr>'+
       '<td style="white-space:nowrap;">'+dateCell+'</td>'+
-      '<td>'+(r.opp||'—')+'</td>'+
-      '<td>'+(r.tournament||'—')+'</td>'+
+      '<td style="white-space:nowrap;">'+oppCell+'</td>'+
+      '<td style="white-space:nowrap;">'+tournCell+'</td>'+
       '<td>'+(r.pts||0)+'</td>'+
       '<td>'+(r.layupm||0)+'/'+(r.layupa||0)+'</td>'+
       '<td>'+(r.ftm||0)+'/'+(r.fta||0)+'</td>'+
