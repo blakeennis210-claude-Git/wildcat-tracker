@@ -532,6 +532,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
     <div id="pl-season-grid" class="season-grid"></div>
     <div id="pl-history-table"></div>
+    <div class="pl-edit-tourn-form hidden" id="pl-date-edit-form">
+      <span style="font-size:12px;font-weight:600;color:var(--purple);">Edit Game Date</span>
+      <input type="date" class="gi-input" id="pl-date-edit-input" style="margin-top:6px;">
+      <div style="display:flex;gap:6px;margin-top:6px;">
+        <button class="lb lb-made" style="flex:1;height:36px;font-size:13px;border-radius:8px;width:auto;" onclick="savePlDate()">Save</button>
+        <button class="lb lb-undo" style="height:36px;padding:0 14px;font-size:13px;border-radius:8px;width:auto;" onclick="cancelPlDate()">Cancel</button>
+      </div>
+    </div>
   </div>
 
   <!-- COMPARE -->
@@ -1125,19 +1133,24 @@ window.cancelPlDate = function() {
 };
 window.savePlDate = async function() {
   if(!isAuthorized()){ showToast('Sign in required',true); return; }
-  if(!_plDateEditId) return;
-  var newDate = document.getElementById('pl-date-edit-input').value;
+  if(!_plDateEditId){ showToast('No record selected',true); return; }
+  var inp = document.getElementById('pl-date-edit-input');
+  if(!inp){ showToast('Form not found',true); return; }
+  var newDate = inp.value;
   if(!newDate){ showToast('Select a date',true); return; }
+  var docId = _plDateEditId;
   try {
-    await updateDoc(doc(db,'playerStats',_plDateEditId), {date: newDate});
-    var rec = cachedPlayerRecords.find(function(r){ return r._plDocId===_plDateEditId; });
+    await updateDoc(doc(db,'playerStats',docId), {date: newDate});
+    var rec = cachedPlayerRecords.find(function(r){ return r._plDocId===docId; });
     if(rec) rec.date = newDate;
-    var lbl = document.getElementById('pl-date-label-'+_plDateEditId);
+    var lbl = document.getElementById('pl-date-label-'+docId);
     if(lbl) {
       var d = new Date(newDate+'T12:00:00');
       lbl.textContent = d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
     }
-    window.cancelPlDate();
+    _plDateEditId = null;
+    var f=document.getElementById('pl-date-edit-form');
+    if(f) f.classList.add('hidden');
     showToast('Date updated!', false);
   } catch(e){ showToast('Update failed: '+e.message, true); }
 };
@@ -1397,14 +1410,6 @@ function renderPlayerHistory(records, selectedPlayer, selectedTournament) {
     '<div style="display:flex;gap:6px;margin-top:10px;">'+
       '<button class="lb lb-made" style="flex:1;height:40px;font-size:13px;border-radius:8px;width:auto;" onclick="savePlStats()">💾 Save Stats</button>'+
       '<button class="lb lb-undo" style="height:40px;padding:0 16px;font-size:13px;border-radius:8px;width:auto;" onclick="cancelPlStats()">Cancel</button>'+
-    '</div>'+
-  '</div>'+
-  '<div class="pl-edit-tourn-form hidden" id="pl-date-edit-form">'+
-    '<span style="font-size:12px;font-weight:600;color:var(--purple);">Edit Game Date</span>'+
-    '<input type="date" class="gi-input" id="pl-date-edit-input" style="margin-top:6px;">'+
-    '<div style="display:flex;gap:6px;margin-top:6px;">'+
-      '<button class="lb lb-made" style="flex:1;height:36px;font-size:13px;border-radius:8px;width:auto;" onclick="savePlDate()">Save</button>'+
-      '<button class="lb lb-undo" style="height:36px;padding:0 14px;font-size:13px;border-radius:8px;width:auto;" onclick="cancelPlDate()">Cancel</button>'+
     '</div>'+
   '</div>';
 }
