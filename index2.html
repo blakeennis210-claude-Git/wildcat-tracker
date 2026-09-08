@@ -1104,6 +1104,44 @@ window.savePlStats = async function() {
     applyPlayerFilter(); // refresh the view
   } catch(e){ showToast('Update failed: '+e.message, true); }
 };
+var _plDateEditId = null;
+
+window.editPlDate = function(docId, currentDate) {
+  if(!isAuthorized()){ showToast('Sign in required',true); return; }
+  _plDateEditId = docId;
+  var inp = document.getElementById('pl-date-edit-input');
+  inp.value = currentDate||'';
+  ['pl-tourn-edit-form','pl-opp-edit-form','pl-stats-edit-form'].forEach(function(id){
+    var f=document.getElementById(id); if(f) f.classList.add('hidden');
+  });
+  var form=document.getElementById('pl-date-edit-form');
+  form.classList.remove('hidden');
+  form.scrollIntoView({behavior:'smooth'});
+};
+window.cancelPlDate = function() {
+  _plDateEditId = null;
+  var f=document.getElementById('pl-date-edit-form');
+  if(f) f.classList.add('hidden');
+};
+window.savePlDate = async function() {
+  if(!isAuthorized()){ showToast('Sign in required',true); return; }
+  if(!_plDateEditId) return;
+  var newDate = document.getElementById('pl-date-edit-input').value;
+  if(!newDate){ showToast('Select a date',true); return; }
+  try {
+    await updateDoc(doc(db,'playerStats',_plDateEditId), {date: newDate});
+    var rec = cachedPlayerRecords.find(function(r){ return r._plDocId===_plDateEditId; });
+    if(rec) rec.date = newDate;
+    var lbl = document.getElementById('pl-date-label-'+_plDateEditId);
+    if(lbl) {
+      var d = new Date(newDate+'T12:00:00');
+      lbl.textContent = d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    }
+    window.cancelPlDate();
+    showToast('Date updated!', false);
+  } catch(e){ showToast('Update failed: '+e.message, true); }
+};
+
 var _plTournEditId = null;
 var _plOppEditId = null;
 
@@ -1282,11 +1320,14 @@ function renderPlayerHistory(records, selectedPlayer, selectedTournament) {
     var d=new Date(r.date+'T12:00:00');
     var ds=d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
     var tid=r._plDocId||'';
+    var dateCell = tid && isAuthorized()
+      ? '<span id="pl-date-label-'+tid+'">'+ds+'</span> <button class="pl-edit-tourn-btn" onclick="editPlDate(\''+tid+'\',\''+r.date+'\')">✏️</button>'
+      : ds;
     var editBtn = tid && isAuthorized()
       ? '<button class="pl-edit-stats-btn" onclick="editPlStats(\''+tid+'\')">✏️ Edit</button>'
       : '';
     return '<tr>'+
-      '<td>'+ds+'</td>'+
+      '<td style="white-space:nowrap;">'+dateCell+'</td>'+
       '<td>'+(r.opp||'—')+'</td>'+
       '<td>'+(r.tournament||'—')+'</td>'+
       '<td>'+(r.pts||0)+'</td>'+
@@ -1356,6 +1397,14 @@ function renderPlayerHistory(records, selectedPlayer, selectedTournament) {
     '<div style="display:flex;gap:6px;margin-top:10px;">'+
       '<button class="lb lb-made" style="flex:1;height:40px;font-size:13px;border-radius:8px;width:auto;" onclick="savePlStats()">💾 Save Stats</button>'+
       '<button class="lb lb-undo" style="height:40px;padding:0 16px;font-size:13px;border-radius:8px;width:auto;" onclick="cancelPlStats()">Cancel</button>'+
+    '</div>'+
+  '</div>'+
+  '<div class="pl-edit-tourn-form hidden" id="pl-date-edit-form">'+
+    '<span style="font-size:12px;font-weight:600;color:var(--purple);">Edit Game Date</span>'+
+    '<input type="date" class="gi-input" id="pl-date-edit-input" style="margin-top:6px;">'+
+    '<div style="display:flex;gap:6px;margin-top:6px;">'+
+      '<button class="lb lb-made" style="flex:1;height:36px;font-size:13px;border-radius:8px;width:auto;" onclick="savePlDate()">Save</button>'+
+      '<button class="lb lb-undo" style="height:36px;padding:0 14px;font-size:13px;border-radius:8px;width:auto;" onclick="cancelPlDate()">Cancel</button>'+
     '</div>'+
   '</div>';
 }
