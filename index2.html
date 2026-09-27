@@ -180,6 +180,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .gc-edit:active{background:var(--purple-light);}
 .edit-opp-row{display:flex;gap:6px;align-items:center;margin-top:8px;}
 .edit-opp-row.hidden{display:none;}
+.edit-stats-form{display:none;margin-top:10px;background:#f0effe;border:1px solid var(--border);border-radius:8px;padding:10px;}
+.edit-stats-form.show{display:block;}
+.esf-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text2);margin-bottom:8px;}
+.esf-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;}
+.esf-field{display:flex;flex-direction:column;gap:2px;}
+.esf-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;}
+.esf-input{height:32px;padding:0 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:#fff;color:var(--text);width:100%;}
+.esf-input:focus{outline:none;border-color:var(--purple-mid);}
+.esf-row{display:flex;gap:6px;margin-top:4px;}
+.esf-save{height:34px;padding:0 14px;background:var(--purple);color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;}
+.esf-save:active{background:var(--purple-dark);}
+.esf-cancel{height:34px;padding:0 12px;background:transparent;color:var(--text2);border:1px solid var(--border);border-radius:7px;font-size:12px;cursor:pointer;}
 .del-confirm{display:none;align-items:center;gap:8px;margin-top:10px;padding:8px 10px;background:var(--red-bg);border:1px solid #F09595;border-radius:8px;}
 .del-confirm.show{display:flex;}
 .del-confirm span{font-size:13px;color:var(--red);flex:1;font-weight:500;}
@@ -321,11 +333,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 </style>
 </head>
 <body>
-<div class="staging-banner">*** STAGING - NOT LIVE ***</div>
 
 <!-- TEAM SELECT -->
-<div id="team-screen">
-  <div class="staging-banner">*** STAGING - NOT LIVE ***</div>
+<div style="background:#c00;color:#fff;text-align:center;padding:6px;font-weight:700;font-size:13px;letter-spacing:.5px;">*** STAGING - NOT LIVE ***</div><div id="team-screen">
   <div class="ts-logo">WOW</div>
   <div class="ts-title">Wortham Oaks Wildcats</div>
   <div class="ts-sub">Select a team to begin</div>
@@ -1812,6 +1822,61 @@ window.saveTourn = async function(docId) {
     if(idx>-1) cachedGames[idx].tournament=newTourn;
   } catch(e){showToast('Update failed: '+e.message,true);}
 };
+window.editStats = function(docId) {
+  // close any other open stats forms first
+  document.querySelectorAll('.edit-stats-form.show').forEach(function(f){
+    if(f.id !== 'edit-stats-form-'+docId) f.classList.remove('show');
+  });
+  var form = document.getElementById('edit-stats-form-'+docId);
+  var isOpen = form.classList.contains('show');
+  if(isOpen) { form.classList.remove('show'); }
+  else { form.classList.add('show'); }
+};
+window.cancelEditStats = function(docId) {
+  document.getElementById('edit-stats-form-'+docId).classList.remove('show');
+};
+window.saveStats = async function(docId) {
+  if(!isAuthorized()){ showToast('Sign in required',true); return; }
+  function n(id){ return parseInt(document.getElementById(id).value)||0; }
+  var lm=n('esf-lm-'+docId), la=n('esf-la-'+docId);
+  var fm=n('esf-fm-'+docId), fa=n('esf-fa-'+docId);
+  var midm=n('esf-midm-'+docId), mida=n('esf-mida-'+docId);
+  var csm=n('esf-csm-'+docId), csa=n('esf-csa-'+docId);
+  var opm=n('esf-opm-'+docId), opa=n('esf-opa-'+docId);
+  var tcr=n('esf-tcr-'+docId), tco=n('esf-tco-'+docId);
+  var rwc=n('esf-rwc-'+docId), rop=n('esf-rop-'+docId);
+  var oppScore=n('esf-oppscore-'+docId);
+  // recalc derived stats
+  var t3m=csm+opm, t3a=csa+opa;
+  var pts=(lm*2)+(fm*1)+(t3m*3);
+  var efg=((lm*2+fm+t3m*3)/2/(la+fa+t3a))*100;
+  var efgRnd=(la+fa+t3a)>0?Math.round(efg):null;
+  var fgm=lm+midm+t3m, fga=la+mida+t3a;
+  try {
+    await updateDoc(doc(db,COLL,docId),{
+      lm:lm,la:la,fm:fm,fa:fa,
+      midm:midm,mida:mida,
+      csm:csm,csa:csa,opm:opm,opa:opa,
+      t3m:t3m,t3a:t3a,
+      tcr:tcr,tco:tco,
+      rwc:rwc,rop:rop,
+      oppScore:oppScore,
+      pts:pts,
+      efg:efgRnd,
+      fgm:fgm,fga:fga
+    });
+    // update cached game
+    var idx=cachedGames.findIndex(function(g){return g._docId===docId;});
+    if(idx>-1){
+      Object.assign(cachedGames[idx],{lm:lm,la:la,fm:fm,fa:fa,midm:midm,mida:mida,
+        csm:csm,csa:csa,opm:opm,opa:opa,t3m:t3m,t3a:t3a,
+        tcr:tcr,tco:tco,rwc:rwc,rop:rop,oppScore:oppScore,pts:pts,efg:efgRnd,fgm:fgm,fga:fga});
+    }
+    cancelEditStats(docId);
+    showToast('Stats updated!',false);
+    loadHistory(); // re-render to reflect new badge values
+  } catch(e){ showToast('Save failed: '+e.message,true); }
+};
 // ── HISTORY ──────────────────────────────────────
 window.loadHistory = async function(){
   setStatus('status-hist','loading','Loading…');
@@ -1938,6 +2003,7 @@ function renderHistory(games){
           '<div style="display:flex;gap:6px;">'+
             '<button class="gc-edit" onclick="editOpp(\''+docId+'\',\''+g.opp.replace(/'/g,"\\'")+'\')" id="edit-btn-'+docId+'">✏️ Opp</button>'+
             '<button class="gc-edit" onclick="editTourn(\''+docId+'\',\''+((g.tournament||'').replace(/'/g,"\\'"))+'\')" id="edit-tourn-btn-'+docId+'">✏️ Tourn</button>'+
+            '<button class="gc-edit" onclick="editStats(\''+docId+'\')" id="edit-stats-btn-'+docId+'">✏️ Stats</button>'+
             '<button class="gc-del" onclick="deleteGame(\''+docId+'\')">🗑</button>'+
           '</div>'+
         '</div>'+
@@ -1950,6 +2016,30 @@ function renderHistory(games){
           '<input class="gi-input" id="edit-tourn-input-'+docId+'" style="flex:1;" value="'+(g.tournament||'')+'">'+
           '<button class="lb lb-made" style="height:36px;padding:0 12px;font-size:13px;border-radius:8px;width:auto;" onclick="saveTourn(\''+docId+'\')">Save</button>'+
           '<button class="lb lb-undo" style="height:36px;padding:0 10px;font-size:13px;border-radius:8px;width:auto;" onclick="cancelEditTourn(\''+docId+'\')">Cancel</button>'+
+        '</div>'+
+        '<div class="edit-stats-form" id="edit-stats-form-'+docId+'">'+
+          '<div class="esf-title">Edit Team Stats</div>'+
+          '<div class="esf-grid">'+
+            '<div class="esf-field"><div class="esf-label">Layup Made</div><input class="esf-input" id="esf-lm-'+docId+'" type="number" min="0" value="'+g.lm+'"></div>'+
+            '<div class="esf-field"><div class="esf-label">Layup Att</div><input class="esf-input" id="esf-la-'+docId+'" type="number" min="0" value="'+g.la+'"></div>'+
+            '<div class="esf-field"><div class="esf-label">FT Made</div><input class="esf-input" id="esf-fm-'+docId+'" type="number" min="0" value="'+g.fm+'"></div>'+
+            '<div class="esf-field"><div class="esf-label">FT Att</div><input class="esf-input" id="esf-fa-'+docId+'" type="number" min="0" value="'+g.fa+'"></div>'+
+            '<div class="esf-field"><div class="esf-label">Mid Made</div><input class="esf-input" id="esf-midm-'+docId+'" type="number" min="0" value="'+(g.midm||0)+'"></div>'+
+            '<div class="esf-field"><div class="esf-label">Mid Att</div><input class="esf-input" id="esf-mida-'+docId+'" type="number" min="0" value="'+(g.mida||0)+'"></div>'+
+            '<div class="esf-field"><div class="esf-label">C&S 3 Made</div><input class="esf-input" id="esf-csm-'+docId+'" type="number" min="0" value="'+(g.csm||0)+'"></div>'+
+            '<div class="esf-field"><div class="esf-label">C&S 3 Att</div><input class="esf-input" id="esf-csa-'+docId+'" type="number" min="0" value="'+(g.csa||0)+'"></div>'+
+            '<div class="esf-field"><div class="esf-label">OP3 Made</div><input class="esf-input" id="esf-opm-'+docId+'" type="number" min="0" value="'+(g.opm||0)+'"></div>'+
+            '<div class="esf-field"><div class="esf-label">OP3 Att</div><input class="esf-input" id="esf-opa-'+docId+'" type="number" min="0" value="'+(g.opa||0)+'"></div>'+
+            '<div class="esf-field"><div class="esf-label">TO Created</div><input class="esf-input" id="esf-tcr-'+docId+'" type="number" min="0" value="'+g.tcr+'"></div>'+
+            '<div class="esf-field"><div class="esf-label">TO Committed</div><input class="esf-input" id="esf-tco-'+docId+'" type="number" min="0" value="'+g.tco+'"></div>'+
+            '<div class="esf-field"><div class="esf-label">WC Rebounds</div><input class="esf-input" id="esf-rwc-'+docId+'" type="number" min="0" value="'+(g.rwc||0)+'"></div>'+
+            '<div class="esf-field"><div class="esf-label">Opp Rebounds</div><input class="esf-input" id="esf-rop-'+docId+'" type="number" min="0" value="'+(g.rop||0)+'"></div>'+
+            '<div class="esf-field"><div class="esf-label">Opp Score</div><input class="esf-input" id="esf-oppscore-'+docId+'" type="number" min="0" value="'+(g.oppScore||0)+'"></div>'+
+          '</div>'+
+          '<div class="esf-row">'+
+            '<button class="esf-save" onclick="saveStats(\''+docId+'\')">💾 Save Stats</button>'+
+            '<button class="esf-cancel" onclick="cancelEditStats(\''+docId+'\')">Cancel</button>'+
+          '</div>'+
         '</div>'+
         '<div class="badges">'+
           '<span class="badge b-purple">'+g.pts+' pts</span>'+
