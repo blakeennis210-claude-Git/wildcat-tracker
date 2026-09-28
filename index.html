@@ -1382,7 +1382,7 @@ function renderPlayerHistory(records, selectedPlayer, selectedTournament) {
     '<tbody>'+rows+'</tbody></table></div>';
 
   // Game log header helper
-  var gameLogHdr='<tr><th>Date</th><th>Opponent</th><th>Tournament</th><th>Pts</th><th>Lay</th><th>FT</th><th>Mid</th><th>3PT</th><th>Reb</th><th>Ast</th><th>PC</th><th>Blk</th><th>Stl</th><th>TO</th><th>WOW</th><th></th></tr>';
+  var gameLogHdr='<tr><th>Date</th><th>Opponent</th><th>Tournament</th><th>Pts</th><th>Lay</th><th>FT</th><th>Mid</th><th>3PT</th><th>Reb</th><th>Ast</th><th>PC</th><th>Blk</th><th>Stl</th><th>TO</th><th>WOW</th><th class="imp-off-hdr">OPI</th><th class="imp-def-hdr">DPI</th><th class="imp-total-hdr">TPI</th><th></th></tr>';
 
   function makeGameRow(r) {
     var d=new Date(r.date+'T12:00:00');
@@ -1411,6 +1411,12 @@ function renderPlayerHistory(records, selectedPlayer, selectedTournament) {
       '<td>'+(r.threem||0)+'/'+(r.threea||0)+'</td>'+
       '<td>'+(r.reb||0)+'</td><td>'+(r.ast||0)+'</td><td>'+(r.pc||0)+'</td><td>'+(r.blk||0)+'</td>'+
       '<td>'+(r.tocr||0)+'</td><td>'+(r.toco||0)+'</td><td>'+(r.wow||0)+'</td>'+
+      (function(){
+        var pts=(r.layupm||0)*2+(r.ftm||0)+(r.threem||0)*3+(r.midm||0)*2;
+        var opi=pts+(r.ast||0)*1.0+(r.pc||0)*1.5-(r.toco||0)*1.5;
+        var dpi=(r.reb||0)*1.2+(r.tocr||0)*1.2+(r.blk||0)*1.2+(r.wow||0)*2.0;
+        return '<td class="imp-off">'+opi.toFixed(1)+'</td><td class="imp-def">'+dpi.toFixed(1)+'</td><td class="imp-total">'+(opi+dpi).toFixed(1)+'</td>';
+      })()+
       '<td>'+editBtn+'</td>'+
     '</tr>';
   }
