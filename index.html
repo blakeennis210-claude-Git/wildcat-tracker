@@ -198,6 +198,35 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .del-yes{height:32px;padding:0 12px;background:var(--red);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;}
 .del-no{height:32px;padding:0 10px;background:transparent;color:var(--red);border:1px solid #F09595;border-radius:6px;font-size:12px;cursor:pointer;}
 .no-games{text-align:center;padding:3rem 1rem;color:#aaa;font-size:14px;line-height:1.8;}
+/* HISTORY PLAYER ACCORDION */
+.gc-pl-toggle{width:100%;margin-top:10px;padding:7px 10px;background:var(--purple-light);border:1px solid var(--border);border-radius:7px;color:var(--text2);font-size:12px;font-weight:700;cursor:pointer;text-align:left;display:flex;justify-content:space-between;align-items:center;}
+.gc-pl-toggle:active{background:#e0ddf7;}
+.gc-pl-body{display:none;margin-top:8px;}
+.gc-pl-body.show{display:block;}
+.gc-pl-table{width:100%;border-collapse:collapse;font-size:11px;}
+.gc-pl-table th{padding:4px 5px;text-align:center;color:var(--text3);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--border);background:#f7f6ff;}
+.gc-pl-table th:first-child{text-align:left;}
+.gc-pl-table td{padding:5px 5px;text-align:center;border-bottom:1px solid #f0effe;font-size:11px;color:var(--text);}
+.gc-pl-table td:first-child{text-align:left;font-weight:600;white-space:nowrap;}
+.gc-pl-table tr:last-child td{border-bottom:none;}
+.gc-pl-table .td-opi{color:#2B8A3E;font-weight:700;}
+.gc-pl-table .td-dpi{color:#1971c2;font-weight:700;}
+.gc-pl-table .td-tpi{color:var(--purple);font-weight:700;}
+.gc-pl-edit-btn{background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--text2);cursor:pointer;font-size:10px;padding:2px 6px;}
+.gc-pl-edit-btn:active{background:var(--purple-light);}
+.gc-add-player{width:100%;margin-top:8px;padding:7px;background:transparent;border:1px dashed var(--border);border-radius:7px;color:var(--text3);font-size:12px;font-weight:600;cursor:pointer;text-align:center;}
+.gc-add-player:active{background:var(--purple-light);}
+/* per-player edit/add form inside History */
+.gc-pef{display:none;margin-top:8px;background:#f0effe;border:1px solid var(--border);border-radius:8px;padding:10px;}
+.gc-pef.show{display:block;}
+.gc-pef-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text2);margin-bottom:8px;}
+.gc-pef-select{width:100%;height:36px;border:1px solid var(--border);border-radius:7px;font-size:13px;padding:0 8px;margin-bottom:8px;background:#fff;color:var(--text);}
+.gc-pef-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px;}
+.gc-pef-field{display:flex;flex-direction:column;gap:2px;}
+.gc-pef-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.4px;}
+.gc-pef-input{height:32px;padding:0 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:#fff;color:var(--text);width:100%;}
+.gc-pef-input:focus{outline:none;border-color:var(--purple-mid);}
+.gc-pef-btns{display:flex;gap:6px;}
 
 .compare-setup{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px;}
 .compare-setup h3{font-size:13px;font-weight:700;color:var(--purple-dark);margin-bottom:6px;}
@@ -1877,6 +1906,212 @@ window.saveStats = async function(docId) {
     loadHistory(); // re-render to reflect new badge values
   } catch(e){ showToast('Save failed: '+e.message,true); }
 };
+// ── HISTORY PLAYER ACCORDION ─────────────────────
+// cache of playerStats docs per gameDate+opp key
+var _gcPlCache = {};
+
+function calcPerGameImpact(r) {
+  var pts = (r.layupm||0)*2+(r.ftm||0)+(r.threem||0)*3+(r.midm||0)*2;
+  var opi = pts + (r.ast||0)*1.0 + (r.pc||0)*1.5 - (r.toco||0)*1.5;
+  var dpi = (r.reb||0)*1.2 + (r.tocr||0)*1.2 + (r.blk||0)*1.2 + (r.wow||0)*2.0;
+  return {opi:opi.toFixed(1), dpi:dpi.toFixed(1), tpi:(opi+dpi).toFixed(1)};
+}
+
+window.toggleGamePlayers = async function(docId, date, opp) {
+  var body = document.getElementById('gc-pl-body-'+docId);
+  var arrow = document.getElementById('gc-pl-arrow-'+docId);
+  if(body.classList.contains('show')) {
+    body.classList.remove('show');
+    arrow.textContent='▼';
+    return;
+  }
+  arrow.textContent='▲';
+  body.innerHTML='<div style="padding:8px;color:#aaa;font-size:12px;">Loading…</div>';
+  body.classList.add('show');
+  try {
+    var snap = await getDocs(collection(db,'playerStats'));
+    var recs = [];
+    snap.forEach(function(d){ var r=d.data(); r._id=d.id; recs.push(r); });
+    // filter to this game by team+date+opp
+    var gameRecs = recs.filter(function(r){
+      return r.team===currentTeam && r.date===date && r.opp===opp;
+    });
+    _gcPlCache[docId] = {date:date, opp:opp, recs:gameRecs};
+    renderGamePlayers(docId);
+  } catch(e) {
+    body.innerHTML='<div style="padding:8px;color:var(--red);font-size:12px;">⚠ '+e.message+'</div>';
+  }
+};
+
+function renderGamePlayers(docId) {
+  var cache = _gcPlCache[docId];
+  if(!cache) return;
+  var recs = cache.recs;
+  var body = document.getElementById('gc-pl-body-'+docId);
+  var rows='';
+  recs.sort(function(a,b){ return parseInt(a.playerNum)-parseInt(b.playerNum); });
+  recs.forEach(function(r){
+    var imp=calcPerGameImpact(r);
+    var pts=(r.layupm||0)*2+(r.ftm||0)+(r.threem||0)*3+(r.midm||0)*2;
+    rows+=
+      '<tr>'+
+      '<td>#'+r.playerNum+' '+r.playerName+'</td>'+
+      '<td>'+pts+'</td>'+
+      '<td>'+(r.layupm||0)+'/'+(r.layupa||0)+'</td>'+
+      '<td>'+(r.ftm||0)+'/'+(r.fta||0)+'</td>'+
+      '<td>'+(r.midm||0)+'/'+(r.mida||0)+'</td>'+
+      '<td>'+(r.threem||0)+'/'+(r.threea||0)+'</td>'+
+      '<td>'+(r.reb||0)+'</td>'+
+      '<td>'+(r.ast||0)+'</td>'+
+      '<td>'+(r.pc||0)+'</td>'+
+      '<td>'+(r.blk||0)+'</td>'+
+      '<td>'+(r.tocr||0)+'</td>'+
+      '<td>'+(r.toco||0)+'</td>'+
+      '<td>'+(r.wow||0)+'</td>'+
+      '<td class="td-opi">'+imp.opi+'</td>'+
+      '<td class="td-dpi">'+imp.dpi+'</td>'+
+      '<td class="td-tpi">'+imp.tpi+'</td>'+
+      (isAuthorized()?'<td><button class="gc-pl-edit-btn" onclick="openEditPlayerStats(\''+docId+'\',\''+r._id+'\')">✏️</button></td>':'<td></td>')+
+      '</tr>';
+  });
+  var tbl='<div style="overflow-x:auto;"><table class="gc-pl-table">'+
+    '<thead><tr><th>Player</th><th>Pts</th><th>Lay</th><th>FT</th><th>Mid</th><th>3PT</th>'+
+    '<th>Reb</th><th>Ast</th><th>PC</th><th>Blk</th><th>Stl</th><th>TO</th><th>WOW</th>'+
+    '<th>OPI</th><th>DPI</th><th>TPI</th><th></th></tr></thead>'+
+    '<tbody>'+(rows||'<tr><td colspan="17" style="text-align:center;color:#aaa;padding:10px;">No player stats saved for this game.</td></tr>')+'</tbody></table></div>';
+  var addBtn = isAuthorized()
+    ? '<button class="gc-add-player" onclick="openAddPlayerStats(\''+docId+'\')">+ Add Player Stats</button>'
+    : '';
+  var editForm=
+    '<div class="gc-pef" id="gc-pef-'+docId+'">'+
+      '<div class="gc-pef-title" id="gc-pef-title-'+docId+'">Add Player Stats</div>'+
+      '<select class="gc-pef-select" id="gc-pef-player-'+docId+'">'+
+        '<option value="">Select player…</option>'+
+        (ROSTERS[currentTeam]||[]).map(function(p){ return '<option value="'+p.num+'|'+p.name+'">'+('#'+p.num+' '+p.name)+'</option>'; }).join('')+
+      '</select>'+
+      '<div class="gc-pef-grid">'+
+        '<div class="gc-pef-field"><div class="gc-pef-label">Layup Made</div><input class="gc-pef-input" id="gc-pef-layupm-'+docId+'" type="number" min="0" value="0"></div>'+
+        '<div class="gc-pef-field"><div class="gc-pef-label">Layup Att</div><input class="gc-pef-input" id="gc-pef-layupa-'+docId+'" type="number" min="0" value="0"></div>'+
+        '<div class="gc-pef-field"><div class="gc-pef-label">FT Made</div><input class="gc-pef-input" id="gc-pef-ftm-'+docId+'" type="number" min="0" value="0"></div>'+
+        '<div class="gc-pef-field"><div class="gc-pef-label">FT Att</div><input class="gc-pef-input" id="gc-pef-fta-'+docId+'" type="number" min="0" value="0"></div>'+
+        '<div class="gc-pef-field"><div class="gc-pef-label">Mid Made</div><input class="gc-pef-input" id="gc-pef-midm-'+docId+'" type="number" min="0" value="0"></div>'+
+        '<div class="gc-pef-field"><div class="gc-pef-label">Mid Att</div><input class="gc-pef-input" id="gc-pef-mida-'+docId+'" type="number" min="0" value="0"></div>'+
+        '<div class="gc-pef-field"><div class="gc-pef-label">C&S 3 Made</div><input class="gc-pef-input" id="gc-pef-threem-'+docId+'" type="number" min="0" value="0"></div>'+
+        '<div class="gc-pef-field"><div class="gc-pef-label">C&S 3 Att</div><input class="gc-pef-input" id="gc-pef-threea-'+docId+'" type="number" min="0" value="0"></div>'+
+        '<div class="gc-pef-field"><div class="gc-pef-label">Rebounds</div><input class="gc-pef-input" id="gc-pef-reb-'+docId+'" type="number" min="0" value="0"></div>'+
+        '<div class="gc-pef-field"><div class="gc-pef-label">Assists</div><input class="gc-pef-input" id="gc-pef-ast-'+docId+'" type="number" min="0" value="0"></div>'+
+        '<div class="gc-pef-field"><div class="gc-pef-label">Play Creations</div><input class="gc-pef-input" id="gc-pef-pc-'+docId+'" type="number" min="0" value="0"></div>'+
+        '<div class="gc-pef-field"><div class="gc-pef-label">Blocks</div><input class="gc-pef-input" id="gc-pef-blk-'+docId+'" type="number" min="0" value="0"></div>'+
+        '<div class="gc-pef-field"><div class="gc-pef-label">Steals (TO Cr)</div><input class="gc-pef-input" id="gc-pef-tocr-'+docId+'" type="number" min="0" value="0"></div>'+
+        '<div class="gc-pef-field"><div class="gc-pef-label">Turnovers</div><input class="gc-pef-input" id="gc-pef-toco-'+docId+'" type="number" min="0" value="0"></div>'+
+        '<div class="gc-pef-field"><div class="gc-pef-label">WOW</div><input class="gc-pef-input" id="gc-pef-wow-'+docId+'" type="number" min="0" value="0"></div>'+
+      '</div>'+
+      '<div class="gc-pef-btns">'+
+        '<button class="esf-save" onclick="saveGamePlayerStats(\''+docId+'\')">💾 Save</button>'+
+        '<button class="esf-cancel" onclick="closePlayerForm(\''+docId+'\')">Cancel</button>'+
+      '</div>'+
+    '</div>';
+  body.innerHTML=tbl+addBtn+editForm;
+}
+
+var _gcPefEditId = {}; // docId -> playerStats _id being edited
+
+window.openAddPlayerStats = function(docId) {
+  var cache=_gcPlCache[docId];
+  if(!cache) return;
+  // remove players who already have stats
+  var existing=cache.recs.map(function(r){return r.playerNum;});
+  var sel=document.getElementById('gc-pef-player-'+docId);
+  if(sel){
+    Array.from(sel.options).forEach(function(o){
+      if(o.value) o.disabled=existing.indexOf(o.value.split('|')[0])>-1;
+    });
+    sel.value='';
+    sel.style.display='';
+  }
+  delete _gcPefEditId[docId];
+  document.getElementById('gc-pef-title-'+docId).textContent='Add Player Stats';
+  // clear inputs
+  ['layupm','layupa','ftm','fta','midm','mida','threem','threea','reb','ast','pc','blk','tocr','toco','wow'].forEach(function(k){
+    var el=document.getElementById('gc-pef-'+k+'-'+docId);
+    if(el) el.value='0';
+  });
+  document.getElementById('gc-pef-'+docId).classList.add('show');
+};
+
+window.openEditPlayerStats = function(docId, plDocId) {
+  var cache=_gcPlCache[docId];
+  if(!cache) return;
+  var r=cache.recs.find(function(x){return x._id===plDocId;});
+  if(!r) return;
+  _gcPefEditId[docId]=plDocId;
+  // hide the player selector (we already know who)
+  var sel=document.getElementById('gc-pef-player-'+docId);
+  if(sel) sel.style.display='none';
+  document.getElementById('gc-pef-title-'+docId).textContent='Editing: #'+r.playerNum+' '+r.playerName;
+  var fields=['layupm','layupa','ftm','fta','midm','mida','threem','threea','reb','ast','pc','blk','tocr','toco','wow'];
+  fields.forEach(function(k){
+    var el=document.getElementById('gc-pef-'+k+'-'+docId);
+    if(el) el.value=r[k]||0;
+  });
+  document.getElementById('gc-pef-'+docId).classList.add('show');
+};
+
+window.closePlayerForm = function(docId) {
+  document.getElementById('gc-pef-'+docId).classList.remove('show');
+  var sel=document.getElementById('gc-pef-player-'+docId);
+  if(sel) sel.style.display='';
+  delete _gcPefEditId[docId];
+};
+
+window.saveGamePlayerStats = async function(docId) {
+  if(!isAuthorized()){ showToast('Sign in required',true); return; }
+  var cache=_gcPlCache[docId];
+  if(!cache) return;
+  function n(k){ return parseInt(document.getElementById('gc-pef-'+k+'-'+docId).value)||0; }
+  var layupm=n('layupm'),layupa=n('layupa'),ftm=n('ftm'),fta=n('fta');
+  var midm=n('midm'),mida=n('mida'),threem=n('threem'),threea=n('threea');
+  var reb=n('reb'),ast=n('ast'),pc=n('pc'),blk=n('blk'),tocr=n('tocr'),toco=n('toco'),wow=n('wow');
+  var pts=layupm*2+ftm+threem*3+midm*2;
+  var editingId=_gcPefEditId[docId];
+  try {
+    if(editingId) {
+      // update existing
+      await updateDoc(doc(db,'playerStats',editingId),{
+        layupm:layupm,layupa:layupa,ftm:ftm,fta:fta,
+        midm:midm,mida:mida,threem:threem,threea:threea,
+        reb:reb,ast:ast,pc:pc,blk:blk,tocr:tocr,toco:toco,wow:wow,pts:pts
+      });
+      var idx=cache.recs.findIndex(function(r){return r._id===editingId;});
+      if(idx>-1) Object.assign(cache.recs[idx],{layupm:layupm,layupa:layupa,ftm:ftm,fta:fta,midm:midm,mida:mida,threem:threem,threea:threea,reb:reb,ast:ast,pc:pc,blk:blk,tocr:tocr,toco:toco,wow:wow,pts:pts});
+      showToast('Player stats updated!',false);
+    } else {
+      // add new
+      var sel=document.getElementById('gc-pef-player-'+docId);
+      if(!sel||!sel.value){ showToast('Select a player',true); return; }
+      var parts=sel.value.split('|');
+      var pNum=parts[0], pName=parts.slice(1).join('|');
+      var newRec={
+        team:currentTeam, opp:cache.opp, date:cache.date, tournament:'',
+        playerNum:pNum, playerName:pName,
+        layupm:layupm,layupa:layupa,ftm:ftm,fta:fta,
+        midm:midm,mida:mida,threem:threem,threea:threea,
+        reb:reb,ast:ast,pc:pc,blk:blk,tocr:tocr,toco:toco,wow:wow,pts:pts,
+        savedAt:Date.now()
+      };
+      // try to grab tournament from the cached game doc
+      var gDoc=cachedGames.find(function(g){return g._docId===docId;});
+      if(gDoc&&gDoc.tournament) newRec.tournament=gDoc.tournament;
+      var ref=await addDoc(collection(db,'playerStats'),newRec);
+      newRec._id=ref.id;
+      cache.recs.push(newRec);
+      showToast('Player stats added!',false);
+    }
+    closePlayerForm(docId);
+    renderGamePlayers(docId);
+  } catch(e){ showToast('Save failed: '+e.message,true); }
+};
+
 // ── HISTORY ──────────────────────────────────────
 window.loadHistory = async function(){
   setStatus('status-hist','loading','Loading…');
@@ -2058,6 +2293,8 @@ function renderHistory(games){
           '<button class="del-yes" onclick="deleteGameConfirmed(\''+docId+'\')">Delete</button>'+
           '<button class="del-no" onclick="cancelDelete(\''+docId+'\')">Cancel</button>'+
         '</div>'+
+        '<button class="gc-pl-toggle" onclick="toggleGamePlayers(\''+docId+'\',\''+g.date+'\',\''+g.opp.replace(/'/g,"\\'")+'\')" id="gc-pl-toggle-'+docId+'">👤 Player Stats <span id="gc-pl-arrow-'+docId+'">▼</span></button>'+
+        '<div class="gc-pl-body" id="gc-pl-body-'+docId+'"></div>'+
       '</div>';
   }
   list.innerHTML=html;
