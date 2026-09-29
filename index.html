@@ -1313,8 +1313,8 @@ function renderPlayerHistory(records, selectedPlayer, selectedTournament) {
     var rpg  = p.reb/p.games;
     var wpg  = p.wow/p.games;
     var topg = p.toco/p.games;
-    var off  = ppg + (apg * 1.0) + (pcpg * 1.5) - (topg * 1.5);
-    var def  = (rpg * 1.2) + (spg * 1.2) + (bpg * 1.2) + (wpg * 2.0);
+    var off  = ppg + (apg * 1.0) + (pcpg * 1.0) - (topg * 1.5);
+    var def  = (rpg * 1.0) + (spg * 1.2) + (bpg * 1.2) + (wpg * 2.0);
     var total = off + def;
     return {off: off.toFixed(1), def: def.toFixed(1), total: total.toFixed(1), totalRaw: total};
   }
@@ -1337,8 +1337,8 @@ function renderPlayerHistory(records, selectedPlayer, selectedTournament) {
     'Stl':  'Steals per game. Also counts as a team Turnover Created',
     'TO':   'Turnovers per game committed by this player',
     'WOW':  'WOW plays per game — hustle plays, momentum plays, and clutch moments that do not show up in traditional stats',
-    'OPI':  'Offensive Performance Index: Pts + (Ast × 1.0) + (PC × 1.5) − (TO × 1.5)',
-    'DPI':  'Defensive Performance Index: (Reb × 1.2) + (Stl × 1.2) + (Blk × 1.2) + (WOW × 2.0)',
+    'OPI':  'Offensive Performance Index: Pts + (Ast × 1.0) + (PC × 1.0) − (TO × 1.5)',
+    'DPI':  'Defensive Performance Index: (Reb × 1.0) + (Stl × 1.2) + (Blk × 1.2) + (WOW × 2.0)',
     'TPI':  'Total Performance Index: OPI + DPI. The complete measure of a player\'s impact on the game'
   };
 
@@ -1413,8 +1413,8 @@ function renderPlayerHistory(records, selectedPlayer, selectedTournament) {
       '<td>'+(r.tocr||0)+'</td><td>'+(r.toco||0)+'</td><td>'+(r.wow||0)+'</td>'+
       (function(){
         var pts=(r.layupm||0)*2+(r.ftm||0)+(r.threem||0)*3+(r.midm||0)*2;
-        var opi=pts+(r.ast||0)*1.0+(r.pc||0)*1.5-(r.toco||0)*1.5;
-        var dpi=(r.reb||0)*1.2+(r.tocr||0)*1.2+(r.blk||0)*1.2+(r.wow||0)*2.0;
+        var opi=pts+(r.ast||0)*1.0+(r.pc||0)*1.0-(r.toco||0)*1.5;
+        var dpi=(r.reb||0)*1.0+(r.tocr||0)*1.2+(r.blk||0)*1.2+(r.wow||0)*2.0;
         return '<td class="imp-off">'+opi.toFixed(1)+'</td><td class="imp-def">'+dpi.toFixed(1)+'</td><td class="imp-total">'+(opi+dpi).toFixed(1)+'</td>';
       })()+
       '<td>'+editBtn+'</td>'+
@@ -1918,8 +1918,8 @@ var _gcPlCache = {};
 
 function calcPerGameImpact(r) {
   var pts = (r.layupm||0)*2+(r.ftm||0)+(r.threem||0)*3+(r.midm||0)*2;
-  var opi = pts + (r.ast||0)*1.0 + (r.pc||0)*1.5 - (r.toco||0)*1.5;
-  var dpi = (r.reb||0)*1.2 + (r.tocr||0)*1.2 + (r.blk||0)*1.2 + (r.wow||0)*2.0;
+  var opi = pts + (r.ast||0)*1.0 + (r.pc||0)*1.0 - (r.toco||0)*1.5;
+  var dpi = (r.reb||0)*1.0 + (r.tocr||0)*1.2 + (r.blk||0)*1.2 + (r.wow||0)*2.0;
   return {opi:opi.toFixed(1), dpi:dpi.toFixed(1), tpi:(opi+dpi).toFixed(1)};
 }
 
