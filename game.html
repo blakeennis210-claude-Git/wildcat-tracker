@@ -59,11 +59,16 @@ td{border:1px solid var(--border);padding:2px;text-align:center;vertical-align:m
 td.col-player{padding:0}
 
 /* stat button */
-.sbt{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:36px;min-height:44px;cursor:pointer;border-radius:6px;border:none;background:transparent;color:var(--fg);font-family:'Space Grotesk',sans-serif;touch-action:manipulation;gap:1px;width:100%;padding:2px}
+.sbt{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:44px;min-height:48px;cursor:pointer;border-radius:6px;border:none;background:transparent;color:var(--fg);font-family:'Space Grotesk',sans-serif;touch-action:manipulation;gap:1px;width:100%;padding:2px}
 .sbt:active{background:rgba(255,255,255,.12);transform:scale(.9)}
 .sbt .cnt{font-size:16px;font-weight:700;line-height:1;min-width:20px}
 .sbt .cnt.nonzero{color:var(--gold)}
 .sbt .lbl{font-size:8px;font-weight:600;color:var(--fg2);letter-spacing:.3px;text-transform:uppercase}
+
+/* shot cell — shows make/miss fraction */
+.sbt.shot .shot-mk{color:var(--green);font-size:15px;font-weight:700;line-height:1}
+.sbt.shot .shot-ms{color:var(--red);font-size:11px;font-weight:600;line-height:1}
+.sbt.shot .shot-lbl{font-size:8px;font-weight:600;color:var(--fg2);letter-spacing:.3px;text-transform:uppercase}
 
 /* make = green tint, miss = red tint */
 .sbt.make .cnt.nonzero{color:var(--green)}
@@ -71,6 +76,20 @@ td.col-player{padding:0}
 .sbt.reb  .cnt.nonzero{color:#4f7cff}
 .sbt.wow  .cnt.nonzero{color:var(--gold)}
 .sbt.neg  .cnt.nonzero{color:var(--red)}
+
+/* make/miss picker popup */
+#mm-popup{position:fixed;z-index:200;display:none;flex-direction:column;gap:6px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:10px 8px;box-shadow:0 8px 32px rgba(0,0,0,.6);min-width:120px}
+#mm-popup.show{display:flex}
+#mm-popup .mm-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--fg2);text-align:center}
+#mm-popup .mm-row{display:flex;gap:6px}
+.mm-btn{flex:1;border:none;border-radius:8px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13px;padding:9px 0;cursor:pointer;touch-action:manipulation;text-align:center}
+.mm-btn.mk{background:rgba(46,204,113,.18);color:var(--green);border:1.5px solid var(--green)}
+.mm-btn.mk:active{background:rgba(46,204,113,.4)}
+.mm-btn.ms{background:rgba(231,76,60,.15);color:var(--red);border:1.5px solid var(--red)}
+.mm-btn.ms:active{background:rgba(231,76,60,.35)}
+.mm-btn.mm-cancel{background:var(--bg3);color:var(--fg2);border:1px solid var(--border);font-size:11px;padding:6px 0}
+#mm-overlay{position:fixed;inset:0;z-index:199;display:none}
+#mm-overlay.show{display:block}
 
 /* flash animations */
 @keyframes fg{0%{background:transparent}20%{background:rgba(46,204,113,.35)}100%{background:transparent}}
@@ -147,10 +166,10 @@ tfoot .tot-val{color:var(--fg)}
   <table id="stat-table">
     <thead>
       <tr>
-        <th>LU✓</th><th>LU✗</th>
-        <th>MID✓</th><th>MID✗</th>
-        <th>3PT✓</th><th>3PT✗</th>
-        <th>FT✓</th><th>FT✗</th>
+        <th>LU</th>
+        <th>MID</th>
+        <th>3PT</th>
+        <th>FT</th>
         <th class="col-player">Player</th>
         <th>WOW</th>
         <th>REB</th>
@@ -195,6 +214,15 @@ tfoot .tot-val{color:var(--fg)}
   <button class="btn-save" id="btn-save">💾 Save Game to Stats Tracker</button>
 </div>
 
+<div id="mm-overlay"></div>
+<div id="mm-popup">
+  <div class="mm-title" id="mm-title">Shot</div>
+  <div class="mm-row">
+    <button class="mm-btn mk" id="mm-make">✓ Make</button>
+    <button class="mm-btn ms" id="mm-miss">✗ Miss</button>
+  </div>
+  <button class="mm-btn mm-cancel" id="mm-cancel">Cancel</button>
+</div>
 <div id="toast"></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -226,10 +254,10 @@ document.getElementById('btn-auth').addEventListener('click',function(){
 });
 
 var ROSTER=[
-  {num:'00',name:'Everly'},{num:'2',name:'Izzy'},{num:'5',name:'Bella'},
-  {num:'7',name:'Mac'},{num:'10',name:'Maria'},{num:'12',name:'Laylah'},
-  {num:'21',name:'Jazzy'},{num:'23',name:'El'},{num:'24',name:'Arya'},
-  {num:'25',name:'Twin'},{num:'30',name:'Avarie'}
+  {num:'25',name:'Twin'},{num:'23',name:'El'},{num:'10',name:'Maria'},
+  {num:'2',name:'Izzy'},{num:'30',name:'Avarie'},{num:'12',name:'Laylah'},
+  {num:'00',name:'Everly'},{num:'21',name:'Jazzy'},{num:'7',name:'Mac'},
+  {num:'24',name:'Arya'},{num:'5',name:'Bella'}
 ];
 
 // stat keys per player
@@ -245,18 +273,60 @@ function calcPts(s){return s.layup_make*2+s.middy_make*2+s.three_make*3+s.ft_mak
 function calcOPI(s){return calcPts(s)+s.ast*0.5+s.pc*1.0-s.to*1.0;}
 function calcDPI(s){return s.reb*1.0+s.stl*1.2+s.blk*1.2+s.wow*2.0;}
 
-// col definitions: [key, label, cssClass]
+// shot col definitions: [makeKey, missKey, label]
 var SHOT_COLS=[
-  ['layup_make','LU✓','make'],['layup_miss','LU✗','miss'],
-  ['middy_make','MID✓','make'],['middy_miss','MID✗','miss'],
-  ['three_make','3PT✓','make'],['three_miss','3PT✗','miss'],
-  ['ft_make','FT✓','make'],['ft_miss','FT✗','miss']
+  ['layup_make','layup_miss','LU'],
+  ['middy_make','middy_miss','MID'],
+  ['three_make','three_miss','3PT'],
+  ['ft_make','ft_miss','FT']
 ];
 var STAT_COLS=[
   ['wow','WOW','wow'],['reb','REB','reb'],['ast','AST',''],
   ['pc','PC',''],['to','TO','neg'],['stl','STL',''],['blk','BLK','']
 ];
-var COLS=SHOT_COLS.concat(STAT_COLS);
+// COLS for totals/refreshTotals — flat list of all keys
+var COLS=[];
+SHOT_COLS.forEach(function(sc){COLS.push([sc[0],'',''],[sc[1],'','']);});
+STAT_COLS.forEach(function(c){COLS.push(c);});
+
+// make/miss picker
+var mmPending=null;
+var mmPopup=document.getElementById('mm-popup');
+var mmOverlay=document.getElementById('mm-overlay');
+function openMM(playerName, makeKey, missKey, label, anchorEl){
+  mmPending={playerName:playerName,makeKey:makeKey,missKey:missKey};
+  document.getElementById('mm-title').textContent=label;
+  // position near the tapped cell
+  var r=anchorEl.getBoundingClientRect();
+  var top=r.bottom+6, left=r.left;
+  if(top+120>window.innerHeight) top=r.top-130;
+  if(left+130>window.innerWidth) left=window.innerWidth-138;
+  if(left<4) left=4;
+  mmPopup.style.top=top+'px'; mmPopup.style.left=left+'px';
+  mmPopup.classList.add('show'); mmOverlay.classList.add('show');
+}
+function closeMM(){ mmPopup.classList.remove('show'); mmOverlay.classList.remove('show'); mmPending=null; }
+document.getElementById('mm-make').addEventListener('click',function(){
+  if(!mmPending)return; var p=mmPending; closeMM(); commitStat(p.playerName,p.makeKey,false);
+});
+document.getElementById('mm-miss').addEventListener('click',function(){
+  if(!mmPending)return; var p=mmPending; closeMM(); commitStat(p.playerName,p.missKey,true);
+});
+document.getElementById('mm-cancel').addEventListener('click',closeMM);
+mmOverlay.addEventListener('click',closeMM);
+
+function makeShotCell(p, sc){
+  var makeKey=sc[0], missKey=sc[1], label=sc[2];
+  var td=document.createElement('td');
+  var btn=document.createElement('button');
+  btn.className='sbt shot';
+  btn.innerHTML='<span class="shot-mk" id="sm-'+p.name+'-'+makeKey+'">0</span>'
+               +'<span class="shot-ms" id="sx-'+p.name+'-'+missKey+'">0✗</span>'
+               +'<span class="shot-lbl">'+label+'</span>';
+  btn.addEventListener('click',function(e){e.stopPropagation();openMM(p.name,makeKey,missKey,label,btn);});
+  td.appendChild(btn);
+  return td;
+}
 
 function makeStatCell(p, col){
   var key=col[0], cls=col[2];
@@ -265,7 +335,7 @@ function makeStatCell(p, col){
   var btn=document.createElement('button');
   btn.className='sbt '+(cls||'');
   btn.innerHTML='<span class="cnt" id="c-'+p.name+'-'+key+'">0</span>';
-  btn.addEventListener('click',function(e){e.stopPropagation();commitStat(p.name,key);});
+  btn.addEventListener('click',function(e){e.stopPropagation();commitStat(p.name,key,false);});
   td.appendChild(btn);
   return td;
 }
@@ -276,7 +346,7 @@ ROSTER.forEach(function(p){
   var tr=document.createElement('tr');
 
   // shot cells (left side)
-  SHOT_COLS.forEach(function(col){ tr.appendChild(makeStatCell(p,col)); });
+  SHOT_COLS.forEach(function(sc){ tr.appendChild(makeShotCell(p,sc)); });
 
   // player name cell (center sticky)
   var tdp=document.createElement('td');
@@ -300,11 +370,11 @@ ROSTER.forEach(function(p){
 // build totals footer
 var tfoot=document.getElementById('stat-foot');
 var tfr=document.createElement('tr');
-// shot totals (left)
-SHOT_COLS.forEach(function(col){
+// shot totals (left) — one cell per shot type showing makes
+SHOT_COLS.forEach(function(sc){
   var td=document.createElement('td');
-  td.id='tot-'+col[0];
-  td.innerHTML='<span class="tot-val">0</span>';
+  td.id='tot-shot-'+sc[0];
+  td.innerHTML='<span class="tot-val" style="color:var(--green)">0</span><span style="color:var(--red);font-size:9px"> /0</span>';
   tfr.appendChild(td);
 });
 // player label (center)
@@ -328,11 +398,19 @@ tfoot.appendChild(tfr);
 
 function refreshRow(name){
   var s=stats[name];
-  KEYS.forEach(function(k){
-    var el=document.getElementById('c-'+name+'-'+k);
+  // shot cells
+  SHOT_COLS.forEach(function(sc){
+    var mk=document.getElementById('sm-'+name+'-'+sc[0]);
+    var ms=document.getElementById('sx-'+name+'-'+sc[1]);
+    if(mk) mk.textContent=s[sc[0]];
+    if(ms) ms.textContent=s[sc[1]]+'✗';
+  });
+  // stat cells
+  STAT_COLS.forEach(function(col){
+    var el=document.getElementById('c-'+name+'-'+col[0]);
     if(!el)return;
-    el.textContent=s[k];
-    el.className='cnt'+(s[k]>0?' nonzero':'');
+    el.textContent=s[col[0]];
+    el.className='cnt'+(s[col[0]]>0?' nonzero':'');
   });
   var opi=calcOPI(s), dpi=calcDPI(s), tpi=opi+dpi;
   var tpiEl=document.getElementById('tpi-'+name);
@@ -341,7 +419,15 @@ function refreshRow(name){
 }
 
 function refreshTotals(){
-  COLS.forEach(function(col){
+  // shot totals
+  SHOT_COLS.forEach(function(sc){
+    var tm=0,ta=0;
+    ROSTER.forEach(function(p){tm+=stats[p.name][sc[0]];ta+=stats[p.name][sc[1]];});
+    var el=document.getElementById('tot-shot-'+sc[0]);
+    if(el){el.querySelector('.tot-val').textContent=tm;el.querySelector('span:last-child').textContent=' /'+ta;}
+  });
+  // stat totals
+  STAT_COLS.forEach(function(col){
     var k=col[0], tot=0;
     ROSTER.forEach(function(p){tot+=stats[p.name][k];});
     var el=document.getElementById('tot-'+k);
@@ -355,7 +441,10 @@ function refreshTotals(){
 }
 
 function flashCell(name, key, cls){
-  var el=document.getElementById('c-'+name+'-'+key);
+  // try stat cell first, then shot cell span
+  var el=document.getElementById('c-'+name+'-'+key)
+      ||document.getElementById('sm-'+name+'-'+key)
+      ||document.getElementById('sx-'+name+'-'+key);
   if(!el)return;
   var td=el.closest('td');
   if(!td)return;
@@ -364,14 +453,14 @@ function flashCell(name, key, cls){
   td.classList.add(cls);
 }
 
-function commitStat(name, key){
+function commitStat(name, key, isMiss){
   var prev=JSON.parse(JSON.stringify(stats[name]));
   stats[name][key]++;
   gameLog.push({player:name,key:key,prev:prev,oppBefore:oppRebs});
   refreshRow(name);
-  var isMiss=key.slice(-5)==='_miss'||key==='to';
   var isReb=key==='reb';
-  flashCell(name,key,isReb?'flash-b':isMiss?'flash-r':'flash-g');
+  var miss=isMiss||key==='to';
+  flashCell(name,key,isReb?'flash-b':miss?'flash-r':'flash-g');
   document.getElementById('btn-undo').disabled=false;
 }
 
