@@ -44,12 +44,12 @@ table{border-collapse:collapse;min-width:max-content;width:100%}
 
 /* header row */
 thead th{background:var(--bg3);color:var(--fg2);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:6px 2px;text-align:center;border:1px solid var(--border);white-space:nowrap;position:sticky;top:0;z-index:2}
-thead th.col-player{text-align:left;padding-left:8px;min-width:70px;position:sticky;left:0;z-index:3;background:var(--bg3)}
+thead th.col-player{text-align:left;padding-left:8px;min-width:70px;background:var(--bg3);border-left:2px solid var(--accent);border-right:2px solid var(--accent)}
 
 /* player rows */
 tbody tr:nth-child(even){background:rgba(255,255,255,.025)}
 tbody tr:nth-child(odd){background:var(--bg)}
-.col-player{position:sticky;left:0;z-index:1;background:inherit;border-right:2px solid var(--border)}
+.col-player{background:var(--bg3);border-left:2px solid var(--accent);border-right:2px solid var(--accent)}
 .player-info{display:flex;flex-direction:column;padding:4px 6px 4px 8px;min-width:70px}
 .p-num{font-size:9px;font-weight:700;color:var(--accent);line-height:1}
 .p-name{font-size:12px;font-weight:700;line-height:1.2;white-space:nowrap}
@@ -147,11 +147,11 @@ tfoot .tot-val{color:var(--fg)}
   <table id="stat-table">
     <thead>
       <tr>
-        <th class="col-player">Player</th>
         <th>LU✓</th><th>LU✗</th>
         <th>MID✓</th><th>MID✗</th>
         <th>3PT✓</th><th>3PT✗</th>
         <th>FT✓</th><th>FT✗</th>
+        <th class="col-player">Player</th>
         <th>WOW</th>
         <th>REB</th>
         <th>AST</th>
@@ -246,40 +246,46 @@ function calcOPI(s){return calcPts(s)+s.ast*0.5+s.pc*1.0-s.to*1.0;}
 function calcDPI(s){return s.reb*1.0+s.stl*1.2+s.blk*1.2+s.wow*2.0;}
 
 // col definitions: [key, label, cssClass]
-var COLS=[
+var SHOT_COLS=[
   ['layup_make','LU✓','make'],['layup_miss','LU✗','miss'],
   ['middy_make','MID✓','make'],['middy_miss','MID✗','miss'],
   ['three_make','3PT✓','make'],['three_miss','3PT✗','miss'],
-  ['ft_make','FT✓','make'],['ft_miss','FT✗','miss'],
+  ['ft_make','FT✓','make'],['ft_miss','FT✗','miss']
+];
+var STAT_COLS=[
   ['wow','WOW','wow'],['reb','REB','reb'],['ast','AST',''],
   ['pc','PC',''],['to','TO','neg'],['stl','STL',''],['blk','BLK','']
 ];
+var COLS=SHOT_COLS.concat(STAT_COLS);
+
+function makeStatCell(p, col){
+  var key=col[0], cls=col[2];
+  var td=document.createElement('td');
+  td.dataset.player=p.name; td.dataset.key=key;
+  var btn=document.createElement('button');
+  btn.className='sbt '+(cls||'');
+  btn.innerHTML='<span class="cnt" id="c-'+p.name+'-'+key+'">0</span>';
+  btn.addEventListener('click',function(e){e.stopPropagation();commitStat(p.name,key);});
+  td.appendChild(btn);
+  return td;
+}
 
 // build table
 var tbody=document.getElementById('stat-body');
 ROSTER.forEach(function(p){
   var tr=document.createElement('tr');
-  // player name cell
+
+  // shot cells (left side)
+  SHOT_COLS.forEach(function(col){ tr.appendChild(makeStatCell(p,col)); });
+
+  // player name cell (center sticky)
   var tdp=document.createElement('td');
   tdp.className='col-player';
   tdp.innerHTML='<div class="player-info"><div class="p-num">#'+p.num+'</div><div class="p-name">'+p.name+'</div></div>';
   tr.appendChild(tdp);
 
-  // stat cells
-  COLS.forEach(function(col){
-    var key=col[0], cls=col[2];
-    var td=document.createElement('td');
-    td.dataset.player=p.name; td.dataset.key=key;
-    var btn=document.createElement('button');
-    btn.className='sbt '+(cls||'');
-    btn.innerHTML='<span class="cnt" id="c-'+p.name+'-'+key+'">0</span>';
-    btn.addEventListener('click',function(e){
-      e.stopPropagation();
-      commitStat(p.name, key);
-    });
-    td.appendChild(btn);
-    tr.appendChild(td);
-  });
+  // stat cells (right side)
+  STAT_COLS.forEach(function(col){ tr.appendChild(makeStatCell(p,col)); });
 
   // TPI cell (read-only)
   var tdtpi=document.createElement('td');
@@ -294,10 +300,19 @@ ROSTER.forEach(function(p){
 // build totals footer
 var tfoot=document.getElementById('stat-foot');
 var tfr=document.createElement('tr');
+// shot totals (left)
+SHOT_COLS.forEach(function(col){
+  var td=document.createElement('td');
+  td.id='tot-'+col[0];
+  td.innerHTML='<span class="tot-val">0</span>';
+  tfr.appendChild(td);
+});
+// player label (center)
 var tftd=document.createElement('td');
 tftd.className='col-player'; tftd.textContent='TOTALS';
 tfr.appendChild(tftd);
-COLS.forEach(function(col){
+// stat totals (right)
+STAT_COLS.forEach(function(col){
   var td=document.createElement('td');
   td.id='tot-'+col[0];
   td.innerHTML='<span class="tot-val">0</span>';
