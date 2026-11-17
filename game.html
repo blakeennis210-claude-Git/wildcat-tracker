@@ -6,7 +6,6 @@
 <title>Wildcats Live Tracker</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap">
 
-
 <style>
 :root {
   --bg: #0f1117; --bg2: #1a1d27; --bg3: #242838;
@@ -23,12 +22,6 @@
     color-scheme: light;
   }
 }
-:root[data-theme="light"] {
-  --bg: #f0f2f8; --bg2: #ffffff; --bg3: #e4e7f0;
-  --fg: #0f1117; --fg2: #5a5f78; --border: rgba(0,0,0,0.08);
-  color-scheme: light;
-}
-
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html, body { height: 100%; background: var(--bg); color: var(--fg); font-family: 'Inter', sans-serif; font-size: 14px; overflow: hidden; user-select: none; }
 
@@ -41,6 +34,28 @@ html, body { height: 100%; background: var(--bg); color: var(--fg); font-family:
   gap: 8px;
 }
 
+/* Game info bar */
+.game-info-bar {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+}
+.game-field { display: flex; flex-direction: column; gap: 2px; }
+.game-field label { font-family: 'Space Grotesk', sans-serif; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--fg2); }
+.game-field input {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+  color: var(--fg); font-family: 'Inter', sans-serif; font-size: 13px;
+  padding: 6px 10px; outline: none; width: 100%;
+}
+.game-field input:focus { border-color: var(--accent); }
+.game-field input::placeholder { color: var(--fg2); }
+
+/* Auth bar */
+#auth-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 7px 12px; flex-shrink: 0; }
+#auth-status { font-size: 12px; color: var(--fg2); }
+#auth-status.signed-in { color: var(--green); }
+.btn-auth { background: var(--accent); color: #fff; border: none; font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 700; padding: 5px 14px; border-radius: 7px; cursor: pointer; }
+.btn-auth.signout { background: var(--bg3); color: var(--fg2); border: 1px solid var(--border); }
+.btn-auth:active { opacity: 0.8; }
+
 .header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .header-left { display: flex; align-items: center; gap: 10px; }
 .logo { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 16px; letter-spacing: -0.3px; }
@@ -51,15 +66,10 @@ html, body { height: 100%; background: var(--bg); color: var(--fg); font-family:
 .btn-undo:active { opacity: 0.7; transform: scale(0.96); }
 .btn-undo:disabled { opacity: 0.3; cursor: default; }
 
-.section-label { font-family: 'Space Grotesk', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--fg2); display: flex; align-items: center; gap: 8px; }
+.section-label { font-family: 'Space Grotesk', sans-serif; font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--fg2); display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .section-label::before, .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-.shoot-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-template-rows: auto auto;
-  gap: 5px;
-}
+.shoot-grid { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: auto auto; gap: 5px; }
 .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; }
 
 .stat-btn {
@@ -81,19 +91,17 @@ html, body { height: 100%; background: var(--bg); color: var(--fg); font-family:
 .stat-btn.missed .label { color: var(--red); }
 .stat-btn.wow-btn .label { color: var(--gold); }
 
-/* OPP REB button */
 .btn-opp-reb {
   background: rgba(231,76,60,0.15); border: 2px solid var(--red); border-radius: 12px;
   color: var(--red); font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 14px;
   padding: 10px 0; cursor: pointer; touch-action: manipulation;
   display: flex; align-items: center; justify-content: center; gap: 6px;
-  width: 100%; letter-spacing: 0.3px;
+  width: 100%; letter-spacing: 0.3px; flex-shrink: 0;
 }
 .btn-opp-reb:active { transform: scale(0.97); background: rgba(231,76,60,0.3); }
 .btn-opp-reb.flash { animation: flashOppReb 0.4s ease; }
 @keyframes flashOppReb { 0%{background:rgba(231,76,60,0.15)} 30%{background:rgba(231,76,60,0.5)} 100%{background:rgba(231,76,60,0.15)} }
 
-/* Prompt banner (rebound + assist share same style) */
 .prompt-banner {
   display: none; background: rgba(79,124,255,0.18); border: 1.5px solid var(--accent);
   border-radius: 12px; padding: 10px 14px; align-items: center;
@@ -109,7 +117,6 @@ html, body { height: 100%; background: var(--bg); color: var(--fg); font-family:
 .btn-action-red { background: rgba(231,76,60,0.15); color: var(--red); border: 1px solid var(--red); font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 700; padding: 7px 14px; border-radius: 8px; cursor: pointer; touch-action: manipulation; }
 .btn-action-red:active { opacity: 0.8; }
 
-/* Player grid */
 .player-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; overflow-y: auto; flex: 1; align-content: start; }
 .player-card { background: var(--bg2); border: 1.5px solid var(--border); border-radius: 12px; padding: 8px 6px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; transition: all 0.12s; touch-action: manipulation; min-height: 82px; }
 .player-card:active { transform: scale(0.95); }
@@ -124,7 +131,6 @@ html, body { height: 100%; background: var(--bg); color: var(--fg); font-family:
 .opi-val { color: #4f7cff; }
 .dpi-val { color: var(--accent2); }
 
-/* Live stats bar */
 #live-bar { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 8px 12px; display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
 .live-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .live-label { font-family: 'Space Grotesk', sans-serif; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--fg2); flex-shrink: 0; min-width: 28px; }
@@ -143,7 +149,23 @@ html, body { height: 100%; background: var(--bg); color: var(--fg); font-family:
 .shot-stat .pct.bad { color: var(--red); }
 .shot-sep { color: var(--border); font-size: 14px; }
 
-/* Log panel */
+/* Save game button */
+.btn-save-game {
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color: #fff; border: none; border-radius: 12px;
+  font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 14px;
+  padding: 11px 0; cursor: pointer; touch-action: manipulation;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  width: 100%; letter-spacing: 0.3px; flex-shrink: 0;
+}
+.btn-save-game:active { opacity: 0.85; transform: scale(0.98); }
+.btn-save-game:disabled { opacity: 0.4; cursor: default; }
+
+/* Toast */
+#toast { position: fixed; bottom: max(80px, env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%) translateY(20px); background: var(--bg3); color: var(--fg); font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 600; padding: 10px 20px; border-radius: 20px; border: 1px solid var(--border); opacity: 0; transition: all 0.25s; pointer-events: none; white-space: nowrap; z-index: 200; }
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+#toast.error { border-color: var(--red); color: var(--red); }
+
 #log-panel { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg2); border-top: 1px solid var(--border); border-radius: 20px 20px 0 0; padding: 16px; padding-bottom: max(16px, env(safe-area-inset-bottom, 0px)); transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1); z-index: 100; max-height: 60vh; display: flex; flex-direction: column; gap: 10px; }
 #log-panel.open { transform: translateY(0); }
 .log-header { display: flex; align-items: center; justify-content: space-between; }
@@ -174,6 +196,22 @@ html, body { height: 100%; background: var(--bg); color: var(--fg); font-family:
     </div>
   </div>
 
+  <!-- Game info -->
+  <div class="game-info-bar">
+    <div class="game-field">
+      <label>Date</label>
+      <input type="date" id="game-date">
+    </div>
+    <div class="game-field">
+      <label>Opponent</label>
+      <input type="text" id="game-opp" placeholder="Opponent name">
+    </div>
+    <div class="game-field" style="grid-column:span 2">
+      <label>Tournament</label>
+      <input type="text" id="game-tourn" placeholder="Tournament name">
+    </div>
+  </div>
+
   <!-- Shooting grid -->
   <div class="section-label">Shooting</div>
   <div class="shoot-grid">
@@ -199,12 +237,12 @@ html, body { height: 100%; background: var(--bg); color: var(--fg); font-family:
     <button class="stat-btn wow-btn" data-stat="wow" style="grid-column:span 2"><div class="icon">⭐</div><div class="label">WOW</div></button>
   </div>
 
-  <!-- OPP REB big red button -->
+  <!-- OPP REB -->
   <button class="btn-opp-reb" id="btn-opp-reb">🔴 OPP REBOUND</button>
 
-  <!-- Rebound prompt (shown after any miss) -->
+  <!-- Rebound prompt -->
   <div class="prompt-banner" id="reb-prompt">
-    <div class="prompt-msg" id="reb-msg">Who rebounded?</div>
+    <div class="prompt-msg" id="reb-msg">Who got the rebound?</div>
     <div class="prompt-actions">
       <button class="btn-action-gray" id="btn-reb-player">👇 Our player</button>
       <button class="btn-action-red" id="btn-reb-opp">🔴 OPP</button>
@@ -212,7 +250,7 @@ html, body { height: 100%; background: var(--bg); color: var(--fg); font-family:
     </div>
   </div>
 
-  <!-- Assist prompt (shown after any make) -->
+  <!-- Assist prompt -->
   <div class="prompt-banner" id="assist-prompt">
     <div class="prompt-msg" id="assist-msg">Assist on that basket?</div>
     <div class="prompt-actions">
@@ -236,7 +274,7 @@ html, body { height: 100%; background: var(--bg); color: var(--fg); font-family:
     </div>
     <div class="live-row">
       <div class="live-label">FG</div>
-      <div class="shot-line" id="shot-line">
+      <div class="shot-line">
         <span class="shot-stat"><span class="frac" id="sh-layup">0/0</span> <span class="pct" id="sh-layup-pct">Layup —</span></span>
         <span class="shot-sep">·</span>
         <span class="shot-stat"><span class="frac" id="sh-mid">0/0</span> <span class="pct" id="sh-mid-pct">Mid —</span></span>
@@ -247,8 +285,12 @@ html, body { height: 100%; background: var(--bg); color: var(--fg); font-family:
       </div>
     </div>
   </div>
+
+  <!-- Save game -->
+  <button class="btn-save-game" id="btn-save-game">💾 Save Game to Stats Tracker</button>
 </div>
 
+<div id="toast"></div>
 <div id="overlay"></div>
 <div id="log-panel">
   <div class="log-header">
@@ -258,7 +300,73 @@ html, body { height: 100%; background: var(--bg); color: var(--fg); font-family:
   <div id="log-list"></div>
 </div>
 
-<script>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBbhBhuY1U57TN6qbIKVC378SitNepTe4M",
+  authDomain: "wildcats-tracker.firebaseapp.com",
+  projectId: "wildcats-tracker",
+  storageBucket: "wildcats-tracker.firebasestorage.app",
+  messagingSenderId: "663776602342",
+  appId: "1:663776602342:web:39bf67df58ece64c86b327"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+const APPROVED = ['seebee210@gmail.com','coachennisccf@gmail.com'];
+const COLL = 'games';
+const TEAM = 'wildcats2031';
+
+let currentUser = null;
+function isAuthorized() { return currentUser && APPROVED.indexOf(currentUser.email) > -1; }
+
+onAuthStateChanged(auth, user => {
+  currentUser = user;
+  updateAuthUI(user);
+});
+
+function updateAuthUI(user) {
+  const bar = document.getElementById('auth-bar');
+  const status = document.getElementById('auth-status');
+  const btn = document.getElementById('btn-auth');
+  if (user && isAuthorized()) {
+    status.textContent = '✓ ' + user.email;
+    status.className = 'signed-in';
+    btn.textContent = 'Sign Out';
+    btn.className = 'btn-auth signout';
+    bar.style.display = 'flex';
+  } else if (user) {
+    status.textContent = 'Not authorized';
+    status.className = '';
+    btn.textContent = 'Sign Out';
+    btn.className = 'btn-auth signout';
+    bar.style.display = 'flex';
+  } else {
+    status.textContent = 'Not signed in';
+    status.className = '';
+    btn.textContent = 'Sign In';
+    btn.className = 'btn-auth';
+    bar.style.display = 'flex';
+  }
+}
+
+document.getElementById('btn-auth').addEventListener('click', async () => {
+  if (currentUser) {
+    await signOut(auth);
+  } else {
+    try { await signInWithPopup(auth, provider); }
+    catch(e) { showToast('Sign in failed', true); }
+  }
+});
+
+// Set today's date as default
+document.getElementById('game-date').value = new Date().toISOString().slice(0,10);
+
 const ROSTER = [
   { num: '00', name: 'Everly' },
   { num: '2',  name: 'Izzy' },
@@ -298,12 +406,10 @@ ROSTER.forEach(p => {
 let oppRebs = 0;
 let activeStat = null;
 let history = [];
-
-// Flow states
 let awaitingAssist = false;
 let lastScorerName = null;
-let awaitingRebound = false; // waiting for player tap after prompt
-let reboundPending = false;  // prompt visible, waiting for button choice
+let awaitingRebound = false;
+let reboundPending = false;
 
 function calcPts(s) { return s.layup_make*2+s.three_make*3+s.middy_make*2+s.ft_make; }
 function calcOPI(s) { return calcPts(s)+s.ast*0.5+s.pc*1.0-s.to*1.0; }
@@ -356,13 +462,11 @@ function commitOppReb() {
 }
 
 function onPlayerTap(playerName) {
-  // Rebound flow: waiting for player selection
   if (awaitingRebound) {
     commitStat(playerName, 'reb');
     endReboundFlow();
     return;
   }
-  // Assist flow
   if (awaitingAssist) {
     if (playerName === lastScorerName) return;
     commitStat(playerName, 'ast');
@@ -370,13 +474,10 @@ function onPlayerTap(playerName) {
     return;
   }
   if (!activeStat) return;
-
   const isMade = MADE_SHOTS.has(activeStat);
   const isMiss = MISS_SHOTS.has(activeStat);
-
   commitStat(playerName, activeStat);
   clearActiveStat();
-
   if (isMade) {
     lastScorerName = playerName;
     awaitingAssist = true;
@@ -391,30 +492,23 @@ function onPlayerTap(playerName) {
   }
 }
 
-// Rebound flow
 function startPlayerRebound() {
-  // User tapped "Our player" — now wait for player tap
   document.getElementById('reb-prompt').classList.remove('visible');
   reboundPending = false;
   awaitingRebound = true;
   document.getElementById('player-section-label').textContent = '👇 Tap the player who rebounded';
 }
-
 function endReboundFlow() {
-  awaitingRebound = false;
-  reboundPending = false;
+  awaitingRebound = false; reboundPending = false;
   document.getElementById('reb-prompt').classList.remove('visible');
   document.getElementById('player-section-label').textContent = 'Players — tap to assign stat';
 }
-
-// Assist flow
 function endAssistFlow() {
   awaitingAssist = false; lastScorerName = null;
   document.getElementById('assist-prompt').classList.remove('visible');
   document.getElementById('player-section-label').textContent = 'Players — tap to assign stat';
 }
 
-// Rebound prompt buttons
 document.getElementById('btn-reb-player').addEventListener('click', startPlayerRebound);
 document.getElementById('btn-reb-opp').addEventListener('click', () => {
   commitOppReb();
@@ -423,21 +517,17 @@ document.getElementById('btn-reb-opp').addEventListener('click', () => {
   endReboundFlow();
 });
 document.getElementById('btn-reb-skip').addEventListener('click', endReboundFlow);
-
-// Assist prompt buttons
 document.getElementById('btn-assist-yes').addEventListener('click', () => {
   document.getElementById('assist-msg').textContent = 'Tap assisting player ↓';
 });
 document.getElementById('btn-assist-no').addEventListener('click', endAssistFlow);
 
-// OPP REB standalone button
 document.getElementById('btn-opp-reb').addEventListener('click', () => {
   commitOppReb();
   const btn = document.getElementById('btn-opp-reb');
   btn.classList.remove('flash'); void btn.offsetWidth; btn.classList.add('flash');
 });
 
-// Stat buttons
 const statBtns = document.querySelectorAll('.stat-btn');
 statBtns.forEach(btn => {
   btn.addEventListener('click', () => {
@@ -458,52 +548,38 @@ function clearActiveStat() {
   document.getElementById('active-label').classList.remove('visible');
 }
 
-// Undo
 document.getElementById('btn-undo').addEventListener('click', () => {
   if (awaitingAssist) endAssistFlow();
   if (awaitingRebound || reboundPending) endReboundFlow();
   if (!history.length) return;
   const last = history.pop();
-  if (last.player === null) {
-    oppRebs = last.oppRebsBefore;
-  } else {
-    stats[last.player] = last.prev;
-    updatePlayerUI(last.player);
-  }
+  if (last.player === null) { oppRebs = last.oppRebsBefore; }
+  else { stats[last.player] = last.prev; updatePlayerUI(last.player); }
   updateLiveBar();
   removeLastLogEntry();
   if (!history.length) document.getElementById('btn-undo').disabled = true;
 });
 
-// Live bar
 function updateLiveBar() {
   let ourRebs = 0;
   ROSTER.forEach(p => { ourRebs += stats[p.name].reb; });
   document.getElementById('reb-ours').textContent = ourRebs;
   document.getElementById('reb-opp').textContent = oppRebs;
   const total = ourRebs + oppRebs;
-  const pct = total === 0 ? 50 : Math.round((ourRebs/total)*100);
-  document.getElementById('reb-bar').style.width = pct + '%';
-
+  document.getElementById('reb-bar').style.width = (total===0?50:Math.round(ourRebs/total*100))+'%';
   let lm=0,la=0,mm=0,ma=0,tm=0,ta=0,fm=0,fa=0;
   ROSTER.forEach(p => {
-    const s = stats[p.name];
+    const s=stats[p.name];
     lm+=s.layup_make; la+=s.layup_make+s.layup_miss;
     mm+=s.middy_make; ma+=s.middy_make+s.middy_miss;
     tm+=s.three_make; ta+=s.three_make+s.three_miss;
     fm+=s.ft_make;    fa+=s.ft_make+s.ft_miss;
   });
-
-  function pctClass(m,a) {
-    if (!a) return '';
-    const p=m/a;
-    return p>=0.5?'good':p>=0.33?'mid-pct':'bad';
-  }
-  function set(fracId,pctId,m,a,label) {
+  function pctClass(m,a){ if(!a)return''; const p=m/a; return p>=0.5?'good':p>=0.33?'mid-pct':'bad'; }
+  function set(fracId,pctId,m,a,label){
     document.getElementById(fracId).textContent=`${m}/${a}`;
-    const p=a?Math.round(m/a*100):null;
     const el=document.getElementById(pctId);
-    el.textContent=`${label} ${p===null?'—':p+'%'}`;
+    el.textContent=`${label} ${a?Math.round(m/a*100)+'%':'—'}`;
     el.className='pct '+pctClass(m,a);
   }
   set('sh-layup','sh-layup-pct',lm,la,'Layup');
@@ -512,23 +588,120 @@ function updateLiveBar() {
   set('sh-ft','sh-ft-pct',fm,fa,'FT');
 }
 
+// ── SAVE GAME ─────────────────────────────────────
+document.getElementById('btn-save-game').addEventListener('click', async () => {
+  if (!isAuthorized()) {
+    showToast('Sign in first', true);
+    return;
+  }
+  const opp = document.getElementById('game-opp').value.trim();
+  if (!opp) { showToast('Enter opponent name', true); return; }
+  const dateVal = document.getElementById('game-date').value || new Date().toISOString().slice(0,10);
+  const tourn = document.getElementById('game-tourn').value.trim();
+
+  // Aggregate team shooting totals
+  let lm=0,la=0,mm=0,ma=0,tm=0,ta=0,fm=0,fa=0,
+      totalReb=0,totalAst=0,totalStl=0,totalBlk=0,
+      totalPc=0,totalTo=0,totalWow=0;
+  ROSTER.forEach(p => {
+    const s = stats[p.name];
+    lm+=s.layup_make; la+=s.layup_make+s.layup_miss;
+    mm+=s.middy_make; ma+=s.middy_make+s.middy_miss;
+    tm+=s.three_make; ta+=s.three_make+s.three_miss;
+    fm+=s.ft_make;    fa+=s.ft_make+s.ft_miss;
+    totalReb+=s.reb; totalAst+=s.ast; totalStl+=s.stl;
+    totalBlk+=s.blk; totalPc+=s.pc; totalTo+=s.to; totalWow+=s.wow;
+  });
+  const fgm = lm+mm+tm, fga = la+ma+ta;
+  const pts = lm*2+mm*2+tm*3+fm;
+
+  const game = {
+    id: Date.now(),
+    team: TEAM,
+    opp: opp,
+    date: dateVal,
+    tournament: tourn,
+    // shooting fields matching main app schema
+    lm: lm, la: la,           // layup
+    midm: mm, mida: ma,       // midrange
+    csm: tm, csa: ta,         // close/corner 3 (using three_make as csm)
+    opm: 0, opa: 0,           // open 3 (not tracked separately)
+    fm: fm, fa: fa,            // free throws
+    tcr: totalStl,            // team steals (turnovers created)
+    tco: totalTo,             // team turnovers committed
+    rwc: totalReb,            // rebounds (team)
+    rop: oppRebs,             // opponent rebounds
+    pts: pts,
+    fgm: fgm, fga: fga,
+    t3m: tm, t3a: ta,
+    efg: fga===0 ? null : Math.round((fgm+0.5*tm)/fga*100)
+  };
+
+  // Per-player records
+  const playerRecords = ROSTER.map(p => {
+    const s = stats[p.name];
+    return {
+      team: TEAM, opp: opp, date: dateVal, tournament: tourn,
+      playerNum: p.num, playerName: p.name,
+      layupm: s.layup_make, layupa: s.layup_make+s.layup_miss,
+      ftm: s.ft_make, fta: s.ft_make+s.ft_miss,
+      threem: s.three_make, threea: s.three_make+s.three_miss,
+      midm: s.middy_make, mida: s.middy_make+s.middy_miss,
+      reb: s.reb, ast: s.ast, pc: s.pc, blk: s.blk,
+      tocr: s.stl, toco: s.to, wow: s.wow,
+      pts: s.layup_make*2+s.ft_make+s.three_make*3+s.middy_make*2,
+      oppReb: oppRebs,
+      savedAt: Date.now()
+    };
+  });
+
+  const btn = document.getElementById('btn-save-game');
+  btn.disabled = true; btn.textContent = 'Saving…';
+  try {
+    await addDoc(collection(db, COLL), game);
+    for (let i = 0; i < playerRecords.length; i++) {
+      await addDoc(collection(db, 'playerStats'), playerRecords[i]);
+    }
+    btn.disabled = false; btn.textContent = '✓ Saved!';
+    showToast('Game saved vs ' + opp, false);
+    setTimeout(() => { btn.textContent = '💾 Save Game to Stats Tracker'; }, 3000);
+  } catch(e) {
+    btn.disabled = false; btn.textContent = '💾 Save Game to Stats Tracker';
+    showToast('Save failed: ' + e.message, true);
+  }
+});
+
 // Log
 const logList = document.getElementById('log-list');
-function addLogEntry(player,stat) {
-  const entry=document.createElement('div');
-  entry.className='log-entry';
+function addLogEntry(player,stat){
+  const e=document.createElement('div'); e.className='log-entry';
   const t=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  entry.innerHTML=`<span class="log-player">${player}</span><span class="log-stat">${STAT_LABELS[stat]||stat}</span><span class="log-time">${t}</span>`;
-  logList.prepend(entry);
+  e.innerHTML=`<span class="log-player">${player}</span><span class="log-stat">${STAT_LABELS[stat]||stat}</span><span class="log-time">${t}</span>`;
+  logList.prepend(e);
 }
-function removeLastLogEntry() { if(logList.firstChild) logList.removeChild(logList.firstChild); }
+function removeLastLogEntry(){ if(logList.firstChild) logList.removeChild(logList.firstChild); }
 
-const logPanel=document.getElementById('log-panel');
-const overlay=document.getElementById('overlay');
-document.getElementById('btn-log').addEventListener('click',()=>{ logPanel.classList.add('open'); overlay.classList.add('visible'); });
-document.getElementById('btn-close-log').addEventListener('click',closeLog);
-overlay.addEventListener('click',closeLog);
+function showToast(msg, isErr) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show' + (isErr ? ' error' : '');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.className = ''; }, 2500);
+}
+
+const logPanel = document.getElementById('log-panel');
+const overlay = document.getElementById('overlay');
+document.getElementById('btn-log').addEventListener('click', () => { logPanel.classList.add('open'); overlay.classList.add('visible'); });
+document.getElementById('btn-close-log').addEventListener('click', closeLog);
+overlay.addEventListener('click', closeLog);
 function closeLog(){ logPanel.classList.remove('open'); overlay.classList.remove('visible'); }
+
+// Add auth bar to DOM dynamically (insert after header)
+const authBar = document.createElement('div');
+authBar.id = 'auth-bar';
+authBar.style.display = 'none';
+authBar.innerHTML = '<span id="auth-status">Not signed in</span><button id="btn-auth" class="btn-auth">Sign In</button>';
+document.getElementById('app').insertBefore(authBar, document.getElementById('app').children[1]);
 </script>
 </body>
 </html>
