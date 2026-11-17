@@ -328,8 +328,9 @@ function openPicker(title, showOpp, onPlayer, onOpp){
     btn.innerHTML='<div class="pp-num">#'+p.num+'</div><div class="pp-name">'+p.name+'</div>';
     btn.addEventListener('click',function(e){
       e.stopPropagation();
+      var cb = pickerPending && pickerPending.onPlayer;
       closePicker();
-      if(pickerPending && pickerPending.onPlayer) pickerPending.onPlayer(p.name);
+      if(cb) cb(p.name);
     });
     pickerPlayers.appendChild(btn);
   });
@@ -344,8 +345,9 @@ document.getElementById('picker-bg').addEventListener('click',closePicker);
 document.getElementById('picker-cancel').addEventListener('click',closePicker);
 pickerOppBtn.addEventListener('click',function(e){
   e.stopPropagation();
+  var cb = pickerPending && pickerPending.onOpp;
   closePicker();
-  if(pickerPending && pickerPending.onOpp) pickerPending.onOpp();
+  if(cb) cb();
 });
 
 // ── STAT BUTTONS ──────────────────────────────────────────
