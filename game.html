@@ -46,27 +46,32 @@ table{border-collapse:collapse;min-width:max-content;width:100%}
 thead th{background:var(--bg3);color:var(--fg2);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:6px 2px;text-align:center;border:1px solid var(--border);white-space:nowrap;position:sticky;top:0;z-index:2}
 thead th.col-player{text-align:left;padding-left:8px;min-width:70px;background:var(--bg3);border-left:2px solid var(--accent);border-right:2px solid var(--accent)}
 
-/* player rows */
-tbody tr:nth-child(even){background:rgba(255,255,255,.025)}
-tbody tr:nth-child(odd){background:var(--bg)}
-.col-player{background:var(--bg3);border-left:2px solid var(--accent);border-right:2px solid var(--accent)}
-.player-info{display:flex;flex-direction:column;padding:4px 6px 4px 8px;min-width:70px}
-.p-num{font-size:9px;font-weight:700;color:var(--accent);line-height:1}
-.p-name{font-size:12px;font-weight:700;line-height:1.2;white-space:nowrap}
+/* player rows — clearly alternating */
+tbody tr:nth-child(odd){background:#1a1d27}
+tbody tr:nth-child(even){background:#0f1117}
+tbody tr:nth-child(odd) td{border-color:rgba(255,255,255,.07)}
+tbody tr:nth-child(even) td{border-color:rgba(255,255,255,.05)}
+/* player column inherits row bg so stripe shows through */
+tbody tr:nth-child(odd) .col-player{background:#242838}
+tbody tr:nth-child(even) .col-player{background:#1a1d27}
+.col-player{border-left:2px solid var(--accent);border-right:2px solid var(--accent)}
+.player-info{display:flex;flex-direction:column;align-items:center;padding:4px 8px;min-width:62px}
+.p-num{font-size:22px;font-weight:700;color:var(--fg);line-height:1.1}
+.p-name{font-size:9px;font-weight:600;color:var(--fg2);line-height:1.2;white-space:nowrap;text-transform:uppercase;letter-spacing:.4px}
 
 /* stat cells */
 td{border:1px solid var(--border);padding:2px;text-align:center;vertical-align:middle}
 td.col-player{padding:0}
 
 /* stat button */
-.sbt{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:44px;min-height:48px;cursor:pointer;border-radius:6px;border:none;background:transparent;color:var(--fg);font-family:'Space Grotesk',sans-serif;touch-action:manipulation;gap:1px;width:100%;padding:2px}
+.sbt{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:48px;min-height:52px;cursor:pointer;border-radius:6px;border:none;background:transparent;color:var(--fg);font-family:'Space Grotesk',sans-serif;touch-action:manipulation;gap:1px;width:100%;padding:3px}
 .sbt:active{background:rgba(255,255,255,.12);transform:scale(.9)}
-.sbt .cnt{font-size:16px;font-weight:700;line-height:1;min-width:20px}
+.sbt .cnt{font-size:20px;font-weight:700;line-height:1;min-width:24px}
 .sbt .cnt.nonzero{color:var(--gold)}
 .sbt .lbl{font-size:8px;font-weight:600;color:var(--fg2);letter-spacing:.3px;text-transform:uppercase}
 
 /* shot cell — shows make/miss fraction */
-.sbt.shot .shot-mk{color:var(--green);font-size:15px;font-weight:700;line-height:1}
+.sbt.shot .shot-mk{color:var(--green);font-size:20px;font-weight:700;line-height:1}
 .sbt.shot .shot-ms{color:var(--red);font-size:11px;font-weight:600;line-height:1}
 .sbt.shot .shot-lbl{font-size:8px;font-weight:600;color:var(--fg2);letter-spacing:.3px;text-transform:uppercase}
 
