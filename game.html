@@ -46,14 +46,21 @@ table{border-collapse:collapse;min-width:max-content;width:100%}
 thead th{background:var(--bg3);color:var(--fg2);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:6px 2px;text-align:center;border:1px solid var(--border);white-space:nowrap;position:sticky;top:0;z-index:2}
 thead th.col-player{text-align:left;padding-left:8px;min-width:70px;background:var(--bg3);border-left:2px solid var(--accent);border-right:2px solid var(--accent)}
 
-/* player rows — clearly alternating */
-tbody tr:nth-child(odd){background:#1a1d27}
-tbody tr:nth-child(even){background:#0f1117}
-tbody tr:nth-child(odd) td{border-color:rgba(255,255,255,.07)}
-tbody tr:nth-child(even) td{border-color:rgba(255,255,255,.05)}
-/* player column inherits row bg so stripe shows through */
-tbody tr:nth-child(odd) .col-player{background:#242838}
-tbody tr:nth-child(even) .col-player{background:#1a1d27}
+/* player rows — white / black alternating */
+tbody tr:nth-child(odd){background:#ffffff;color:#000}
+tbody tr:nth-child(even){background:#000000;color:#fff}
+tbody tr:nth-child(odd) td{border-color:rgba(0,0,0,.15)}
+tbody tr:nth-child(even) td{border-color:rgba(255,255,255,.12)}
+tbody tr:nth-child(odd) .col-player{background:#e8e8e8}
+tbody tr:nth-child(even) .col-player{background:#1a1a1a}
+tbody tr:nth-child(odd) .p-num{color:#000}
+tbody tr:nth-child(even) .p-num{color:#fff}
+tbody tr:nth-child(odd) .p-name{color:#555}
+tbody tr:nth-child(even) .p-name{color:#aaa}
+tbody tr:nth-child(odd) .sbt{color:#000}
+tbody tr:nth-child(even) .sbt{color:#fff}
+tbody tr:nth-child(odd) .cnt{color:#000}
+tbody tr:nth-child(even) .cnt{color:#fff}
 .col-player{border-left:2px solid var(--accent);border-right:2px solid var(--accent)}
 .player-info{display:flex;flex-direction:column;align-items:center;padding:4px 8px;min-width:62px}
 .p-num{font-size:22px;font-weight:700;color:var(--fg);line-height:1.1}
