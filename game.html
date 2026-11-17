@@ -394,14 +394,19 @@ function onPlayerTap(name){
   commitStat(name, activeStat);
   clearActiveStat();
   if(isMade){
-    lastScorerName=name; awaitingAssist=true;
-    document.getElementById('assist-msg').textContent=name+' scored — assist?';
-    document.getElementById('assist-prompt').classList.add('visible');
-    document.getElementById('player-section-label').textContent='Tap assisting player';
+    lastScorerName=name;
+    setTimeout(function(){
+      awaitingAssist=true;
+      document.getElementById('assist-msg').textContent=name+' scored — assist?';
+      document.getElementById('assist-prompt').classList.add('visible');
+      document.getElementById('player-section-label').textContent='Tap assisting player';
+    }, 350);
   } else if(isMiss){
-    reboundPending=true;
-    document.getElementById('reb-prompt').classList.add('visible');
-    document.getElementById('player-section-label').textContent='Tap our player who rebounded';
+    setTimeout(function(){
+      reboundPending=true;
+      document.getElementById('reb-prompt').classList.add('visible');
+      document.getElementById('player-section-label').textContent='Tap our player who rebounded';
+    }, 350);
   }
 }
 
@@ -421,18 +426,35 @@ function endAssistFlow(){
   document.getElementById('player-section-label').textContent='Players — tap to assign stat';
 }
 
-document.getElementById('btn-reb-player').addEventListener('click',startPlayerRebound);
-document.getElementById('btn-reb-opp').addEventListener('click',function(){
+function guardedClick(id, fn) {
+  document.getElementById(id).addEventListener('click', function(e) {
+    // ignore clicks that fire within 400ms of the prompt becoming visible
+    var prompt = this.closest('.prompt-banner');
+    if(prompt && prompt._shownAt && Date.now() - prompt._shownAt < 400) return;
+    fn.call(this, e);
+  });
+}
+
+// track when each prompt becomes visible
+var rebPrompt = document.getElementById('reb-prompt');
+var assistPrompt = document.getElementById('assist-prompt');
+var origRebAdd = rebPrompt.classList.add.bind(rebPrompt.classList);
+rebPrompt.classList.add = function(cls) { if(cls==='visible') rebPrompt._shownAt=Date.now(); origRebAdd(cls); };
+var origAssistAdd = assistPrompt.classList.add.bind(assistPrompt.classList);
+assistPrompt.classList.add = function(cls) { if(cls==='visible') assistPrompt._shownAt=Date.now(); origAssistAdd(cls); };
+
+guardedClick('btn-reb-player', startPlayerRebound);
+guardedClick('btn-reb-opp', function(){
   commitOppReb();
   var b=document.getElementById('btn-opp-reb');
   b.style.animation='none'; void b.offsetWidth; b.style.animation='flashOppReb .4s ease';
   endReboundFlow();
 });
-document.getElementById('btn-reb-skip').addEventListener('click',endReboundFlow);
-document.getElementById('btn-assist-yes').addEventListener('click',function(){
+guardedClick('btn-reb-skip', endReboundFlow);
+guardedClick('btn-assist-yes', function(){
   document.getElementById('assist-msg').textContent='Tap assisting player ↓';
 });
-document.getElementById('btn-assist-no').addEventListener('click',endAssistFlow);
+guardedClick('btn-assist-no', endAssistFlow);
 document.getElementById('btn-opp-reb').addEventListener('click',function(){
   commitOppReb();
   var b=this; b.style.animation='none'; void b.offsetWidth; b.style.animation='flashOppReb .4s ease';
