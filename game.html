@@ -250,7 +250,7 @@ ROSTER.forEach(function(p){
     three_make:0,three_miss:0,ft_make:0,ft_miss:0,
     reb:0,ast:0,stl:0,blk:0,pc:0,to:0,wow:0};
 });
-var oppRebs=0, history=[];
+var oppRebs=0, gameLog=[];
 
 function calcPts(s){ return s.layup_make*2+s.middy_make*2+s.three_make*3+s.ft_make; }
 function calcOPI(s){ return calcPts(s)+s.ast*0.5+s.pc*1.0-s.to*1.0; }
@@ -284,7 +284,7 @@ function flashCard(name,neg){
 function commitStat(playerName, stat){
   var prev=JSON.parse(JSON.stringify(stats[playerName]));
   stats[playerName][stat]++;
-  history.push({player:playerName,stat:stat,prev:prev,oppBefore:oppRebs});
+  gameLog.push({player:playerName,stat:stat,prev:prev,oppBefore:oppRebs});
   refreshCard(playerName);
   flashCard(playerName, stat==='to'||stat.slice(-5)==='_miss');
   updateLiveBar();
@@ -292,7 +292,7 @@ function commitStat(playerName, stat){
   showToast(playerName+' — '+(STAT_LABELS[stat]||stat));
 }
 function commitOppReb(){
-  history.push({player:null,stat:'opp_reb',oppBefore:oppRebs});
+  gameLog.push({player:null,stat:'opp_reb',oppBefore:oppRebs});
   oppRebs++;
   updateLiveBar();
   document.getElementById('btn-undo').disabled=false;
@@ -300,12 +300,12 @@ function commitOppReb(){
 }
 
 document.getElementById('btn-undo').addEventListener('click',function(){
-  if(!history.length)return;
-  var last=history.pop();
+  if(!gameLog.length)return;
+  var last=gameLog.pop();
   if(last.player===null){ oppRebs=last.oppBefore; }
   else{ stats[last.player]=last.prev; refreshCard(last.player); }
   updateLiveBar();
-  if(!history.length) document.getElementById('btn-undo').disabled=true;
+  if(!gameLog.length) document.getElementById('btn-undo').disabled=true;
 });
 
 // ── PICKER ────────────────────────────────────────────────
