@@ -253,7 +253,7 @@ firebase.initializeApp({
 });
 var db=firebase.firestore(), auth=firebase.auth();
 var APPROVED=['seebee210@gmail.com','coachennisccf@gmail.com'];
-var TEAM='wildcats2031', currentUser=null;
+var TEAM='2031', currentUser=null;
 function isAuth(){ return currentUser && APPROVED.indexOf(currentUser.email)>-1; }
 
 auth.onAuthStateChanged(function(u){
