@@ -13,6 +13,19 @@
 html{background:var(--bg);color:var(--fg);font-family:'Space Grotesk',sans-serif;font-size:13px}
 body{min-height:100vh;padding:max(10px,env(safe-area-inset-top,0px)) 0 max(16px,env(safe-area-inset-bottom,0px))}
 
+/* ── team select screen ── */
+#team-screen{position:fixed;inset:0;background:var(--bg);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:32px}
+#team-screen.hidden{display:none}
+.ts-logo{font-size:36px;font-weight:800;letter-spacing:-1px;color:var(--fg)}
+.ts-logo span{color:var(--accent)}
+.ts-sub{font-size:12px;color:var(--fg2);text-transform:uppercase;letter-spacing:1px}
+.ts-label{font-size:11px;font-weight:700;color:var(--fg2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:-12px}
+.ts-teams{display:flex;flex-direction:column;gap:12px;width:100%;max-width:300px}
+.ts-btn{background:var(--bg3);border:2px solid var(--border);color:var(--fg);font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:700;padding:16px 0;border-radius:12px;cursor:pointer;touch-action:manipulation;text-align:center}
+.ts-btn:active{background:var(--accent);border-color:var(--accent);transform:scale(.97)}
+
+.hidden{display:none!important}
+
 /* ── top bar ── */
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:0 12px;margin-bottom:8px;gap:8px}
 .logo{font-weight:700;font-size:15px;letter-spacing:-.3px}
@@ -150,6 +163,18 @@ table.summary tr.tot-row td.sh{color:var(--fg2)}
 </head>
 <body>
 
+<div id="team-screen">
+  <div class="ts-logo">Wild<span>cats</span></div>
+  <div class="ts-sub">Live Game Tracker</div>
+  <div class="ts-label">Who's playing?</div>
+  <div class="ts-teams">
+    <button class="ts-btn" onclick="selectTeam('2031')">Class of 2031</button>
+    <button class="ts-btn" onclick="selectTeam('2032')">Class of 2032</button>
+    <button class="ts-btn" onclick="selectTeam('2033')">Class of 2033</button>
+  </div>
+</div>
+
+<div id="tracker-wrap" class="hidden">
 <div class="topbar">
   <div class="logo">Wild<span>cats</span></div>
   <div>
@@ -228,6 +253,8 @@ table.summary tr.tot-row td.sh{color:var(--fg2)}
   <button class="btn-save" id="btn-save">💾 Save Game to Stats Tracker</button>
 </div>
 
+</div><!-- end tracker-wrap -->
+
 <div id="mm-overlay"></div>
 <div id="mm-popup">
   <div class="mm-title" id="mm-title">Shot</div>
@@ -254,6 +281,41 @@ firebase.initializeApp({
 var db=firebase.firestore(), auth=firebase.auth();
 var APPROVED=['seebee210@gmail.com','coachennisccf@gmail.com'];
 var TEAM='2031', currentUser=null;
+
+var ROSTERS={
+  '2031':[
+    {num:'25',name:'Twin'},{num:'23',name:'El'},{num:'10',name:'Maria'},
+    {num:'2',name:'Izzy'},{num:'30',name:'Avarie'},{num:'12',name:'Laylah'},
+    {num:'00',name:'Everly'},{num:'21',name:'Jazzy'},{num:'7',name:'Mac'},
+    {num:'24',name:'Arya'},{num:'5',name:'Bella'}
+  ],
+  '2032':[
+    {num:'10',name:'Maria'},{num:'00',name:'Everly'},{num:'1',name:'Mia'},
+    {num:'21',name:'Jazzy'},{num:'7',name:'Mac'},{num:'11',name:'Brooklyn'},
+    {num:'5',name:'Bella'}
+  ],
+  '2033':[
+    {num:'7',name:'Mac'},{num:'11',name:'Brooklyn'},{num:'5',name:'Bella'},
+    {num:'9',name:'Jyzelle'},{num:'24',name:'Arya'},{num:'20',name:'Ky'},
+    {num:'10',name:'Issaly'}
+  ]
+};
+
+window.selectTeam=function(id){
+  TEAM=id;
+  ROSTER=ROSTERS[id]||[];
+  document.getElementById('team-screen').classList.add('hidden');
+  document.getElementById('tracker-wrap').classList.remove('hidden');
+  // reset state
+  stats={};
+  ROSTER.forEach(function(p){ stats[p.name]={}; KEYS.forEach(function(k){stats[p.name][k]=0;}); });
+  oppRebs=0; gameLog=[];
+  document.getElementById('opp-reb-count').textContent='0';
+  document.getElementById('btn-undo').disabled=true;
+  buildTable();
+  buildSummary();
+  refreshSummary();
+};
 function isAuth(){ return currentUser && APPROVED.indexOf(currentUser.email)>-1; }
 
 auth.onAuthStateChanged(function(u){
@@ -317,70 +379,68 @@ document.getElementById('mm-cancel').addEventListener('click',closeMM);
 mmOverlay.addEventListener('click',closeMM);
 
 /* ── build tracker table ── */
-var tbody=document.getElementById('stat-body');
-ROSTER.forEach(function(p){
-  var tr=document.createElement('tr');
-
-  // shot buttons (left) — label only
-  SHOT_COLS.forEach(function(sc){
-    var td=document.createElement('td');
-    var btn=document.createElement('button');
-    btn.className='sbt';
-    btn.textContent=sc[2];
-    btn.addEventListener('click',function(e){e.stopPropagation();openMM(p.name,sc[0],sc[1],sc[2],btn);});
-    td.appendChild(btn); tr.appendChild(td);
+function buildTable(){
+  var tbody=document.getElementById('stat-body');
+  tbody.innerHTML='';
+  ROSTER.forEach(function(p){
+    var tr=document.createElement('tr');
+    SHOT_COLS.forEach(function(sc){
+      var td=document.createElement('td');
+      var btn=document.createElement('button');
+      btn.className='sbt';
+      btn.textContent=sc[2];
+      btn.addEventListener('click',function(e){e.stopPropagation();openMM(p.name,sc[0],sc[1],sc[2],btn);});
+      td.appendChild(btn); tr.appendChild(td);
+    });
+    var tdp=document.createElement('td');
+    tdp.className='col-player';
+    tdp.innerHTML='<div class="player-info"><div class="p-num">'+p.num+'</div><div class="p-name">'+p.name+'</div></div>';
+    tr.appendChild(tdp);
+    STAT_COLS.forEach(function(sc){
+      var key=sc[0], lbl=sc[1];
+      var td=document.createElement('td');
+      var btn=document.createElement('button');
+      btn.className='sbt';
+      btn.textContent=lbl;
+      btn.addEventListener('click',function(e){e.stopPropagation();commitStat(p.name,key,key==='to');});
+      td.appendChild(btn); tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
   });
-
-  // player name cell
-  var tdp=document.createElement('td');
-  tdp.className='col-player';
-  tdp.innerHTML='<div class="player-info"><div class="p-num">'+p.num+'</div><div class="p-name">'+p.name+'</div></div>';
-  tr.appendChild(tdp);
-
-  // stat buttons (right) — label only
-  STAT_COLS.forEach(function(sc){
-    var key=sc[0], lbl=sc[1];
-    var td=document.createElement('td');
-    var btn=document.createElement('button');
-    btn.className='sbt';
-    btn.textContent=lbl;
-    btn.addEventListener('click',function(e){e.stopPropagation();commitStat(p.name,key,key==='to');});
-    td.appendChild(btn); tr.appendChild(td);
-  });
-
-  tbody.appendChild(tr);
-});
+}
 
 /* ── build summary table ── */
-var sbody=document.getElementById('summary-body');
-ROSTER.forEach(function(p){
-  var tr=document.createElement('tr');
-  tr.innerHTML='<td class="sh">'+p.num+' '+p.name+'</td>'
-    +'<td id="su-lu-'+p.name+'">0/0</td>'
-    +'<td id="su-mid-'+p.name+'">0/0</td>'
-    +'<td id="su-3-'+p.name+'">0/0</td>'
-    +'<td id="su-ft-'+p.name+'">0/0</td>'
-    +'<td id="su-pts-'+p.name+'">0</td>'
-    +'<td id="su-reb-'+p.name+'">0</td>'
-    +'<td id="su-ast-'+p.name+'">0</td>'
-    +'<td id="su-stl-'+p.name+'">0</td>'
-    +'<td id="su-blk-'+p.name+'">0</td>'
-    +'<td id="su-pc-'+p.name+'">0</td>'
-    +'<td id="su-to-'+p.name+'">0</td>'
-    +'<td id="su-wow-'+p.name+'">0</td>'
-    +'<td class="tpi-val" id="su-tpi-'+p.name+'">0.0</td>';
-  sbody.appendChild(tr);
-});
-
-// totals footer row
-var sfoot=document.getElementById('summary-foot');
-var tfr=document.createElement('tr'); tfr.className='tot-row';
-tfr.innerHTML='<td class="sh">TOTALS</td>'
-  +'<td id="tot-lu">0/0</td><td id="tot-mid">0/0</td><td id="tot-3">0/0</td><td id="tot-ft">0/0</td>'
-  +'<td id="tot-pts">0</td><td id="tot-reb">0</td><td id="tot-ast">0</td>'
-  +'<td id="tot-stl">0</td><td id="tot-blk">0</td><td id="tot-pc">0</td>'
-  +'<td id="tot-to">0</td><td id="tot-wow">0</td><td id="tot-tpi" style="color:var(--gold)">0.0</td>';
-sfoot.appendChild(tfr);
+function buildSummary(){
+  var sbody=document.getElementById('summary-body');
+  sbody.innerHTML='';
+  ROSTER.forEach(function(p){
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td class="sh">'+p.num+' '+p.name+'</td>'
+      +'<td id="su-lu-'+p.name+'">0/0</td>'
+      +'<td id="su-mid-'+p.name+'">0/0</td>'
+      +'<td id="su-3-'+p.name+'">0/0</td>'
+      +'<td id="su-ft-'+p.name+'">0/0</td>'
+      +'<td id="su-pts-'+p.name+'">0</td>'
+      +'<td id="su-reb-'+p.name+'">0</td>'
+      +'<td id="su-ast-'+p.name+'">0</td>'
+      +'<td id="su-stl-'+p.name+'">0</td>'
+      +'<td id="su-blk-'+p.name+'">0</td>'
+      +'<td id="su-pc-'+p.name+'">0</td>'
+      +'<td id="su-to-'+p.name+'">0</td>'
+      +'<td id="su-wow-'+p.name+'">0</td>'
+      +'<td class="tpi-val" id="su-tpi-'+p.name+'">0.0</td>';
+    sbody.appendChild(tr);
+  });
+  var sfoot=document.getElementById('summary-foot');
+  sfoot.innerHTML='';
+  var tfr=document.createElement('tr'); tfr.className='tot-row';
+  tfr.innerHTML='<td class="sh">TOTALS</td>'
+    +'<td id="tot-lu">0/0</td><td id="tot-mid">0/0</td><td id="tot-3">0/0</td><td id="tot-ft">0/0</td>'
+    +'<td id="tot-pts">0</td><td id="tot-reb">0</td><td id="tot-ast">0</td>'
+    +'<td id="tot-stl">0</td><td id="tot-blk">0</td><td id="tot-pc">0</td>'
+    +'<td id="tot-to">0</td><td id="tot-wow">0</td><td id="tot-tpi" style="color:var(--gold)">0.0</td>';
+  sfoot.appendChild(tfr);
+}
 
 function v(id){ return document.getElementById(id); }
 function set(id,val){ var el=v(id); if(el){el.textContent=val; el.className=(el.className||'').replace(' zero','')+(val==='0'||val===0?' zero':'');} }
@@ -533,7 +593,6 @@ function showToast(msg,err){
 }
 
 v('game-date').value=new Date().toISOString().slice(0,10);
-refreshSummary();
 </script>
 </body>
 </html>
